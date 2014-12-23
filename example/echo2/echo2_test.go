@@ -3,7 +3,6 @@
 package echo2_test
 
 import (
-	"bytes"
 	"github.com/jart/gosip/rtp"
 	"github.com/jart/gosip/sdp"
 	"github.com/jart/gosip/sip"
@@ -19,10 +18,11 @@ func TestCallToEchoApp(t *testing.T) {
 	from := &sip.Addr{Uri: &sip.URI{Host: "127.0.0.1"}}
 
 	// Create the SIP UDP transport layer.
-	tp, err := sip.NewUDPTransport(from)
+	tp, err := sip.NewTransport(from)
 	if err != nil {
 		t.Fatal(err)
 	}
+	defer tp.Sock.Close()
 
 	// Create an RTP socket.
 	rtpsock, err := net.ListenPacket("udp", "108.61.60.146:0")
@@ -40,46 +40,35 @@ func TestCallToEchoApp(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	// Receive provisional 100 Trying.
-	conn.SetDeadline(time.Now().Add(time.Second))
-	memory := make([]byte, 2048)
-	amt, err := conn.Read(memory)
-	if err != nil {
-		t.Fatal("read 100 trying:", err)
-	}
-	log.Printf("<<< %s\n%s\n", raddr, string(memory[0:amt]))
-	msg, err := sip.ParseMsg(string(memory[0:amt]))
-	if err != nil {
-		t.Fatal("parse 100 trying", err)
-	}
-	if !msg.IsResponse || msg.Status != 100 || msg.Phrase != "Trying" {
-		t.Fatal("didn't get 100 trying :[")
-	}
-
-	// Receive 200 OK.
-	conn.SetDeadline(time.Now().Add(5 * time.Second))
-	amt, err = conn.Read(memory)
-	if err != nil {
-		t.Fatal("read 200 ok:", err)
-	}
-	log.Printf("<<< %s\n%s\n", raddr, string(memory[0:amt]))
-	msg, err = sip.ParseMsg(string(memory[0:amt]))
-	if err != nil {
-		t.Fatal("parse 200 ok:", err)
-	}
-	if !msg.IsResponse || msg.Status != 200 || msg.Phrase != "OK" {
-		t.Fatal("wanted 200 ok but got:", msg.Status, msg.Phrase)
-	}
-	if msg.Payload == "" || msg.Headers["Content-Type"] != "application/sdp" {
-		t.Fatal("200 ok didn't have sdp payload")
+	// Consume provisional messages until we receive answer.
+	var rrtpaddr *net.UDPAddr
+	for {
+		tp.Sock.SetDeadline(time.Now().Add(time.Second))
+		msg := tp.Recv()
+		if msg.Error != nil {
+			t.Fatal(msg.Error)
+		}
+		if msg.Status < sip.StatusOK {
+			log.Printf("Got provisional %d %s", msg.Status, msg.Phrase)
+		}
+		if msg.Headers["Content-Type"] == "application/sdp" {
+			log.Printf("Establishing media session")
+			rsdp, err := sdp.Parse(msg.Payload)
+			if err != nil {
+				t.Fatal("failed to parse sdp", err)
+			}
+			rrtpaddr = &net.UDPAddr{IP: net.ParseIP(rsdp.Addr), Port: int(rsdp.Audio.Port)}
+		}
+		if msg.Status == sip.StatusOK {
+			log.Printf("Answered!")
+			break
+		} else if msg.Status > sip.StatusOK {
+			t.Fatalf("Got %d %s", msg.Status, msg.Phrase)
+			NewAck(invite)
+		}
 	}
 
 	// Figure out where they want us to send RTP.
-	rsdp, err := sdp.Parse(msg.Payload)
-	if err != nil {
-		t.Fatal("failed to parse sdp", err)
-	}
-	rrtpaddr := &net.UDPAddr{IP: net.ParseIP(rsdp.Addr), Port: int(rsdp.Audio.Port)}
 
 	// Acknowledge the 200 OK to answer the call.
 	var ack sip.Msg

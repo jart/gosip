@@ -81,9 +81,9 @@ func TestOptions(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	msg, err := sip.ParseMsg(string(memory[0:amt]))
-	if err != nil {
-		t.Fatal(err)
+	msg := sip.ParseMsg(string(memory[0:amt]))
+	if msg.Error != nil {
+		t.Fatal(msg.Error)
 	}
 
 	if !msg.IsResponse || msg.Status != 200 || msg.Phrase != "OK" {

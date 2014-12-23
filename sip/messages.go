@@ -6,49 +6,55 @@ import (
 	"log"
 )
 
-func NewRequest(tp Transport, method string, to, from *Addr) *Msg {
+const (
+	GosipUserAgent = "gosip/1.o"
+	GosipAllow     = "INVITE, ACK, CANCEL, BYE, OPTIONS"
+)
+
+func NewRequest(tp *Transport, method string, to, from *Addr) *Msg {
 	return &Msg{
 		Method:     method,
 		Request:    to.Uri.Copy(),
-		Via:        tp.Via().Branch(),
-		From:       from.Or(tp.Contact()).Tag(),
+		Via:        tp.Via.Copy().Branch(),
+		From:       from.Or(tp.Contact).Tag(),
 		To:         to.Copy(),
-		Contact:    tp.Contact(),
+		Contact:    tp.Contact,
 		CallID:     util.GenerateCallID(),
 		CSeq:       util.GenerateCSeq(),
 		CSeqMethod: method,
-		Headers:    Headers{"User-Agent": "gosip/1.o"},
+		Headers:    DefaultHeaders(),
 	}
 }
 
 func NewResponse(msg *Msg, status int) *Msg {
 	return &Msg{
-		IsResponse: true,
-		Status:     status,
-		Phrase:     Phrases[status],
-		Via:        msg.Via,
-		From:       msg.From,
-		To:         msg.To,
-		CallID:     msg.CallID,
-		CSeq:       msg.CSeq,
-		CSeqMethod: msg.CSeqMethod,
-		Headers:    Headers{"User-Agent": "gosip/1.o"},
+		IsResponse:  true,
+		Status:      status,
+		Phrase:      Phrase(status),
+		Via:         msg.Via,
+		From:        msg.From,
+		To:          msg.To,
+		CallID:      msg.CallID,
+		CSeq:        msg.CSeq,
+		CSeqMethod:  msg.CSeqMethod,
+		RecordRoute: msg.RecordRoute,
+		Headers:     DefaultHeaders(),
 	}
 }
 
 // http://tools.ietf.org/html/rfc3261#section-17.1.1.3
-func NewAck(invite *Msg) *Msg {
+func NewAck(original, last *Msg) *Msg {
 	return &Msg{
 		Method:     "ACK",
-		Request:    invite.Request,
-		Via:        invite.Via,
-		From:       invite.From,
-		To:         invite.To,
-		CallID:     invite.CallID,
-		CSeq:       invite.CSeq,
+		Request:    original.Request,
+		Via:        original.Via.Copy().SetNext(nil),
+		From:       original.From,
+		To:         last.To,
+		CallID:     original.CallID,
+		CSeq:       original.CSeq,
 		CSeqMethod: "ACK",
-		Route:      invite.Route,
-		Headers:    Headers{"User-Agent": "gosip/1.o"},
+		Route:      last.RecordRoute.Reversed(),
+		Headers:    DefaultHeaders(),
 	}
 }
 
@@ -65,23 +71,23 @@ func NewCancel(invite *Msg) *Msg {
 		CallID:     invite.CallID,
 		CSeq:       invite.CSeq,
 		CSeqMethod: "CANCEL",
-		Route:      invite.Route,
-		Headers:    Headers{"User-Agent": "gosip/1.o"},
+		Route:      invite.RecordRoute.Reversed(),
+		Headers:    DefaultHeaders(),
 	}
 }
 
-func NewBye(last, invite, ok200 *Msg) *Msg {
+func NewBye(invite, last *Msg) *Msg {
 	return &Msg{
-		Request:    ok200.Contact.Uri,
-		Via:        invite.Via.Branch(),
+		Method:     "BYE",
+		Request:    last.Contact.Uri,
+		Via:        invite.Via,
 		From:       last.From,
 		To:         last.To,
 		CallID:     last.CallID,
-		Method:     "BYE",
 		CSeq:       last.CSeq + 1,
 		CSeqMethod: "BYE",
-		Route:      ok200.RecordRoute,
-		Headers:    make(map[string]string),
+		Route:      last.RecordRoute.Reversed(),
+		Headers:    DefaultHeaders(),
 	}
 }
 
@@ -108,4 +114,11 @@ func AckMatch(msg, ack *Msg) bool {
 func AttachSDP(msg *Msg, sdp *sdp.SDP) {
 	msg.Headers["Content-Type"] = "application/sdp"
 	msg.Payload = sdp.String()
+}
+
+func DefaultHeaders() Headers {
+	return Headers{
+		"User-Agent": GosipUserAgent,
+		"Allow":      GosipAllow,
+	}
 }

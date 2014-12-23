@@ -227,9 +227,9 @@ func TestCallToEchoApp(t *testing.T) {
 		t.Fatal("read 100 trying:", err)
 	}
 	log.Printf("<<< %s\n%s\n", raddr, string(memory[0:amt]))
-	msg, err := sip.ParseMsg(string(memory[0:amt]))
-	if err != nil {
-		t.Fatal("parse 100 trying", err)
+	msg := sip.ParseMsg(string(memory[0:amt]))
+	if msg.Error != nil {
+		t.Fatal("parse 100 trying", msg.Error)
 	}
 	if !msg.IsResponse || msg.Status != 100 || msg.Phrase != "Trying" {
 		t.Fatal("didn't get 100 trying :[")
@@ -242,9 +242,9 @@ func TestCallToEchoApp(t *testing.T) {
 		t.Fatal("read 200 ok:", err)
 	}
 	log.Printf("<<< %s\n%s\n", raddr, string(memory[0:amt]))
-	msg, err = sip.ParseMsg(string(memory[0:amt]))
-	if err != nil {
-		t.Fatal("parse 200 ok:", err)
+	msg = sip.ParseMsg(string(memory[0:amt]))
+	if msg.Error != nil {
+		t.Fatal("parse 200 ok:", msg.Error)
 	}
 	if !msg.IsResponse || msg.Status != 200 || msg.Phrase != "OK" {
 		t.Fatal("wanted 200 ok but got:", msg.Status, msg.Phrase)
@@ -346,9 +346,9 @@ func TestCallToEchoApp(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	msg, err = sip.ParseMsg(string(memory[0:amt]))
-	if err != nil {
-		t.Fatal(err)
+	msg = sip.ParseMsg(string(memory[0:amt]))
+	if msg.Error != nil {
+		t.Fatal(msg.Error)
 	}
 	if !msg.IsResponse || msg.Status != 200 || msg.Phrase != "OK" {
 		t.Fatal("wanted bye response 200 ok but got:", msg.Status, msg.Phrase)

@@ -11,18 +11,18 @@ import (
 )
 
 var (
-	ViaBadHeader  = errors.New("bad via header")
-	ViaProtoBlank = errors.New("via.Proto blank")
+	ViaBadHeader  = errors.New("Bad Via header")
+	ViaProtoBlank = errors.New("Via Proto blank")
 )
 
 // Example: SIP/2.0/UDP 1.2.3.4:5060;branch=z9hG4bK556f77e6.
 type Via struct {
-	Next    *Via   // pointer to next via header if any
 	Version string // protocol version e.g. "2.0"
 	Proto   string // transport type "UDP"
 	Host    string // name or ip of egress interface
 	Port    uint16 // network port number
 	Params  Params // params like branch, received, rport, etc.
+	Next    *Via   // pointer to next via header if any
 }
 
 // Parses a single SIP Via header, provided the part that comes after "Via: ".
@@ -98,7 +98,6 @@ func (via *Via) Copy() *Via {
 
 // Sets newly generated branch ID and returns self.
 func (via *Via) Branch() *Via {
-	via = via.Copy()
 	via.Params["branch"] = util.GenerateBranch()
 	return via
 }

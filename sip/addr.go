@@ -22,7 +22,6 @@ import (
 	"bytes"
 	"errors"
 	"github.com/jart/gosip/util"
-	"log"
 	"strings"
 )
 
@@ -45,7 +44,7 @@ func ParseAddr(s string) (addr *Addr, err error) {
 	// Extract display.
 	switch n := strings.IndexAny(s, "\"<"); {
 	case n < 0:
-		return nil, errors.New("invalid address")
+		return nil, errors.New("Invalid address")
 	case s[n] == '<': // Display is not quoted.
 		addr.Display, s = strings.Trim(s[0:n], " "), s[n+1:]
 	case s[n] == '"': // We found an opening quote.
@@ -58,7 +57,7 @@ func ParseAddr(s string) (addr *Addr, err error) {
 				break LOL
 			case '\\': // Escape sequence.
 				if len(s) < 2 {
-					return nil, errors.New("evil quote escape")
+					return nil, errors.New("Evil quote escape")
 				}
 				switch s[1] {
 				case '"':
@@ -73,7 +72,7 @@ func ParseAddr(s string) (addr *Addr, err error) {
 			}
 		}
 		if s == "" {
-			return nil, errors.New("no closing quote in display")
+			return nil, errors.New("No closing quote in display")
 		}
 		for s != "" {
 			c := s[0]
@@ -111,7 +110,7 @@ func ParseAddr(s string) (addr *Addr, err error) {
 		if s != "" {
 			addr.Next, err = ParseAddr(s)
 			if err != nil {
-				log.Println("[NOTICE]", "dropping invalid bonus addr:", s, err)
+				return nil, err
 			}
 		}
 	}
@@ -186,6 +185,27 @@ func (addr *Addr) Last() *Addr {
 	if addr != nil {
 		for ; addr.Next != nil; addr = addr.Next {
 		}
+	}
+	return addr
+}
+
+// Returns number of items in the linked list.
+func (addr *Addr) Len() int {
+	count := 0
+	for ; addr != nil; addr = addr.Next {
+		count++
+	}
+	return count
+}
+
+// Returns self with linked list reversed.
+func (addr *Addr) Reversed() *Addr {
+	var res *Addr
+	for ; addr != nil; addr = addr.Next {
+		a := new(Addr)
+		*a = *addr
+		a.Next = res
+		res = a
 	}
 	return addr
 }

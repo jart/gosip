@@ -5,7 +5,9 @@ package sip
 import (
 	"bytes"
 	"errors"
+	"fmt"
 	"log"
+	"net"
 	"strconv"
 	"strings"
 )
@@ -15,17 +17,19 @@ type Headers map[string]string
 // Msg represents a SIP message. This can either be a request or a response.
 // These fields are never nil unless otherwise specified.
 type Msg struct {
-	magic         int    // Used for pseudo msgs or to mark direction
-	OutboundProxy string // Use Route instead if possible
+	// Special non-SIP fields.
+	Error      error        // Set to indicate an error with this message
+	SourceAddr *net.UDPAddr // Set by transport layer as received address
 
-	IsResponse bool   // This is a response (like 404 GO DIE)
+	// Fields that aren't headers.
+	IsResponse bool   // This is a response (like 404 Not Found)
 	Method     string // Indicates type of request (if request)
 	Request    *URI   // dest URI (nil if response)
 	Status     int    // Indicates happiness of response (if response)
 	Phrase     string // Explains happiness of response (if response)
 	Payload    string // Stuff that comes after two line breaks
 
-	// Mandatory headers
+	// Mandatory headers.
 	Via         *Via   // Linked list of agents traversed (must have one)
 	Route       *Addr  // Used for goose routing and loose routing
 	RecordRoute *Addr  // Used for loose routing
@@ -60,21 +64,27 @@ func (msg *Msg) String() string {
 }
 
 // Parses a SIP message into a data structure. This takes ~70 µs on average.
-func ParseMsg(packet string) (msg *Msg, err error) {
+func ParseMsg(packet string) (msg *Msg) {
 	msg = new(Msg)
 	if packet == "" {
-		return nil, errors.New("empty msg")
+		msg.Error = errors.New("Empty msg")
+		return msg
 	}
 	if n := strings.Index(packet, "\r\n\r\n"); n > 0 {
 		packet, msg.Payload = packet[0:n], packet[n+4:]
 	}
 	lines := strings.Split(packet, "\r\n")
 	if lines == nil || len(lines) < 2 {
-		return nil, errors.New("too few lines")
+		msg.Error = errors.New("Too few lines")
+		return msg
 	}
 	var k, v string
 	var okVia, okTo, okFrom, okCallID, okComputer bool
-	err = msg.parseFirstLine(lines[0])
+	err := msg.parseFirstLine(lines[0])
+	if err != nil {
+		msg.Error = err
+		return msg
+	}
 	hdrs := lines[1:]
 	msg.Headers = make(map[string]string, len(hdrs))
 	msg.MaxForwards = 70
@@ -94,6 +104,7 @@ func ParseMsg(packet string) (msg *Msg, err error) {
 				if k == "" || v == "" {
 					log.Println("[NOTICE]", "blank header found", hdr)
 				}
+				k = uncompactHeader(k)
 			} else {
 				log.Println("[NOTICE]", "header missing delimiter", hdr)
 				continue
@@ -107,27 +118,29 @@ func ParseMsg(packet string) (msg *Msg, err error) {
 			okVia = true
 			*viap, err = ParseVia(v)
 			if err != nil {
-				return nil, errors.New("Via header - " + err.Error())
+				msg.Error = errors.New("Bad Via header: " + err.Error())
+			} else {
+				viap = &(*viap).Next
 			}
-			viap = &(*viap).Next
 		case "to":
 			okTo = true
 			msg.To, err = ParseAddr(v)
 			if err != nil {
-				return nil, errors.New("To header - " + err.Error())
+				msg.Error = errors.New("Bad To header: " + err.Error())
 			}
 		case "from":
 			okFrom = true
 			msg.From, err = ParseAddr(v)
 			if err != nil {
-				return nil, errors.New("From header - " + err.Error())
+				msg.Error = errors.New("Bad From header: " + err.Error())
 			}
 		case "contact":
 			*contactp, err = ParseAddr(v)
 			if err != nil {
-				return nil, errors.New("Contact header - " + err.Error())
+				msg.Error = errors.New("Bad Contact header: " + err.Error())
+			} else {
+				contactp = &(*contactp).Last().Next
 			}
-			contactp = &(*contactp).Next
 		case "cseq":
 			okComputer = false
 			if n := strings.Index(v, " "); n > 0 {
@@ -138,90 +151,68 @@ func ParseMsg(packet string) (msg *Msg, err error) {
 				}
 			}
 			if !okComputer {
-				return nil, errors.New("Bad CSeq Header")
+				msg.Error = errors.New("Bad CSeq Header")
 			}
 		case "content-length":
 			if cl, err := strconv.Atoi(v); err == nil {
-				if cl > len(msg.Payload) {
-					msg.Payload = msg.Payload[0:cl]
-					log.Println("[DEBUG]", "discarding extra sip payload bytes")
-				} else if cl > len(msg.Payload) {
-					return nil, errors.New("content-length > len(payload)")
+				if cl != len(msg.Payload) {
+					msg.Error = errors.New(fmt.Sprintf(
+						"Content-Length (%d) differs from payload length (%d)",
+						cl, len(msg.Payload)))
 				}
 			} else {
-				return nil, errors.New("Bad Content-Length header")
+				msg.Error = errors.New("Bad Content-Length header")
 			}
 		case "expires":
 			if cl, err := strconv.Atoi(v); err == nil && cl >= 0 {
 				msg.Expires = cl
 			} else {
-				return nil, errors.New("Bad Expires header")
+				msg.Error = errors.New("Bad Expires header")
 			}
 		case "min-expires":
 			if cl, err := strconv.Atoi(v); err == nil && cl > 0 {
 				msg.MinExpires = cl
 			} else {
-				return nil, errors.New("Bad Min-Expires header")
+				msg.Error = errors.New("Bad Min-Expires header")
 			}
 		case "max-forwards":
 			if cl, err := strconv.Atoi(v); err == nil && cl > 0 {
 				msg.MaxForwards = cl
 			} else {
-				return nil, errors.New("Bad Max-Forwards header")
+				msg.Error = errors.New("Bad Max-Forwards header")
 			}
 		case "route":
 			*routep, err = ParseAddr(v)
 			if err != nil {
-				return nil, errors.New("Bad Route header: " + err.Error())
+				msg.Error = errors.New("Bad Route header: " + err.Error())
+			} else {
+				routep = &(*routep).Last().Next
 			}
-			routep = &(*routep).Next
 		case "record-route":
 			*rroutep, err = ParseAddr(v)
 			if err != nil {
-				return nil, errors.New("Bad Record-Route header: " + err.Error())
+				msg.Error = errors.New("Bad Record-Route header: " + err.Error())
+			} else {
+				rroutep = &(*rroutep).Last().Next
 			}
-			rroutep = &(*rroutep).Next
 		case "p-asserted-identity":
 			msg.Paid, err = ParseAddr(v)
 			if err != nil {
-				return nil, errors.New("Bad P-Asserted-Identity header: " + err.Error())
+				msg.Error = errors.New("Bad P-Asserted-Identity header: " + err.Error())
 			}
 		case "remote-party-id":
 			msg.Rpid, err = ParseAddr(v)
 			if err != nil {
-				return nil, errors.New("Bad Remote-Party-ID header: " + err.Error())
+				msg.Error = errors.New("Bad Remote-Party-ID header: " + err.Error())
 			}
 		default:
 			msg.Headers[k] = v
 		}
 	}
 	if !okVia || !okTo || !okFrom || !okCallID || !okComputer {
-		return nil, errors.New("Missing mandatory headers")
+		msg.Error = errors.New("Missing mandatory headers")
 	}
-	return msg, nil
-}
-
-func (msg *Msg) parseFirstLine(s string) (err error) {
-	toks := strings.Split(s, " ")
-	if toks != nil && len(toks) == 3 && toks[2] == "SIP/2.0" {
-		msg.Phrase = ""
-		msg.Status = 0
-		msg.Method = toks[0]
-		msg.Request = new(URI)
-		msg.Request, err = ParseURI(toks[1])
-	} else if toks != nil && len(toks) == 3 && toks[0] == "SIP/2.0" {
-		msg.IsResponse = true
-		msg.Method = ""
-		msg.Request = nil
-		msg.Phrase = toks[2]
-		msg.Status, err = strconv.Atoi(toks[1])
-		if err != nil {
-			return errors.New("Invalid status")
-		}
-	} else {
-		err = errors.New("Bad protocol or request line")
-	}
-	return err
+	return
 }
 
 func (msg *Msg) Copy() *Msg {
@@ -267,11 +258,7 @@ func (msg *Msg) Append(b *bytes.Buffer) error {
 			return errors.New("Msg.Status >= 700")
 		}
 		if msg.Phrase == "" {
-			if v, ok := Phrases[msg.Status]; ok {
-				msg.Phrase = v
-			} else {
-				return errors.New("Msg.Phrase not set and Msg.Status is unknown")
-			}
+			msg.Phrase = Phrase(msg.Status)
 		}
 		b.WriteString("SIP/2.0 ")
 		b.WriteString(strconv.Itoa(msg.Status))
@@ -375,4 +362,27 @@ func (msg *Msg) Append(b *bytes.Buffer) error {
 	b.WriteString(msg.Payload)
 
 	return nil
+}
+
+func (msg *Msg) parseFirstLine(s string) (err error) {
+	toks := strings.Split(s, " ")
+	if toks != nil && len(toks) == 3 && toks[2] == "SIP/2.0" {
+		msg.Phrase = ""
+		msg.Status = 0
+		msg.Method = toks[0]
+		msg.Request = new(URI)
+		msg.Request, err = ParseURI(toks[1])
+	} else if toks != nil && len(toks) == 3 && toks[0] == "SIP/2.0" {
+		msg.IsResponse = true
+		msg.Method = ""
+		msg.Request = nil
+		msg.Phrase = toks[2]
+		msg.Status, err = strconv.Atoi(toks[1])
+		if err != nil {
+			return errors.New("Invalid status")
+		}
+	} else {
+		err = errors.New("Bad protocol or request line")
+	}
+	return err
 }

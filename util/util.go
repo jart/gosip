@@ -8,6 +8,14 @@ import (
 	"strings"
 )
 
+// Returns true if error is an i/o timeout.
+func IsTimeout(err error) bool {
+	if operr, ok := err.(*net.OpError); ok {
+		return operr.Timeout()
+	}
+	return false
+}
+
 // Returns true if IP contains a colon.
 func IsIPv6(ip string) bool {
 	n := strings.Index(ip, ":")

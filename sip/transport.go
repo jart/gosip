@@ -7,7 +7,6 @@ import (
 	"bytes"
 	"errors"
 	"flag"
-	"fmt"
 	"github.com/jart/gosip/util"
 	"log"
 	"net"
@@ -21,48 +20,34 @@ var (
 	timestampTagging = flag.Bool("timestampTagging", false, "Add microsecond timestamps to Via tags")
 )
 
-// Transport defines any object capable of sending and receiving SIP messages.
-// Such objects are responsible for their own reliability. This means checking
-// network errors, raising alarms, rebinding sockets, etc.
-type Transport interface {
-	// Sends a SIP message. Will not modify msg.
-	Send(msg *Msg) error
+// Transport sends and receives SIP messages over UDP with stateless routing.
+type Transport struct {
 
-	// Receives a SIP message. Must only be called by one goroutine. The received
-	// address is injected into the first Via header as the "received" param.
-	Recv() (msg *Msg, err error)
-
-	// Closes underlying resources. Please make sure all calls using this
-	// transport complete first.
-	Close() error
+	// Thing returned by ListenPacket
+	Sock *net.UDPConn
 
 	// When you send an outbound request (not a response) you have to set the via
-	// tag: ``msg.Via = tport.Via().SetBranch().SetNext(msg.Via)``. The details
-	// of the branch parameter... are tricky.
-	Via() *Via
+	// tag: ``msg.Via = tp.Via.Copy().Branch().SetNext(msg.Via)``. The details of
+	// the branch parameter... are tricky.
+	Via *Via
 
 	// Returns a linked list of all canonical names and/or IP addresses that may
 	// be used to contact *this specific* transport.
-	Contact() *Addr
-}
+	Contact *Addr
 
-// Transport implementation that serializes messages to/from a UDP socket.
-type udpTransport struct {
-	sock    *net.UDPConn // thing returned by ListenUDP
-	addr    *net.UDPAddr // handy for getting ip (contact might be host)
-	buf     []byte       // reusable memory for serialization
-	via     *Via         // who are we?
-	contact *Addr        // uri that points to this specific transport
+	// Reusable memory for serialization
+	buf []byte
 }
 
 // Creates a new stateless network mechanism for transmitting and receiving SIP
 // signalling messages.
 //
-// 'contact' is a SIP address, e.g. "<sip:1.2.3.4>", that tells how to bind
-// sockets. This value is also used for contact headers which tell other
-// user-agents where to send responses and hence should only contain an IP or
-// canonical address.
-func NewUDPTransport(contact *Addr) (tp Transport, err error) {
+// contact is a SIP address, e.g. "<sip:1.2.3.4>", that tells how to bind
+// sockets. If contact.Uri.Port is 0, then a port will be selected randomly.
+// This value is also used for contact headers which tell other user-agents
+// where to send responses and hence should only contain an IP or canonical
+// address.
+func NewTransport(contact *Addr) (tp *Transport, err error) {
 	saddr := util.HostPortToString(contact.Uri.Host, contact.Uri.Port)
 	sock, err := net.ListenPacket("udp", saddr)
 	if err != nil {
@@ -72,31 +57,29 @@ func NewUDPTransport(contact *Addr) (tp Transport, err error) {
 	contact = contact.Copy()
 	contact.Uri.Port = uint16(addr.Port)
 	contact.Uri.Params["transport"] = addr.Network()
-	return &udpTransport{
-		sock:    sock.(*net.UDPConn),
-		addr:    addr,
-		buf:     make([]byte, 2048),
-		contact: contact,
-		via: &Via{
-			Version: "2.0",
-			Proto:   strings.ToUpper(addr.Network()),
-			Host:    contact.Uri.Host,
-			Port:    contact.Uri.Port,
+	return &Transport{
+		Sock:    sock.(*net.UDPConn),
+		Contact: contact,
+		Via: &Via{
+			Host: contact.Uri.Host,
+			Port: contact.Uri.Port,
 		},
 	}, nil
 }
 
-func (tp *udpTransport) Send(msg *Msg) error {
+// Sends a SIP message.
+func (tp *Transport) Send(msg *Msg) error {
 	msg, saddr, err := tp.route(msg)
 	if err != nil {
 		return err
 	}
 	addr, err := net.ResolveUDPAddr("ip", saddr)
 	if err != nil {
-		return errors.New(fmt.Sprintf(
-			"udpTransport(%s) failed to resolve %s: %s", tp.addr, saddr, err))
+		return err
 	}
-	msg.MaxForwards--
+	if msg.MaxForwards > 0 {
+		msg.MaxForwards--
+	}
 	ts := time.Now()
 	addTimestamp(msg, ts)
 	var b bytes.Buffer
@@ -104,58 +87,47 @@ func (tp *udpTransport) Send(msg *Msg) error {
 	if *tracing {
 		tp.trace("send", b.String(), addr, ts)
 	}
-	_, err = tp.sock.WriteTo(b.Bytes(), addr)
+	_, err = tp.Sock.WriteTo(b.Bytes(), addr)
 	if err != nil {
-		return errors.New(fmt.Sprintf(
-			"udpTransport(%s) write failed: %s", tp.addr, err))
+		return err
 	}
 	return nil
 }
 
-func (tp *udpTransport) Recv() (msg *Msg, err error) {
-	for {
-		amt, addr, err := tp.sock.ReadFromUDP(tp.buf)
-		if err != nil {
-			return nil, errors.New(fmt.Sprintf(
-				"udpTransport(%s) read failed: %s", tp.addr, err))
-		}
-		ts := time.Now()
-		packet := string(tp.buf[0:amt])
-		if *tracing {
-			tp.trace("recv", packet, addr, ts)
-		}
-		// Validation: http://tools.ietf.org/html/rfc3261#section-16.3
-		msg, err = ParseMsg(packet)
-		if err != nil {
-			log.Printf("udpTransport(%s) got bad message from %s: %s\n%s", tp.addr, addr, err, packet)
-			continue
-		}
-		if msg.Via.Host != addr.IP.String() || int(msg.Via.Port) != addr.Port {
-			msg.Via.Params["received"] = addr.String()
-		}
-		addTimestamp(msg, ts)
-		if !tp.sanityCheck(msg) {
-			continue
-		}
-		tp.preprocess(msg)
-		break
+// Receives a SIP message. The received address is injected into the first Via
+// header as the "received" param. The Error field of msg should be checked. If
+// msg.Status is Status8xxNetworkError, it means the underlying socket died. If
+// you set a deadline, you should check: util.IsTimeout(msg.Error).
+//
+// Warning: Must only be called by one goroutine.
+func (tp *Transport) Recv() *Msg {
+	if tp.buf == nil {
+		tp.buf = make([]byte, 2048)
 	}
-	return msg, nil
+	amt, addr, err := tp.Sock.ReadFromUDP(tp.buf)
+	if err != nil {
+		return &Msg{Status: Status8xxNetworkError, Error: err}
+	}
+	ts := time.Now()
+	packet := string(tp.buf[0:amt])
+	if *tracing {
+		tp.trace("recv", packet, addr, ts)
+	}
+	// Validation: http://tools.ietf.org/html/rfc3261#section-16.3
+	msg := ParseMsg(packet)
+	if msg.Error != nil {
+		return msg
+	}
+	addReceived(msg, addr)
+	addTimestamp(msg, ts)
+	if !tp.sanityCheck(msg) {
+		return msg
+	}
+	tp.preprocess(msg)
+	return msg
 }
 
-func (tp *udpTransport) Via() *Via {
-	return tp.via
-}
-
-func (tp *udpTransport) Contact() *Addr {
-	return tp.contact
-}
-
-func (tp *udpTransport) Close() error {
-	return tp.sock.Close()
-}
-
-func (tp *udpTransport) trace(dir, pkt string, addr net.Addr, t time.Time) {
+func (tp *Transport) trace(dir, pkt string, addr *net.UDPAddr, t time.Time) {
 	size := len(pkt)
 	bar := strings.Repeat("-", 72)
 	suffix := "\n  "
@@ -174,36 +146,33 @@ func (tp *udpTransport) trace(dir, pkt string, addr net.Addr, t time.Time) {
 		bar)
 }
 
-// Test if this message is acceptable.
-func (tp *udpTransport) sanityCheck(msg *Msg) bool {
+// Checks if message is acceptable, otherwise sets msg.Error and returns false.
+func (tp *Transport) sanityCheck(msg *Msg) bool {
 	if msg.MaxForwards <= 0 {
-		log.Printf("udpTransport(%s) froot loop detected\n%s", tp.addr, msg)
 		go tp.Send(NewResponse(msg, 483))
-		return false
+		msg.Error = errors.New("Froot loop detected")
 	}
 	if msg.IsResponse {
 		if msg.Status >= 700 {
-			log.Printf("udpTransport(%s) msg has crazy status number\n%s", tp.addr, msg)
 			go tp.Send(NewResponse(msg, 400))
-			return false
+			msg.Error = errors.New("Crazy status number")
 		}
 	} else {
 		if msg.CSeqMethod == "" || msg.CSeqMethod != msg.Method {
-			log.Printf("udpTransport(%s) bad cseq number\n%s", tp.addr, msg)
 			go tp.Send(NewResponse(msg, 400))
-			return false
+			msg.Error = errors.New("Bad CSeq")
 		}
 	}
-	return true
+	return msg.Error == nil
 }
 
 // Perform some ingress message mangling.
-func (tp *udpTransport) preprocess(msg *Msg) {
-	if tp.contact.Compare(msg.Route) {
-		log.Printf("udpTransport(%s) removing our route header: %s", tp.addr, msg.Route)
+func (tp *Transport) preprocess(msg *Msg) {
+	if tp.Contact.Compare(msg.Route) {
+		log.Printf("Removing our route header: %s", msg.Route)
 		msg.Route = msg.Route.Next
 	}
-	if _, ok := msg.Request.Params["lr"]; ok && msg.Route != nil && tp.contact.Uri.Compare(msg.Request) {
+	if _, ok := msg.Request.Params["lr"]; ok && msg.Route != nil && tp.Contact.Uri.Compare(msg.Request) {
 		// RFC3261 16.4 Route Information Preprocessing
 		// RFC3261 16.12.1.2: Traversing a Strict-Routing Proxy
 		var oldReq, newReq *URI
@@ -220,39 +189,34 @@ func (tp *udpTransport) preprocess(msg *Msg) {
 			seclast.Next = nil
 			msg.Route.Last()
 		}
-		log.Printf("udpTransport(%s) fixing request uri after strict router traversal: %s -> %s",
-			tp.addr, oldReq, newReq)
+		log.Printf("Fixing request URI after strict router traversal: %s -> %s", oldReq, newReq)
 	}
 }
 
-func (tp *udpTransport) route(old *Msg) (msg *Msg, saddr string, err error) {
+func (tp *Transport) route(old *Msg) (msg *Msg, saddr string, err error) {
 	var host string
 	var port uint16
 	msg = new(Msg)
-	*msg = *old // Shallow copy is sufficient.
+	*msg = *old // Start off with a shallow copy.
 	if msg.IsResponse {
 		msg.Via = old.Via.Copy()
-		if msg.Via.CompareAddr(tp.via) {
+		if msg.Via.CompareAddr(tp.Via) {
 			// In proxy scenarios we have to remove our own Via.
 			msg.Via = msg.Via.Next
 		}
 		if msg.Via == nil {
-			return nil, "", errors.New("Ran out of Via headers when forwarding Response!")
-		}
-		if msg.Via != nil {
-			if received, ok := msg.Via.Params["received"]; ok {
-				return msg, received, nil
-			} else {
-				host, port = msg.Via.Host, msg.Via.Port
-			}
-		} else {
 			return nil, "", errors.New("Message missing Via header")
+		}
+		if received, ok := msg.Via.Params["received"]; ok {
+			return msg, received, nil
+		} else {
+			host, port = msg.Via.Host, msg.Via.Port
 		}
 	} else {
 		if msg.Request == nil {
 			return nil, "", errors.New("Missing request URI")
 		}
-		if !msg.Via.CompareAddr(tp.via) {
+		if !msg.Via.CompareAddr(tp.Via) {
 			return nil, "", errors.New("You forgot to say: msg.Via = tp.Via(msg.Via)")
 		}
 		if msg.Route != nil {
@@ -276,12 +240,14 @@ func (tp *udpTransport) route(old *Msg) (msg *Msg, saddr string, err error) {
 			host, port = msg.Request.Host, msg.Request.Port
 		}
 	}
-	if msg.OutboundProxy != "" {
-		saddr = msg.OutboundProxy
-	} else {
-		saddr = util.HostPortToString(host, port)
-	}
+	saddr = util.HostPortToString(host, port)
 	return
+}
+
+func addReceived(msg *Msg, addr *net.UDPAddr) {
+	if msg.Via.Host != addr.IP.String() || int(msg.Via.Port) != addr.Port {
+		msg.Via.Params["received"] = addr.String()
+	}
 }
 
 func addTimestamp(msg *Msg, ts time.Time) {
