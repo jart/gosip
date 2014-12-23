@@ -35,12 +35,12 @@ var (
 
 // Header is encoded at the beginning of a UDP audio packet.
 type Header struct {
-	Pad  bool   // the padding flag is used for secure rtp
-	Mark bool   // the marker flag is used for rfc2833
-	PT   uint8  // payload type you got from sdp
-	Seq  uint16 // sequence id useful for reordering packets
-	TS   uint32 // timestamp measured in samples
-	Ssrc uint32 // random id used to identify an rtp session
+	Pad  bool   // Padding flag is used for secure RTP.
+	Mark bool   // Marker flag is used for RFC2833.
+	PT   uint8  // Payload type you got from SDP.
+	Seq  uint16 // Sequence id useful for reordering packets.
+	TS   uint32 // Timestamp measured in samples.
+	Ssrc uint32 // Random ID used to identify an RTP session.
 }
 
 // EventHeader stores things like DTMF and is encoded after Header.

@@ -23,7 +23,7 @@ var (
 // Transport sends and receives SIP messages over UDP with stateless routing.
 type Transport struct {
 
-	// Thing returned by ListenPacket
+	// Underlying UDP socket.
 	Sock *net.UDPConn
 
 	// When you send an outbound request (not a response) you have to set the via

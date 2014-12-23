@@ -16,6 +16,11 @@ func IsTimeout(err error) bool {
 	return false
 }
 
+// Returns true if error was caused by reading from a closed socket.
+func IsUseOfClosed(err error) bool {
+	return strings.Contains(err.Error(), "use of closed network connection")
+}
+
 // Returns true if IP contains a colon.
 func IsIPv6(ip string) bool {
 	n := strings.Index(ip, ":")
