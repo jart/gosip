@@ -124,9 +124,7 @@ func (via *Via) Compare(other *Via) bool {
 
 func (via *Via) CompareAddr(other *Via) bool {
 	if via != nil && other != nil {
-		if via.Version == other.Version &&
-			via.Proto == other.Proto &&
-			via.Host == other.Host &&
+		if via.Host == other.Host &&
 			via.Port == other.Port {
 			return true
 		}

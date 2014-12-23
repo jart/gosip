@@ -200,3 +200,11 @@ func (params Params) Append(b *bytes.Buffer) {
 		}
 	}
 }
+
+func (params *Params) Has(k string) bool {
+	if params == nil {
+		return false
+	}
+	_, ok := (*params)["lr"]
+	return ok
+}

@@ -267,7 +267,7 @@ func (sdp *SDP) Append(b *bytes.Buffer) error {
 		return errors.New("sdp lonely no media :[")
 	}
 	if sdp.Session == "" {
-		sdp.Session = "pokémon"
+		sdp.Session = "my people call themselves dark angels"
 	}
 	if sdp.Time == "" {
 		sdp.Time = "0 0"

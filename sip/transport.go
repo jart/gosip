@@ -16,7 +16,7 @@ import (
 )
 
 var (
-	tracing          = flag.Bool("tracing", false, "Enable SIP message tracing")
+	tracing          = flag.Bool("tracing", true, "Enable SIP message tracing")
 	timestampTagging = flag.Bool("timestampTagging", false, "Add microsecond timestamps to Via tags")
 )
 
@@ -43,10 +43,10 @@ type Transport struct {
 // signalling messages.
 //
 // contact is a SIP address, e.g. "<sip:1.2.3.4>", that tells how to bind
-// sockets. If contact.Uri.Port is 0, then a port will be selected randomly.
-// This value is also used for contact headers which tell other user-agents
-// where to send responses and hence should only contain an IP or canonical
-// address.
+// sockets. If contact.Uri.Port is 0, it'll be mutated with a randomly selected
+// port. This value is also used for contact headers which tell other
+// user-agents where to send responses and hence should only contain an IP or
+// canonical address.
 func NewTransport(contact *Addr) (tp *Transport, err error) {
 	saddr := util.HostPortToString(contact.Uri.Host, contact.Uri.Port)
 	sock, err := net.ListenPacket("udp", saddr)
@@ -54,6 +54,7 @@ func NewTransport(contact *Addr) (tp *Transport, err error) {
 		return nil, err
 	}
 	addr := sock.LocalAddr().(*net.UDPAddr)
+	contact.Uri.Port = uint16(addr.Port)
 	contact = contact.Copy()
 	contact.Uri.Port = uint16(addr.Port)
 	contact.Uri.Params["transport"] = addr.Network()
@@ -73,7 +74,7 @@ func (tp *Transport) Send(msg *Msg) error {
 	if err != nil {
 		return err
 	}
-	addr, err := net.ResolveUDPAddr("ip", saddr)
+	addr, err := net.ResolveUDPAddr("udp", saddr)
 	if err != nil {
 		return err
 	}
@@ -130,7 +131,7 @@ func (tp *Transport) Recv() *Msg {
 func (tp *Transport) trace(dir, pkt string, addr *net.UDPAddr, t time.Time) {
 	size := len(pkt)
 	bar := strings.Repeat("-", 72)
-	suffix := "\n  "
+	suffix := "\n"
 	if pkt[len(pkt)-1] == '\n' {
 		suffix = ""
 	}
@@ -142,7 +143,7 @@ func (tp *Transport) trace(dir, pkt string, addr *net.UDPAddr, t time.Time) {
 		dir, size, addr.Network(), addr.String(),
 		t.Format(time.RFC3339Nano),
 		bar,
-		strings.Replace(pkt, "\n", "\n  ", -1), suffix,
+		pkt, suffix,
 		bar)
 }
 
@@ -172,7 +173,8 @@ func (tp *Transport) preprocess(msg *Msg) {
 		log.Printf("Removing our route header: %s", msg.Route)
 		msg.Route = msg.Route.Next
 	}
-	if _, ok := msg.Request.Params["lr"]; ok && msg.Route != nil && tp.Contact.Uri.Compare(msg.Request) {
+
+	if msg.Request != nil && msg.Request.Params.Has("lr") && msg.Route != nil && tp.Contact.Uri.Compare(msg.Request) {
 		// RFC3261 16.4 Route Information Preprocessing
 		// RFC3261 16.12.1.2: Traversing a Strict-Routing Proxy
 		var oldReq, newReq *URI
@@ -223,7 +225,7 @@ func (tp *Transport) route(old *Msg) (msg *Msg, saddr string, err error) {
 			if msg.Method == "REGISTER" {
 				return nil, "", errors.New("Don't loose route register requests")
 			}
-			if _, ok := msg.Route.Uri.Params["lr"]; ok {
+			if msg.Route.Uri.Params.Has("lr") {
 				// RFC3261 16.12.1.1 Basic SIP Trapezoid
 				route := msg.Route
 				msg.Route = msg.Route.Next

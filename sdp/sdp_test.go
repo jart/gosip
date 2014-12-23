@@ -372,9 +372,9 @@ func sdpCompareMedia(t *testing.T, name string, correct, media *sdp.Media) {
 	sdpCompareCodecs(t, name, correct.Codecs, media.Codecs)
 }
 
-func TestParseSDP(t *testing.T) {
+func TestParse(t *testing.T) {
 	for _, test := range sdpTests {
-		sdp, err := sdp.ParseSDP(test.s)
+		sdp, err := sdp.Parse(test.s)
 		if err != nil {
 			if test.err == nil {
 				t.Errorf("%v", err)

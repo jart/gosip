@@ -43,17 +43,17 @@ func NewResponse(msg *Msg, status int) *Msg {
 }
 
 // http://tools.ietf.org/html/rfc3261#section-17.1.1.3
-func NewAck(original, last *Msg) *Msg {
+func NewAck(original, msg *Msg) *Msg {
 	return &Msg{
 		Method:     "ACK",
 		Request:    original.Request,
 		Via:        original.Via.Copy().SetNext(nil),
 		From:       original.From,
-		To:         last.To,
+		To:         msg.To,
 		CallID:     original.CallID,
 		CSeq:       original.CSeq,
 		CSeqMethod: "ACK",
-		Route:      last.RecordRoute.Reversed(),
+		Route:      msg.RecordRoute.Reversed(),
 		Headers:    DefaultHeaders(),
 	}
 }
@@ -71,7 +71,7 @@ func NewCancel(invite *Msg) *Msg {
 		CallID:     invite.CallID,
 		CSeq:       invite.CSeq,
 		CSeqMethod: "CANCEL",
-		Route:      invite.RecordRoute.Reversed(),
+		Route:      invite.Route,
 		Headers:    DefaultHeaders(),
 	}
 }
@@ -81,10 +81,10 @@ func NewBye(invite, last *Msg) *Msg {
 		Method:     "BYE",
 		Request:    last.Contact.Uri,
 		Via:        invite.Via,
-		From:       last.From,
+		From:       invite.From,
 		To:         last.To,
-		CallID:     last.CallID,
-		CSeq:       last.CSeq + 1,
+		CallID:     invite.CallID,
+		CSeq:       invite.CSeq + 1,
 		CSeqMethod: "BYE",
 		Route:      last.RecordRoute.Reversed(),
 		Headers:    DefaultHeaders(),
