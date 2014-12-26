@@ -7,7 +7,6 @@ import (
 	"github.com/jart/gosip/rtp"
 	"github.com/jart/gosip/sdp"
 	"github.com/jart/gosip/sip"
-	"github.com/jart/gosip/util"
 	"log"
 	"net"
 	"testing"
@@ -15,43 +14,16 @@ import (
 )
 
 func TestCallToEchoApp(t *testing.T) {
-	log.SetFlags(log.LstdFlags | log.Lmicroseconds | log.Lshortfile)
 	to := &sip.Addr{Uri: &sip.URI{User: "echo", Host: "127.0.0.1", Port: 5060}}
 	from := &sip.Addr{Uri: &sip.URI{Host: "127.0.0.1"}}
 
 	// Create an RTP media session.
 	rs, err := rtp.NewSession(from.Uri.Host)
 	if err != nil {
-		t.Fatal("rtp listen:", err)
+		t.Fatal("RTP listen failed:", err)
 	}
 	defer rs.Sock.Close()
 	rtpaddr := rs.Sock.LocalAddr().(*net.UDPAddr)
-
-	// Create an RTP audio sender.
-	rtpPeer := make(chan *net.UDPAddr, 1)
-	go func() {
-		var frame rtp.Frame
-		awgn := dsp.NewAWGN(-25.0)
-		ticker := time.NewTicker(20 * time.Millisecond)
-		defer ticker.Stop()
-		for {
-			select {
-			case rs.Peer = <-rtpPeer:
-			case <-ticker.C:
-				// Send an audio frame containing comfort noise.
-				for n := 0; n < 160; n++ {
-					frame[n] = awgn.Get()
-				}
-				err := rs.Send(&frame)
-				if err != nil {
-					if !util.IsUseOfClosed(err) {
-						t.Error("rtp write", err)
-					}
-					return
-				}
-			}
-		}
-	}()
 
 	// Create the SIP UDP transport layer.
 	tp, err := sip.NewTransport(from)
@@ -60,7 +32,7 @@ func TestCallToEchoApp(t *testing.T) {
 	}
 	defer tp.Sock.Close()
 
-	// Send an INVITE message with an SDP.
+	// Send an INVITE message with an SDP media session description.
 	invite := sip.NewRequest(tp, sip.MethodInvite, to, from)
 	sip.AttachSDP(invite, sdp.New(rtpaddr, sdp.ULAWCodec, sdp.DTMFCodec))
 	err = tp.Send(invite)
@@ -68,14 +40,20 @@ func TestCallToEchoApp(t *testing.T) {
 		t.Fatal(err)
 	}
 
+	// We're going to send white noise every 20ms.
+	var frame rtp.Frame
+	awgn := dsp.NewAWGN(-25.0)
+	ticker := time.NewTicker(20 * time.Millisecond)
+	defer ticker.Stop()
+
+	// Hangup after 200ms.
+	deathTimer := time.After(200 * time.Millisecond)
+
 	// Set up some reliability in case a UDP packet drops.
 	resend := invite
 	resends := 0
 	resendInterval := 50 * time.Millisecond
 	resendTimer := time.After(resendInterval)
-
-	// Hangup after two seconds.
-	deathTimer := time.After(200 * time.Millisecond)
 
 	// Create a SIP dialog handler.
 	var answered bool
@@ -84,17 +62,24 @@ loop:
 	for {
 		select {
 		case err = <-rs.E:
-			t.Fatal("RTP network error", err)
+			t.Fatal("RTP recv failed:", err)
 		case err = <-tp.E:
-			t.Fatal("SIP network error", err)
+			t.Fatal("SIP recv failed:", err)
 		case <-rs.C:
-			// Do nothing with inbound audio.
+			// Do nothing with received audio.
+		case <-ticker.C:
+			for n := 0; n < 160; n++ {
+				frame[n] = awgn.Get()
+			}
+			if err := rs.Send(&frame); err != nil {
+				t.Fatal("RTP send failed:", err)
+			}
 		case msg = <-tp.C:
 			if msg.IsResponse {
 				if msg.Status >= sip.StatusOK && msg.CSeq == invite.CSeq {
 					err = tp.Send(sip.NewAck(invite, msg))
 					if err != nil {
-						t.Fatal(err)
+						t.Fatal("SIP send failed:", err)
 					}
 				}
 				if msg.Status < sip.StatusOK {
@@ -127,16 +112,16 @@ loop:
 					log.Printf("Establishing media session")
 					ms, err := sdp.Parse(msg.Payload)
 					if err != nil {
-						t.Fatal("failed to parse sdp", err)
+						t.Fatal("Failed to parse SDP", err)
 					}
-					rtpPeer <- &net.UDPAddr{IP: net.ParseIP(ms.Addr), Port: int(ms.Audio.Port)}
+					rs.Peer = &net.UDPAddr{IP: net.ParseIP(ms.Addr), Port: int(ms.Audio.Port)}
 				}
 			} else {
 				if msg.Method == "BYE" {
 					log.Printf("Remote Hangup!")
 					err = tp.Send(sip.NewResponse(invite, sip.StatusOK))
 					if err != nil {
-						t.Fatal(err)
+						t.Fatal("SIP send failed:", err)
 					}
 					break loop
 				}
@@ -148,7 +133,7 @@ loop:
 			resends++
 			err = tp.Send(resend)
 			if err != nil {
-				t.Fatal(err)
+				t.Fatal("SIP send failed:", err)
 			}
 		case <-deathTimer:
 			resends = 0
@@ -160,12 +145,12 @@ loop:
 			}
 			err = tp.Send(resend)
 			if err != nil {
-				t.Error(err)
+				t.Error("SIP send failed:", err)
 			}
 		}
 	}
 
-	// The dialog has shut down cleanly.
+	// The dialog has shut down cleanly. Was it answered?
 	if !answered {
 		t.Error("Call didn't get answered!")
 	}
