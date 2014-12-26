@@ -155,7 +155,7 @@ func (uri *URI) Append(b *bytes.Buffer) {
 	} else {
 		b.WriteString(util.URLEscape(uri.Host, false))
 	}
-	if uri.Port > 0 && uri.Port != 5060 {
+	if uri.Port > 0 {
 		b.WriteString(":" + strconv.FormatInt(int64(uri.Port), 10))
 	}
 	uri.Params.Append(b)

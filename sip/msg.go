@@ -97,12 +97,14 @@ func ParseMsg(packet string) (msg *Msg, err error) {
 		} else {
 			if i := strings.Index(hdr, ": "); i > 0 {
 				k, v = hdr[0:i], hdr[i+2:]
-				if k == "" || v == "" {
-					log.Println("[NOTICE]", "blank header found", hdr)
-				}
+				k = strings.Trim(k, " \t")
+				v = strings.Trim(v, " \t")
 				k = uncompactHeader(k)
+				if k == "" || v == "" {
+					log.Println("Blank header found:", hdr)
+				}
 			} else {
-				log.Println("[NOTICE]", "header missing delimiter", hdr)
+				log.Println("Header missing delimiter:", hdr)
 				continue
 			}
 		}
@@ -269,6 +271,22 @@ func (msg *Msg) Append(b *bytes.Buffer) error {
 	for viap := msg.Via; viap != nil; viap = viap.Next {
 		b.WriteString("Via: ")
 		if err := viap.Append(b); err != nil {
+			return err
+		}
+		b.WriteString("\r\n")
+	}
+
+	if msg.Route != nil {
+		b.WriteString("Route: ")
+		if err := msg.Route.Append(b); err != nil {
+			return err
+		}
+		b.WriteString("\r\n")
+	}
+
+	if msg.RecordRoute != nil {
+		b.WriteString("Record-Route: ")
+		if err := msg.RecordRoute.Append(b); err != nil {
 			return err
 		}
 		b.WriteString("\r\n")

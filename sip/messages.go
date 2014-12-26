@@ -18,7 +18,6 @@ func NewRequest(tp *Transport, method string, to, from *Addr) *Msg {
 		Via:        tp.Via.Copy().Branch(),
 		From:       from.Or(tp.Contact).Tag(),
 		To:         to,
-		Contact:    tp.Contact,
 		CallID:     util.GenerateCallID(),
 		CSeq:       util.GenerateCSeq(),
 		CSeqMethod: method,
@@ -46,9 +45,9 @@ func NewResponse(msg *Msg, status int) *Msg {
 func NewAck(original, msg *Msg) *Msg {
 	return &Msg{
 		Method:     MethodAck,
-		Request:    original.Request,
+		Request:    msg.Contact.Uri,
 		Via:        original.Via.Copy().SetNext(nil),
-		From:       original.From,
+		From:       msg.From,
 		To:         msg.To,
 		CallID:     original.CallID,
 		CSeq:       original.CSeq,

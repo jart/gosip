@@ -143,7 +143,7 @@ func (addr *Addr) Tag() *Addr {
 }
 
 // Reassembles a SIP address into a buffer.
-func (addr *Addr) Append(b *bytes.Buffer) {
+func (addr *Addr) Append(b *bytes.Buffer) error {
 	if addr.Display != "" {
 		b.WriteString("\"")
 		b.WriteString(util.EscapeDisplay(addr.Display))
@@ -154,9 +154,10 @@ func (addr *Addr) Append(b *bytes.Buffer) {
 	b.WriteString(">")
 	addr.Params.Append(b)
 	if addr.Next != nil {
-		b.WriteString(", ")
+		b.WriteString(",")
 		addr.Next.Append(b)
 	}
+	return nil
 }
 
 // Deep copies a new Addr object.
@@ -207,5 +208,5 @@ func (addr *Addr) Reversed() *Addr {
 		a.Next = res
 		res = a
 	}
-	return addr
+	return res
 }

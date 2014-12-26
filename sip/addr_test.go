@@ -139,7 +139,7 @@ func TestParseAddr(t *testing.T) {
 				t.Error(err)
 				continue
 			} else { // Test was supposed to fail.
-				panic("TODO(jart): Implement failing support.")
+				t.Fatal("TODO(jart): Implement failing support.")
 			}
 		}
 		if !reflect.DeepEqual(&test.addr, addr) {
@@ -160,5 +160,32 @@ func TestAddrString(t *testing.T) {
 		if s != addr {
 			t.Error(s, "!=", addr)
 		}
+	}
+}
+
+func TestReversed(t *testing.T) {
+	a := &sip.Addr{
+		Uri: &sip.URI{
+			Scheme: "sip",
+			Host:   "1.2.3.4",
+			Port:   5060,
+		},
+		Next: &sip.Addr{
+			Uri: &sip.URI{
+				Scheme: "sip",
+				Host:   "2.3.4.5",
+				Port:   5060,
+			},
+		},
+	}
+	b := a.Reversed()
+	if b.Uri.Host != "2.3.4.5" {
+		t.Error("first bad", b.Uri.Host)
+	}
+	if b.Next.Uri.Host != "1.2.3.4" {
+		t.Error("second bad", b.Next.Uri.Host)
+	}
+	if b.Next.Next != nil {
+		t.Error("wtf", b.Next.Next)
 	}
 }

@@ -44,6 +44,16 @@ var uriTests = []uriTest{
 	},
 
 	uriTest{
+		s: "sip:+12125650666@cat.lol",
+		uri: sip.URI{
+			Scheme: "sip",
+			User:   "+12125650666",
+			Host:   "cat.lol",
+			Port:   5060,
+		},
+	},
+
+	uriTest{
 		s:  "sip:jtunney@bsdtelecom.net:5060",
 		s2: "sip:jtunney@bsdtelecom.net",
 		uri: sip.URI{

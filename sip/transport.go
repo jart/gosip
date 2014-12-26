@@ -64,6 +64,7 @@ func NewTransport(contact *Addr) (tp *Transport, err error) {
 	contact.Uri.Params["transport"] = addr.Network()
 	tp = &Transport{
 		C:       make(chan *Msg, 32),
+		E:       make(chan error, 1),
 		Sock:    sock.(*net.UDPConn),
 		Contact: contact,
 		Via: &Via{
@@ -107,6 +108,7 @@ func (tp *Transport) launchConsumer() {
 		for {
 			msg, err := tp.recv()
 			if err != nil {
+				log.Println("shutting down", err)
 				tp.E <- err
 				return
 			}
@@ -202,6 +204,9 @@ func (tp *Transport) route(old *Msg) (msg *Msg, dest string, err error) {
 	var port uint16
 	msg = new(Msg)
 	*msg = *old // Start off with a shallow copy.
+	if msg.Contact == nil {
+		msg.Contact = tp.Contact
+	}
 	if msg.IsResponse {
 		if msg.Via.CompareAddr(tp.Via) {
 			// In proxy scenarios we have to remove our own Via.
@@ -229,7 +234,8 @@ func (tp *Transport) route(old *Msg) (msg *Msg, dest string, err error) {
 			if msg.Route.Uri.Params.Has("lr") {
 				// RFC3261 16.12.1.1 Basic SIP Trapezoid
 				route := msg.Route
-				msg.Route = msg.Route.Next
+				// TODO(jart): Remove if same as Contact.
+				// msg.Route = msg.Route.Next
 				host, port = route.Uri.Host, route.Uri.Port
 			} else {
 				// RFC3261 16.12.1.2: Traversing a Strict-Routing Proxy
