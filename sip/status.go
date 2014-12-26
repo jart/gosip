@@ -1,4 +1,4 @@
-// SIP Protocol Statuses
+// SIP Protocol Status Definitions
 //
 // http://www.iana.org/assignments/sip-parameters
 
@@ -92,10 +92,6 @@ const (
 	StatusDoesNotExistAnywhere = 604
 	StatusNotAcceptable606     = 606
 	StatusDialogTerminated     = 687
-
-	// 8xx: Special gosip errors
-	Status8xxProgrammerError = 800
-	Status8xxNetworkError    = 801
 )
 
 func Phrase(status int) string {
@@ -177,6 +173,4 @@ var phrases = map[int]string{
 	StatusDoesNotExistAnywhere:         "Does Not Exist Anywhere",
 	StatusNotAcceptable606:             "Not Acceptable",
 	StatusDialogTerminated:             "Dialog Terminated",
-	Status8xxProgrammerError:           "Programmer Error",
-	Status8xxNetworkError:              "Network Error",
 }

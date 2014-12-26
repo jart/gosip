@@ -64,7 +64,8 @@ import (
 )
 
 const (
-	MaxLength = 1450
+	ContentType = "application/sdp"
+	MaxLength   = 1450
 )
 
 // SDP represents a Session Description Protocol SIP payload.

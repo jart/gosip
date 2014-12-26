@@ -8,16 +8,16 @@ import (
 
 const (
 	GosipUserAgent = "gosip/1.o"
-	GosipAllow     = "INVITE, ACK, CANCEL, BYE, OPTIONS"
+	GosipAllow     = MethodInvite + ", " + MethodAck + ", " + MethodCancel + ", " + MethodBye + ", " + MethodOptions
 )
 
 func NewRequest(tp *Transport, method string, to, from *Addr) *Msg {
 	return &Msg{
 		Method:     method,
-		Request:    to.Uri.Copy(),
+		Request:    to.Uri,
 		Via:        tp.Via.Copy().Branch(),
 		From:       from.Or(tp.Contact).Tag(),
-		To:         to.Copy(),
+		To:         to,
 		Contact:    tp.Contact,
 		CallID:     util.GenerateCallID(),
 		CSeq:       util.GenerateCSeq(),
@@ -45,7 +45,7 @@ func NewResponse(msg *Msg, status int) *Msg {
 // http://tools.ietf.org/html/rfc3261#section-17.1.1.3
 func NewAck(original, msg *Msg) *Msg {
 	return &Msg{
-		Method:     "ACK",
+		Method:     MethodAck,
 		Request:    original.Request,
 		Via:        original.Via.Copy().SetNext(nil),
 		From:       original.From,
@@ -59,18 +59,18 @@ func NewAck(original, msg *Msg) *Msg {
 }
 
 func NewCancel(invite *Msg) *Msg {
-	if invite.IsResponse || invite.Method != "INVITE" {
+	if invite.IsResponse || invite.Method != MethodInvite {
 		log.Printf("Can't CANCEL anything non-INVITE:\n%s", invite)
 	}
 	return &Msg{
-		Method:     "CANCEL",
+		Method:     MethodCancel,
 		Request:    invite.Request,
 		Via:        invite.Via,
 		From:       invite.From,
 		To:         invite.To,
 		CallID:     invite.CallID,
 		CSeq:       invite.CSeq,
-		CSeqMethod: "CANCEL",
+		CSeqMethod: MethodCancel,
 		Route:      invite.Route,
 		Headers:    DefaultHeaders(),
 	}
@@ -78,14 +78,14 @@ func NewCancel(invite *Msg) *Msg {
 
 func NewBye(invite, last *Msg) *Msg {
 	return &Msg{
-		Method:     "BYE",
+		Method:     MethodBye,
 		Request:    last.Contact.Uri,
 		Via:        invite.Via,
 		From:       invite.From,
 		To:         last.To,
 		CallID:     invite.CallID,
 		CSeq:       invite.CSeq + 1,
-		CSeqMethod: "BYE",
+		CSeqMethod: MethodBye,
 		Route:      last.RecordRoute.Reversed(),
 		Headers:    DefaultHeaders(),
 	}
@@ -101,19 +101,19 @@ func ResponseMatch(msg, resp *Msg) bool {
 }
 
 // Returns true if `ack` can be considered an appropriate response to `msg`.
-// we don't enforce a matching Via because some VoIP software will generate a
+// We don't enforce a matching Via because some VoIP software will generate a
 // new branch for ACKs.
 func AckMatch(msg, ack *Msg) bool {
 	return (!ack.IsResponse &&
-		ack.Method == "ACK" &&
+		ack.Method == MethodAck &&
 		ack.CSeq == msg.CSeq &&
-		ack.CSeqMethod == "ACK" &&
+		ack.CSeqMethod == MethodAck &&
 		ack.Via.Last().CompareAddr(msg.Via))
 }
 
-func AttachSDP(msg *Msg, sdp *sdp.SDP) {
-	msg.Headers["Content-Type"] = "application/sdp"
-	msg.Payload = sdp.String()
+func AttachSDP(msg *Msg, ms *sdp.SDP) {
+	msg.Headers["Content-Type"] = sdp.ContentType
+	msg.Payload = ms.String()
 }
 
 func DefaultHeaders() Headers {

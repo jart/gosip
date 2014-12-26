@@ -18,7 +18,6 @@ type Headers map[string]string
 // These fields are never nil unless otherwise specified.
 type Msg struct {
 	// Special non-SIP fields.
-	Error      error        // Set to indicate an error with this message
 	SourceAddr *net.UDPAddr // Set by transport layer as received address
 
 	// Fields that aren't headers.
@@ -64,26 +63,23 @@ func (msg *Msg) String() string {
 }
 
 // Parses a SIP message into a data structure. This takes ~70 µs on average.
-func ParseMsg(packet string) (msg *Msg) {
+func ParseMsg(packet string) (msg *Msg, err error) {
 	msg = new(Msg)
 	if packet == "" {
-		msg.Error = errors.New("Empty msg")
-		return msg
+		return nil, errors.New("Empty msg")
 	}
 	if n := strings.Index(packet, "\r\n\r\n"); n > 0 {
 		packet, msg.Payload = packet[0:n], packet[n+4:]
 	}
 	lines := strings.Split(packet, "\r\n")
 	if lines == nil || len(lines) < 2 {
-		msg.Error = errors.New("Too few lines")
-		return msg
+		return nil, errors.New("Too few lines")
 	}
 	var k, v string
 	var okVia, okTo, okFrom, okCallID, okComputer bool
-	err := msg.parseFirstLine(lines[0])
+	err = msg.parseFirstLine(lines[0])
 	if err != nil {
-		msg.Error = err
-		return msg
+		return nil, err
 	}
 	hdrs := lines[1:]
 	msg.Headers = make(map[string]string, len(hdrs))
@@ -118,7 +114,7 @@ func ParseMsg(packet string) (msg *Msg) {
 			okVia = true
 			*viap, err = ParseVia(v)
 			if err != nil {
-				msg.Error = errors.New("Bad Via header: " + err.Error())
+				return nil, errors.New("Bad Via header: " + err.Error())
 			} else {
 				viap = &(*viap).Next
 			}
@@ -126,18 +122,18 @@ func ParseMsg(packet string) (msg *Msg) {
 			okTo = true
 			msg.To, err = ParseAddr(v)
 			if err != nil {
-				msg.Error = errors.New("Bad To header: " + err.Error())
+				return nil, errors.New("Bad To header: " + err.Error())
 			}
 		case "from":
 			okFrom = true
 			msg.From, err = ParseAddr(v)
 			if err != nil {
-				msg.Error = errors.New("Bad From header: " + err.Error())
+				return nil, errors.New("Bad From header: " + err.Error())
 			}
 		case "contact":
 			*contactp, err = ParseAddr(v)
 			if err != nil {
-				msg.Error = errors.New("Bad Contact header: " + err.Error())
+				return nil, errors.New("Bad Contact header: " + err.Error())
 			} else {
 				contactp = &(*contactp).Last().Next
 			}
@@ -151,66 +147,66 @@ func ParseMsg(packet string) (msg *Msg) {
 				}
 			}
 			if !okComputer {
-				msg.Error = errors.New("Bad CSeq Header")
+				return nil, errors.New("Bad CSeq Header")
 			}
 		case "content-length":
 			if cl, err := strconv.Atoi(v); err == nil {
 				if cl != len(msg.Payload) {
-					msg.Error = errors.New(fmt.Sprintf(
+					return nil, errors.New(fmt.Sprintf(
 						"Content-Length (%d) differs from payload length (%d)",
 						cl, len(msg.Payload)))
 				}
 			} else {
-				msg.Error = errors.New("Bad Content-Length header")
+				return nil, errors.New("Bad Content-Length header")
 			}
 		case "expires":
 			if cl, err := strconv.Atoi(v); err == nil && cl >= 0 {
 				msg.Expires = cl
 			} else {
-				msg.Error = errors.New("Bad Expires header")
+				return nil, errors.New("Bad Expires header")
 			}
 		case "min-expires":
 			if cl, err := strconv.Atoi(v); err == nil && cl > 0 {
 				msg.MinExpires = cl
 			} else {
-				msg.Error = errors.New("Bad Min-Expires header")
+				return nil, errors.New("Bad Min-Expires header")
 			}
 		case "max-forwards":
 			if cl, err := strconv.Atoi(v); err == nil && cl > 0 {
 				msg.MaxForwards = cl
 			} else {
-				msg.Error = errors.New("Bad Max-Forwards header")
+				return nil, errors.New("Bad Max-Forwards header")
 			}
 		case "route":
 			*routep, err = ParseAddr(v)
 			if err != nil {
-				msg.Error = errors.New("Bad Route header: " + err.Error())
+				return nil, errors.New("Bad Route header: " + err.Error())
 			} else {
 				routep = &(*routep).Last().Next
 			}
 		case "record-route":
 			*rroutep, err = ParseAddr(v)
 			if err != nil {
-				msg.Error = errors.New("Bad Record-Route header: " + err.Error())
+				return nil, errors.New("Bad Record-Route header: " + err.Error())
 			} else {
 				rroutep = &(*rroutep).Last().Next
 			}
 		case "p-asserted-identity":
 			msg.Paid, err = ParseAddr(v)
 			if err != nil {
-				msg.Error = errors.New("Bad P-Asserted-Identity header: " + err.Error())
+				return nil, errors.New("Bad P-Asserted-Identity header: " + err.Error())
 			}
 		case "remote-party-id":
 			msg.Rpid, err = ParseAddr(v)
 			if err != nil {
-				msg.Error = errors.New("Bad Remote-Party-ID header: " + err.Error())
+				return nil, errors.New("Bad Remote-Party-ID header: " + err.Error())
 			}
 		default:
 			msg.Headers[k] = v
 		}
 	}
 	if !okVia || !okTo || !okFrom || !okCallID || !okComputer {
-		msg.Error = errors.New("Missing mandatory headers")
+		return nil, errors.New("Missing mandatory headers")
 	}
 	return
 }

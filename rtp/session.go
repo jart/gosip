@@ -26,6 +26,10 @@ type Frame [160]int16
 // support for RTCP is provided.
 type Session struct {
 
+	// Channel to which received RTP frames and errors are published.
+	C chan *Frame
+	E chan error
+
 	// Underlying UDP socket.
 	Sock *net.UDPConn
 
@@ -38,17 +42,18 @@ type Session struct {
 
 	ibuf []byte
 	obuf []byte
-	phdr Header
 }
 
 // Creates a new RTP µLaw 20ptime session listening on host with a random port
 // selected from the range [16384,32768].
-func NewSession(host string) (s *Session, err error) {
+func NewSession(host string) (rs *Session, err error) {
 	sock, err := listenRTP(host)
 	if err != nil {
 		return nil, err
 	}
-	return &Session{
+	rs = &Session{
+		C:    make(chan *Frame, 32),
+		E:    make(chan error, 1),
 		Sock: sock.(*net.UDPConn),
 		Header: Header{
 			PT:   sdp.ULAWCodec.PT,
@@ -56,53 +61,65 @@ func NewSession(host string) (s *Session, err error) {
 			TS:   0,
 			Ssrc: rand.Uint32(),
 		},
-	}, err
-}
-
-func (s *Session) Send(frame Frame) (err error) {
-	if s.Peer == nil {
-		return nil
+		obuf: make([]byte, HeaderSize+160),
+		ibuf: make([]byte, 2048),
 	}
-	if s.obuf == nil {
-		s.obuf = make([]byte, HeaderSize+160)
-	}
-	s.Header.Write(s.obuf)
-	s.Header.TS += 160
-	s.Header.Seq++
-	for n := 0; n < 160; n++ {
-		s.obuf[HeaderSize+n] = byte(dsp.LinearToUlaw(int64(frame[n])))
-	}
-	_, err = s.Sock.WriteTo(s.obuf, s.Peer)
+	rs.launchConsumer()
 	return
 }
 
-func (s *Session) Recv(frame Frame) (err error) {
-	if s.ibuf == nil {
-		s.ibuf = make([]byte, 2048)
+func (rs *Session) Send(frame *Frame) (err error) {
+	if rs.Peer == nil {
+		return nil
 	}
+	rs.Header.Write(rs.obuf)
+	rs.Header.TS += 160
+	rs.Header.Seq++
+	for n := 0; n < 160; n++ {
+		rs.obuf[HeaderSize+n] = byte(dsp.LinearToUlaw(int64(frame[n])))
+	}
+	_, err = rs.Sock.WriteTo(rs.obuf, rs.Peer)
+	return
+}
+
+func (rs *Session) launchConsumer() {
+	go func() {
+		for {
+			frame, err := rs.recv()
+			if err != nil {
+				rs.E <- err
+				return
+			}
+			rs.C <- frame
+		}
+	}()
+}
+
+func (rs *Session) recv() (frame *Frame, err error) {
+	frame = new(Frame)
 	for {
-		amt, _, err := s.Sock.ReadFrom(s.ibuf)
+		amt, _, err := rs.Sock.ReadFrom(rs.ibuf)
 		if err != nil {
-			return err
+			return nil, err
 		}
 		// TODO(jart): Verify source address?
 		// TODO(jart): Packet reordering? Drop duplicate packets?
 		// TODO(jart): DTMF?
 		var phdr Header
-		err = phdr.Read(s.ibuf)
+		err = phdr.Read(rs.ibuf)
 		if err != nil {
-			return err
+			return nil, err
 		}
 		if phdr.PT != sdp.ULAWCodec.PT {
 			continue
 		}
 		if amt != HeaderSize+160 {
-			return errors.New(fmt.Sprintf("Unexpected RTP packet size: %d", amt))
+			return nil, errors.New(fmt.Sprintf("Unexpected RTP packet size: %d", amt))
 		}
 		for n := 0; n < 160; n++ {
-			frame[n] = int16(dsp.UlawToLinear(int64(s.ibuf[HeaderSize+n])))
+			frame[n] = int16(dsp.UlawToLinear(int64(rs.ibuf[HeaderSize+n])))
 		}
-		return nil
+		return frame, nil
 	}
 }
 
