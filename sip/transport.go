@@ -7,7 +7,6 @@ import (
 	"bytes"
 	"errors"
 	"flag"
-	"github.com/jart/gosip/util"
 	"log"
 	"net"
 	"strconv"
@@ -52,7 +51,7 @@ type Transport struct {
 // user-agents where to send responses and hence should only contain an IP or
 // canonical address.
 func NewTransport(contact *Addr) (tp *Transport, err error) {
-	saddr := util.HostPortToString(contact.Uri.Host, contact.Uri.Port)
+	saddr := net.JoinHostPort(contact.Uri.Host, portstr(contact.Uri.Port))
 	sock, err := net.ListenPacket("udp", saddr)
 	if err != nil {
 		return nil, err
@@ -173,12 +172,12 @@ func (tp *Transport) sanityCheck(msg *Msg) error {
 
 // Perform some ingress message mangling.
 func (tp *Transport) preprocess(msg *Msg) {
-	if tp.Contact.Compare(msg.Route) {
+	if tp.Contact.CompareHostPort(msg.Route) {
 		log.Printf("Removing our route header: %s", msg.Route)
 		msg.Route = msg.Route.Next
 	}
 
-	if msg.Request != nil && msg.Request.Params.Has("lr") && msg.Route != nil && tp.Contact.Uri.Compare(msg.Request) {
+	if msg.Request != nil && msg.Request.Params.Has("lr") && msg.Route != nil && tp.Contact.Uri.CompareHostPort(msg.Request) {
 		// RFC3261 16.4 Route Information Preprocessing
 		// RFC3261 16.12.1.2: Traversing a Strict-Routing Proxy
 		var oldReq, newReq *URI
@@ -208,8 +207,8 @@ func (tp *Transport) route(old *Msg) (msg *Msg, dest string, err error) {
 		msg.Contact = tp.Contact
 	}
 	if msg.IsResponse {
-		if msg.Via.CompareAddr(tp.Via) {
-			// In proxy scenarios we have to remove our own Via.
+		if msg.Via.CompareHostPort(tp.Via) {
+			// In proxy scenarios, we have to remove our own Via.
 			msg.Via = msg.Via.Next
 		}
 		if msg.Via == nil {
@@ -224,8 +223,12 @@ func (tp *Transport) route(old *Msg) (msg *Msg, dest string, err error) {
 		if msg.Request == nil {
 			return nil, "", errors.New("Missing request URI")
 		}
-		if !msg.Via.CompareAddr(tp.Via) {
-			return nil, "", errors.New("You forgot to say: msg.Via = tp.Via(msg.Via)")
+		if !msg.Via.CompareHostPort(tp.Via) {
+			return nil, "", errors.New("Set our Via should come first when sending messages")
+		}
+		if msg.Route.CompareHostPort(tp.Contact) {
+			// In proxy scenarios, we have to remove our own Route.
+			msg.Route = msg.Route.Next
 		}
 		if msg.Route != nil {
 			if msg.Method == "REGISTER" {
@@ -233,23 +236,20 @@ func (tp *Transport) route(old *Msg) (msg *Msg, dest string, err error) {
 			}
 			if msg.Route.Uri.Params.Has("lr") {
 				// RFC3261 16.12.1.1 Basic SIP Trapezoid
-				route := msg.Route
-				// TODO(jart): Remove if same as Contact.
-				// msg.Route = msg.Route.Next
-				host, port = route.Uri.Host, route.Uri.Port
+				host, port = msg.Route.Uri.Host, msg.Route.Uri.GetPort()
 			} else {
 				// RFC3261 16.12.1.2: Traversing a Strict-Routing Proxy
 				msg.Route = old.Route.Copy()
 				msg.Route.Last().Next = &Addr{Uri: msg.Request}
 				msg.Request = msg.Route.Uri
 				msg.Route = msg.Route.Next
-				host, port = msg.Request.Host, msg.Request.Port
+				host, port = msg.Request.Host, msg.Request.GetPort()
 			}
 		} else {
-			host, port = msg.Request.Host, msg.Request.Port
+			host, port = msg.Request.Host, msg.Request.GetPort()
 		}
 	}
-	dest = util.HostPortToString(host, port)
+	dest = net.JoinHostPort(host, portstr(port))
 	return
 }
 

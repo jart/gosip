@@ -115,7 +115,6 @@ var msgTests = []msgTest{
 			Request: &sip.URI{
 				Scheme: "sip",
 				Host:   "10.11.34.37",
-				Port:   5060,
 			},
 			Via: &sip.Via{
 				Version: "2.0",
@@ -128,7 +127,6 @@ var msgTests = []msgTest{
 				Uri: &sip.URI{
 					Scheme: "sip",
 					Host:   "10.11.34.37",
-					Port:   5060,
 				},
 			},
 			From: &sip.Addr{

@@ -42,7 +42,7 @@ func TestCallToEchoApp(t *testing.T) {
 
 	// We're going to send white noise every 20ms.
 	var frame rtp.Frame
-	awgn := dsp.NewAWGN(-25.0)
+	awgn := dsp.NewAWGN(-45.0)
 	ticker := time.NewTicker(20 * time.Millisecond)
 	defer ticker.Stop()
 
@@ -130,14 +130,13 @@ loop:
 			if resends == 2 {
 				t.Fatal("Failed to send", resend.Method)
 			}
-			resends++
 			err = tp.Send(resend)
 			if err != nil {
 				t.Fatal("SIP send failed:", err)
 			}
-		case <-deathTimer:
-			resends = 0
+			resends++
 			resendTimer = time.After(resendInterval)
+		case <-deathTimer:
 			if answered {
 				resend = sip.NewBye(invite, msg)
 			} else {
@@ -147,6 +146,8 @@ loop:
 			if err != nil {
 				t.Error("SIP send failed:", err)
 			}
+			resends = 0
+			resendTimer = time.After(resendInterval)
 		}
 	}
 

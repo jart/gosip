@@ -24,7 +24,6 @@ import (
 	"bytes"
 	"errors"
 	"github.com/jart/gosip/util"
-	"strconv"
 	"strings"
 )
 
@@ -156,28 +155,30 @@ func (uri *URI) Append(b *bytes.Buffer) {
 		b.WriteString(util.URLEscape(uri.Host, false))
 	}
 	if uri.Port > 0 {
-		b.WriteString(":" + strconv.FormatInt(int64(uri.Port), 10))
+		b.WriteString(":" + portstr((uri.Port)))
 	}
 	uri.Params.Append(b)
 }
 
-// Returns true if scheme, host, and port match.  if a username is present in
-// `addr`, then the username is `other` must also match.
-func (uri *URI) Compare(other *URI) bool {
+func (uri *URI) CompareHostPort(other *URI) bool {
 	if uri != nil && other != nil {
-		if uri.Scheme == other.Scheme &&
-			uri.Host == other.Host &&
-			uri.Port == other.Port {
-			if uri.User != "" {
-				if uri.User == other.User {
-					return true
-				}
-			} else {
-				return true
-			}
+		if uri.Host == other.Host && uri.GetPort() == other.GetPort() {
+			return true
 		}
 	}
 	return false
+}
+
+func (uri *URI) GetPort() uint16 {
+	if uri.Port == 0 {
+		if uri.Scheme == "sips" {
+			return 5061
+		} else {
+			return 5060
+		}
+	} else {
+		return uri.Port
+	}
 }
 
 func (params Params) Copy() Params {
@@ -201,10 +202,7 @@ func (params Params) Append(b *bytes.Buffer) {
 	}
 }
 
-func (params *Params) Has(k string) bool {
-	if params == nil {
-		return false
-	}
-	_, ok := (*params)["lr"]
+func (params Params) Has(k string) bool {
+	_, ok := params["lr"]
 	return ok
 }

@@ -7,9 +7,9 @@ import (
 	"fmt"
 	"github.com/jart/gosip/dsp"
 	"github.com/jart/gosip/sdp"
-	"github.com/jart/gosip/util"
 	"math/rand"
 	"net"
+	"strconv"
 	"strings"
 )
 
@@ -125,8 +125,8 @@ func (rs *Session) recv() (frame *Frame, err error) {
 
 func listenRTP(host string) (sock net.PacketConn, err error) {
 	for i := 0; i < rtpBindMaxAttempts; i++ {
-		port := rtpBindPortMin + rand.Int()%(rtpBindPortMax-rtpBindPortMin+1)
-		saddr := util.HostPortToString(host, uint16(port))
+		port := rtpBindPortMin + rand.Int63()%(rtpBindPortMax-rtpBindPortMin+1)
+		saddr := net.JoinHostPort(host, strconv.FormatInt(port, 10))
 		sock, err = net.ListenPacket("udp", saddr)
 		if err != nil {
 			if !strings.Contains(err.Error(), "address already in use") {

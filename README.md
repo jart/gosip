@@ -67,3 +67,4 @@ This is what a sip stack looks like:
 - [RTP (RFC 3550)](https://tools.ietf.org/html/rfc3550)
 - [RTP DTMF (RFC 4733)](https://tools.ietf.org/html/rfc4733)
 - [SIP 100rel (RFC 3262)](https://tools.ietf.org/html/rfc3262)
+- [SIP: Locating a Server (RFC 3263)](https://tools.ietf.org/html/rfc3263)

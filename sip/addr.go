@@ -137,7 +137,6 @@ func (addr *Addr) Or(other *Addr) *Addr {
 
 // Sets newly generated tag ID and returns self.
 func (addr *Addr) Tag() *Addr {
-	addr = addr.Copy()
 	addr.Params["tag"] = util.GenerateTag()
 	return addr
 }
@@ -172,11 +171,11 @@ func (addr *Addr) Copy() *Addr {
 	return res
 }
 
-// Returns true if the host and port match. If a username is present in
-// `addr`, then the username is `other` must also match.
-func (addr *Addr) Compare(other *Addr) bool {
+func (addr *Addr) CompareHostPort(other *Addr) bool {
 	if addr != nil && other != nil {
-		return addr.Uri.Compare(other.Uri)
+		if addr.Uri.CompareHostPort(other.Uri) {
+			return true
+		}
 	}
 	return false
 }

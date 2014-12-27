@@ -14,10 +14,10 @@ const (
 func NewRequest(tp *Transport, method string, to, from *Addr) *Msg {
 	return &Msg{
 		Method:     method,
-		Request:    to.Uri,
+		Request:    to.Uri.Copy(),
 		Via:        tp.Via.Copy().Branch(),
-		From:       from.Or(tp.Contact).Tag(),
-		To:         to,
+		From:       from.Or(tp.Contact).Copy().Tag(),
+		To:         to.Copy(),
 		CallID:     util.GenerateCallID(),
 		CSeq:       util.GenerateCSeq(),
 		CSeqMethod: method,
@@ -96,7 +96,7 @@ func ResponseMatch(msg, resp *Msg) bool {
 	return (resp.IsResponse &&
 		resp.CSeq == msg.CSeq &&
 		resp.CSeqMethod == msg.Method &&
-		resp.Via.Last().Compare(msg.Via))
+		resp.Via.Last().CompareHostPort(msg.Via))
 }
 
 // Returns true if `ack` can be considered an appropriate response to `msg`.
@@ -107,7 +107,7 @@ func AckMatch(msg, ack *Msg) bool {
 		ack.Method == MethodAck &&
 		ack.CSeq == msg.CSeq &&
 		ack.CSeqMethod == MethodAck &&
-		ack.Via.Last().CompareAddr(msg.Via))
+		ack.Via.Last().CompareHostPort(msg.Via))
 }
 
 func AttachSDP(msg *Msg, ms *sdp.SDP) {

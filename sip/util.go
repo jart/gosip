@@ -6,8 +6,11 @@ import (
 	"strings"
 )
 
+func portstr(port uint16) string {
+	return strconv.FormatInt(int64(port), 10)
+}
+
 func extractHostPort(s string) (s2, host string, port uint16, err error) {
-	port = 5060
 	if s == "" {
 		err = URIMissingHost
 	} else {

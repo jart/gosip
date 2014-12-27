@@ -8,7 +8,6 @@ import (
 
 type uriTest struct {
 	s   string  // user input we want to convert
-	s2  string  // non-blank if 's' changes after we parse/format it
 	uri sip.URI // what 's' should become after parsing
 	err error   // if we expect parsing to fail
 }
@@ -16,30 +15,38 @@ type uriTest struct {
 var uriTests = []uriTest{
 
 	uriTest{
-		s: "sip:bsdtelecom.net",
+		s: "sip:google.com",
 		uri: sip.URI{
 			Scheme: "sip",
-			Host:   "bsdtelecom.net",
+			Host:   "google.com",
+		},
+	},
+
+	uriTest{
+		s: "sip:jart@google.com",
+		uri: sip.URI{
+			Scheme: "sip",
+			User:   "jart",
+			Host:   "google.com",
+		},
+	},
+
+	uriTest{
+		s: "sip:jart@google.com:5060",
+		uri: sip.URI{
+			Scheme: "sip",
+			User:   "jart",
+			Host:   "google.com",
 			Port:   5060,
 		},
 	},
 
 	uriTest{
-		s: "sip:bsdtelecom.net:666",
+		s: "sip:google.com:666",
 		uri: sip.URI{
 			Scheme: "sip",
-			Host:   "bsdtelecom.net",
+			Host:   "google.com",
 			Port:   666,
-		},
-	},
-
-	uriTest{
-		s: "sip:jtunney@bsdtelecom.net",
-		uri: sip.URI{
-			Scheme: "sip",
-			User:   "jtunney",
-			Host:   "bsdtelecom.net",
-			Port:   5060,
 		},
 	},
 
@@ -49,42 +56,26 @@ var uriTests = []uriTest{
 			Scheme: "sip",
 			User:   "+12125650666",
 			Host:   "cat.lol",
-			Port:   5060,
 		},
 	},
 
 	uriTest{
-		s:  "sip:jtunney@bsdtelecom.net:5060",
-		s2: "sip:jtunney@bsdtelecom.net",
+		s: "sip:jart:lawl@google.com",
 		uri: sip.URI{
 			Scheme: "sip",
-			User:   "jtunney",
-			Host:   "bsdtelecom.net",
-			Port:   5060,
-		},
-	},
-
-	uriTest{
-		s:  "sip:jtunney:lawl@bsdtelecom.net:5060",
-		s2: "sip:jtunney:lawl@bsdtelecom.net",
-		uri: sip.URI{
-			Scheme: "sip",
-			User:   "jtunney",
+			User:   "jart",
 			Pass:   "lawl",
-			Host:   "bsdtelecom.net",
-			Port:   5060,
+			Host:   "google.com",
 		},
 	},
 
 	uriTest{
-		s:  "sip:jtunney:lawl@bsdtelecom.net:5060;isup-oli=00;omg;lol=cat",
-		s2: "sip:jtunney:lawl@bsdtelecom.net;isup-oli=00;omg;lol=cat",
+		s: "sip:jart:lawl@google.com;isup-oli=00;omg;lol=cat",
 		uri: sip.URI{
 			Scheme: "sip",
-			User:   "jtunney",
+			User:   "jart",
 			Pass:   "lawl",
-			Host:   "bsdtelecom.net",
-			Port:   5060,
+			Host:   "google.com",
 			Params: sip.Params{
 				"isup-oli": "00",
 				"omg":      "",
@@ -94,12 +85,11 @@ var uriTests = []uriTest{
 	},
 
 	uriTest{
-		s: "sip:jtunney@bsdtelecom.net;isup-oli=00;omg;lol=cat",
+		s: "sip:jart@google.com;isup-oli=00;omg;lol=cat",
 		uri: sip.URI{
 			Scheme: "sip",
-			User:   "jtunney",
-			Host:   "bsdtelecom.net",
-			Port:   5060,
+			User:   "jart",
+			Host:   "google.com",
 			Params: sip.Params{
 				"isup-oli": "00",
 				"omg":      "",
@@ -113,15 +103,13 @@ var uriTests = []uriTest{
 		uri: sip.URI{
 			Scheme: "sip",
 			Host:   "dead:beef::666",
-			Port:   5060,
 		},
 	},
 
 	uriTest{
-		s:  "sip:[dead:beef::666]:5060",
-		s2: "sip:[dead:beef::666]",
+		s: "sips:[dead:beef::666]:5060",
 		uri: sip.URI{
-			Scheme: "sip",
+			Scheme: "sips",
 			Host:   "dead:beef::666",
 			Port:   5060,
 		},
@@ -155,13 +143,13 @@ var uriTests = []uriTest{
 	},
 
 	uriTest{
-		s: "sip:jtunney%3e:la%3ewl@bsdtelecom%3e.net:65535" +
+		s: "sip:jart%3e:la%3ewl@google%3e.net:65535" +
 			";isup%3e-oli=00%3e;%3eomg;omg;lol=cat",
 		uri: sip.URI{
 			Scheme: "sip",
-			User:   "jtunney>",
+			User:   "jart>",
 			Pass:   "la>wl",
-			Host:   "bsdtelecom>.net",
+			Host:   "google>.net",
 			Port:   65535,
 			Params: sip.Params{
 				"isup>-oli": "00>",
@@ -193,11 +181,7 @@ func TestParse(t *testing.T) {
 func TestFormat(t *testing.T) {
 	for _, test := range uriTests {
 		uri := test.uri.String()
-		s := test.s
-		if test.s2 != "" {
-			s = test.s2
-		}
-		if s != uri {
+		if test.s != uri {
 			t.Error(test.s, "!=", uri)
 		}
 	}

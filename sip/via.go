@@ -117,12 +117,7 @@ func (via *Via) Last() *Via {
 	return via
 }
 
-// returns true if version, proto, ip, port, and branch match
-func (via *Via) Compare(other *Via) bool {
-	return (via.CompareAddr(other) && via.CompareBranch(other))
-}
-
-func (via *Via) CompareAddr(other *Via) bool {
+func (via *Via) CompareHostPort(other *Via) bool {
 	if via != nil && other != nil {
 		if via.Host == other.Host &&
 			via.Port == other.Port {

@@ -4,7 +4,6 @@ import (
 	"encoding/hex"
 	"math/rand"
 	"net"
-	"strconv"
 	"strings"
 )
 
@@ -47,16 +46,6 @@ func IsIPPrivate(ip net.IP) bool {
 		}
 	}
 	return false
-}
-
-func HostPortToString(host string, port uint16) (saddr string) {
-	sport := strconv.FormatInt(int64(port), 10)
-	if IsIPv6(host) {
-		saddr = "[" + host + "]:" + sport
-	} else {
-		saddr = host + ":" + sport
-	}
-	return saddr
 }
 
 // Generates a secure random number between 0 and 50,000.

@@ -1,6 +1,7 @@
 #define ULAW_BIAS $0x84
 
 // func L16MixSat160(dst, src *int16)
+// Explanation: http://i.imgur.com/nejgQ41.jpg
 TEXT    ·L16MixSat160(SB),4,$0-16
 	MOVQ	dst+0(FP), AX
 	MOVQ	src+8(FP), BX
