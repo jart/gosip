@@ -41,7 +41,7 @@ var (
 type Params map[string]string
 
 type URI struct {
-	Scheme string // sip, tel, etc. (never blank)
+	Scheme string // sip, tel, etc.
 	User   string // sip:USER@host
 	Pass   string // sip:user:PASS@host
 	Host   string // example.com, 1.2.3.4, etc.
