@@ -148,7 +148,8 @@ func (tp *Transport) recv() (msg *Msg, err error) {
 	if err != nil {
 		return nil, err
 	}
-	tp.preprocess(msg)
+	tp.removeOurRoute(msg)
+	tp.fixMessagesFromStrictRouters(msg)
 	return
 }
 
@@ -172,34 +173,6 @@ func (tp *Transport) sanityCheck(msg *Msg) error {
 	return nil
 }
 
-// Perform some ingress message mangling.
-func (tp *Transport) preprocess(msg *Msg) {
-	if tp.Contact.CompareHostPort(msg.Route) {
-		log.Printf("Removing our route header: %s", msg.Route)
-		msg.Route = msg.Route.Next
-	}
-
-	if msg.Request != nil && msg.Request.Params.Has("lr") && msg.Route != nil && tp.Contact.Uri.CompareHostPort(msg.Request) {
-		// RFC3261 16.4 Route Information Preprocessing
-		// RFC3261 16.12.1.2: Traversing a Strict-Routing Proxy
-		var oldReq, newReq *URI
-		if msg.Route.Next == nil {
-			oldReq, newReq = msg.Request, msg.Route.Uri
-			msg.Request = msg.Route.Uri
-			msg.Route = nil
-		} else {
-			seclast := msg.Route
-			for ; seclast.Next.Next != nil; seclast = seclast.Next {
-			}
-			oldReq, newReq = msg.Request, seclast.Next.Uri
-			msg.Request = seclast.Next.Uri
-			seclast.Next = nil
-			msg.Route.Last()
-		}
-		log.Printf("Fixing request URI after strict router traversal: %s -> %s", oldReq, newReq)
-	}
-}
-
 func (tp *Transport) route(old *Msg) (msg *Msg, dest string, err error) {
 	var host string
 	var port uint16
@@ -209,32 +182,17 @@ func (tp *Transport) route(old *Msg) (msg *Msg, dest string, err error) {
 		msg.Contact = tp.Contact
 	}
 	if msg.IsResponse {
-		if msg.Via.CompareHostPort(tp.Via) {
-			// In proxy scenarios, we have to remove our own Via.
-			msg.Via = msg.Via.Next
-		}
-		if msg.Via == nil {
-			return nil, "", errors.New("Message missing Via header")
-		}
+		tp.removeOurVia(msg)
 		if received, ok := msg.Via.Params["received"]; ok {
 			return msg, received, nil
 		} else {
 			host, port = msg.Via.Host, msg.Via.Port
 		}
 	} else {
-		if msg.Request == nil {
-			return nil, "", errors.New("Missing request URI")
-		}
-		if !msg.Via.CompareHostPort(tp.Via) {
-			return nil, "", errors.New("Set our Via should come first when sending messages")
-		}
-		if msg.Route.CompareHostPort(tp.Contact) {
-			// In proxy scenarios, we have to remove our own Route.
-			msg.Route = msg.Route.Next
-		}
+		tp.removeOurRoute(msg)
 		if msg.Route != nil {
 			if msg.Method == "REGISTER" {
-				return nil, "", errors.New("Don't loose route register requests")
+				return nil, "", errors.New("Don't route REGISTER requests")
 			}
 			if msg.Route.Uri.Params.Has("lr") {
 				// RFC3261 16.12.1.1 Basic SIP Trapezoid
@@ -253,6 +211,40 @@ func (tp *Transport) route(old *Msg) (msg *Msg, dest string, err error) {
 	}
 	dest = net.JoinHostPort(host, portstr(port))
 	return
+}
+
+// RFC3261 16.4 Route Information Preprocessing
+// RFC3261 16.12.1.2: Traversing a Strict-Routing Proxy
+func (tp *Transport) fixMessagesFromStrictRouters(msg *Msg) {
+	if msg.Request != nil && msg.Request.Params.Has("lr") && msg.Route != nil && tp.Contact.Uri.CompareHostPort(msg.Request) {
+		var oldReq, newReq *URI
+		if msg.Route.Next == nil {
+			oldReq, newReq = msg.Request, msg.Route.Uri
+			msg.Request = msg.Route.Uri
+			msg.Route = nil
+		} else {
+			seclast := msg.Route
+			for ; seclast.Next.Next != nil; seclast = seclast.Next {
+			}
+			oldReq, newReq = msg.Request, seclast.Next.Uri
+			msg.Request = seclast.Next.Uri
+			seclast.Next = nil
+			msg.Route.Last()
+		}
+		log.Printf("Fixing request URI after strict router traversal: %s -> %s", oldReq, newReq)
+	}
+}
+
+func (tp *Transport) removeOurRoute(msg *Msg) {
+	if tp.Contact.CompareHostPort(msg.Route) {
+		msg.Route = msg.Route.Next
+	}
+}
+
+func (tp *Transport) removeOurVia(msg *Msg) {
+	if tp.Via.CompareHostPort(msg.Via) {
+		msg.Via = msg.Via.Next
+	}
 }
 
 func addReceived(msg *Msg, addr *net.UDPAddr) {
