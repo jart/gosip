@@ -8,7 +8,7 @@ import (
 	"time"
 )
 
-func ReceiveMessages(contact *Addr, sock *net.UDPConn, c chan *Msg, e chan error) {
+func ReceiveMessages(contact *Addr, sock *net.UDPConn, c chan<- *Msg, e chan<- error) {
 	buf := make([]byte, 2048)
 	for {
 		amt, addr, err := sock.ReadFromUDP(buf)

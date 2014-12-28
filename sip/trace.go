@@ -1,10 +1,16 @@
 package sip
 
 import (
+	"flag"
 	"log"
 	"net"
 	"strings"
 	"time"
+)
+
+var (
+	tracing          = flag.Bool("tracing", true, "Enable SIP message tracing")
+	timestampTagging = flag.Bool("timestampTagging", false, "Add microsecond timestamps to Via tags")
 )
 
 func trace(dir, pkt string, addr net.Addr, t time.Time) {

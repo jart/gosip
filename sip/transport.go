@@ -5,23 +5,16 @@ package sip
 
 import (
 	"bytes"
-	"errors"
-	"flag"
 	"net"
 	"time"
-)
-
-var (
-	tracing          = flag.Bool("tracing", true, "Enable SIP message tracing")
-	timestampTagging = flag.Bool("timestampTagging", false, "Add microsecond timestamps to Via tags")
 )
 
 // Transport sends and receives SIP messages over UDP with stateless routing.
 type Transport struct {
 
 	// Channel to which received SIP messages and errors are published.
-	C chan *Msg
-	E chan error
+	C <-chan *Msg
+	E <-chan error
 
 	// Underlying UDP socket.
 	Sock *net.UDPConn
@@ -45,19 +38,21 @@ type Transport struct {
 // canonical address.
 func NewTransport(contact *Addr) (tp *Transport, err error) {
 	saddr := net.JoinHostPort(contact.Uri.Host, portstr(contact.Uri.Port))
-	c, err := net.ListenPacket("udp", saddr)
+	conn, err := net.ListenPacket("udp", saddr)
 	if err != nil {
 		return nil, err
 	}
-	sock := c.(*net.UDPConn)
-	addr := c.LocalAddr().(*net.UDPAddr)
+	sock := conn.(*net.UDPConn)
+	addr := conn.LocalAddr().(*net.UDPAddr)
 	contact = contact.Copy()
 	contact.Next = nil
 	contact.Uri.Port = uint16(addr.Port)
 	contact.Uri.Params["transport"] = "udp"
+	c := make(chan *Msg, 32)
+	e := make(chan error, 1)
 	tp = &Transport{
-		C:       make(chan *Msg, 32),
-		E:       make(chan error, 1),
+		C:       c,
+		E:       e,
 		Sock:    sock,
 		Contact: contact,
 		Via: &Via{
@@ -65,17 +60,17 @@ func NewTransport(contact *Addr) (tp *Transport, err error) {
 			Port: uint16(addr.Port),
 		},
 	}
-	go ReceiveMessages(contact, sock, tp.C, tp.E)
+	go ReceiveMessages(contact, sock, c, e)
 	return
 }
 
 // Sends a SIP message.
 func (tp *Transport) Send(msg *Msg) error {
-	msg, hostport, err := RouteMessage(tp.Via, tp.Contact, msg)
+	msg, host, port, err := RouteMessage(tp.Via, tp.Contact, msg)
 	if err != nil {
 		return err
 	}
-	addr, err := net.ResolveUDPAddr("udp", hostport)
+	addr, err := net.ResolveUDPAddr("udp", net.JoinHostPort(host, portstr(port)))
 	if err != nil {
 		return err
 	}
@@ -92,26 +87,6 @@ func (tp *Transport) Send(msg *Msg) error {
 	_, err = tp.Sock.WriteTo(b.Bytes(), addr)
 	if err != nil {
 		return err
-	}
-	return nil
-}
-
-// Checks if message is acceptable, otherwise sets msg.Error and returns false.
-func (tp *Transport) sanityCheck(msg *Msg) error {
-	if msg.MaxForwards <= 0 {
-		tp.Send(NewResponse(msg, StatusTooManyHops))
-		return errors.New("Froot loop detected")
-	}
-	if msg.IsResponse {
-		if msg.Status >= 700 {
-			tp.Send(NewResponse(msg, StatusBadRequest))
-			return errors.New("Crazy status number")
-		}
-	} else {
-		if msg.CSeqMethod == "" || msg.CSeqMethod != msg.Method {
-			tp.Send(NewResponse(msg, StatusBadRequest))
-			return errors.New("Bad CSeq")
-		}
 	}
 	return nil
 }
