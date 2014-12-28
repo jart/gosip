@@ -48,8 +48,8 @@ func NewTransport(contact *Addr) (tp *Transport, err error) {
 	contact.Next = nil
 	contact.Uri.Port = uint16(addr.Port)
 	contact.Uri.Params["transport"] = "udp"
-	c := make(chan *Msg, 32)
-	e := make(chan error, 1)
+	c := make(chan *Msg)
+	e := make(chan error)
 	tp = &Transport{
 		C:       c,
 		E:       e,

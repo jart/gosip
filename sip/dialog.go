@@ -256,6 +256,8 @@ func (dls *dialogState) cleanup() {
 	if dls.sock != nil {
 		dls.sock.Close()
 		dls.sock = nil
+		_, _ = <-dls.sockMsgs
+		<-dls.sockErrs
 	}
 }
 

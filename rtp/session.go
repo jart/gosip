@@ -53,7 +53,7 @@ func NewSession(host string) (rs *Session, err error) {
 		return nil, err
 	}
 	rs = &Session{
-		C:    make(chan *Frame, 32),
+		C:    make(chan *Frame, 4),
 		E:    make(chan error, 1),
 		Sock: sock.(*net.UDPConn),
 		Header: Header{

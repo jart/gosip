@@ -1,7 +1,6 @@
 package sip
 
 import (
-	"github.com/jart/gosip/util"
 	"log"
 	"net"
 	"strconv"
@@ -13,10 +12,8 @@ func ReceiveMessages(contact *Addr, sock *net.UDPConn, c chan<- *Msg, e chan<- e
 	for {
 		amt, addr, err := sock.ReadFromUDP(buf)
 		if err != nil {
-			if !util.IsUseOfClosed(err) {
-				e <- err
-			}
-			return
+			e <- err
+			break
 		}
 		ts := time.Now()
 		packet := string(buf[0:amt])
@@ -36,6 +33,8 @@ func ReceiveMessages(contact *Addr, sock *net.UDPConn, c chan<- *Msg, e chan<- e
 		fixMessagesFromStrictRouters(contact, msg)
 		c <- msg
 	}
+	close(c)
+	close(e)
 }
 
 func addReceived(msg *Msg, addr *net.UDPAddr) {
