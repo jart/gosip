@@ -7,6 +7,7 @@ import (
 	"bytes"
 	"errors"
 	"flag"
+	"github.com/jart/gosip/util"
 	"log"
 	"net"
 	"strconv"
@@ -107,8 +108,9 @@ func (tp *Transport) launchConsumer() {
 		for {
 			msg, err := tp.recv()
 			if err != nil {
-				log.Println("shutting down", err)
-				tp.E <- err
+				if !util.IsUseOfClosed(err) {
+					tp.E <- err
+				}
 				return
 			}
 			tp.C <- msg
