@@ -66,6 +66,7 @@ func NewTransport(contact *Addr) (tp *Transport, err error) {
 
 // Sends a SIP message.
 func (tp *Transport) Send(msg *Msg) error {
+	PopulateMessage(tp.Via, tp.Contact, msg)
 	msg, host, port, err := RouteMessage(tp.Via, tp.Contact, msg)
 	if err != nil {
 		return err

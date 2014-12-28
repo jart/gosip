@@ -111,6 +111,9 @@ func AckMatch(msg, ack *Msg) bool {
 }
 
 func AttachSDP(msg *Msg, ms *sdp.SDP) {
+	if msg.Headers == nil {
+		msg.Headers = Headers{}
+	}
 	msg.Headers["Content-Type"] = sdp.ContentType
 	msg.Payload = ms.String()
 }

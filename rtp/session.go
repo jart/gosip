@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"github.com/jart/gosip/dsp"
 	"github.com/jart/gosip/sdp"
+	"log"
 	"math/rand"
 	"net"
 	"strconv"
@@ -128,11 +129,10 @@ func listenRTP(host string) (sock net.PacketConn, err error) {
 		port := rtpBindPortMin + rand.Int63()%(rtpBindPortMax-rtpBindPortMin+1)
 		saddr := net.JoinHostPort(host, strconv.FormatInt(port, 10))
 		sock, err = net.ListenPacket("udp", saddr)
-		if err != nil {
-			if !strings.Contains(err.Error(), "address already in use") {
-				break
-			}
+		if err == nil || !strings.Contains(err.Error(), "address already in use") {
+			break
 		}
+		log.Println("RTP listen congestion:", saddr)
 	}
 	return
 }

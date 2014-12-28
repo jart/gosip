@@ -17,7 +17,7 @@ func trace(dir, pkt string, addr net.Addr, t time.Time) {
 	size := len(pkt)
 	bar := strings.Repeat("-", 72)
 	suffix := "\n"
-	if pkt[len(pkt)-1] == '\n' {
+	if pkt != "" && pkt[len(pkt)-1] == '\n' {
 		suffix = ""
 	}
 	log.Printf(

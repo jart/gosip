@@ -378,25 +378,35 @@ func (msg *Msg) Append(b *bytes.Buffer) error {
 	return nil
 }
 
-func (msg *Msg) parseFirstLine(s string) (err error) {
-	toks := strings.Split(s, " ")
-	if toks != nil && len(toks) == 3 && toks[2] == "SIP/2.0" {
-		msg.Phrase = ""
-		msg.Status = 0
-		msg.Method = toks[0]
-		msg.Request = new(URI)
-		msg.Request, err = ParseURI(toks[1])
-	} else if toks != nil && len(toks) == 3 && toks[0] == "SIP/2.0" {
+func (msg *Msg) parseFirstLine(s string) error {
+	i := strings.Index(s, "SIP/2.0")
+	if i == -1 {
+		return errors.New("Not a SIP message")
+	} else if i == 0 {
 		msg.IsResponse = true
-		msg.Method = ""
-		msg.Request = nil
-		msg.Phrase = toks[2]
-		msg.Status, err = strconv.Atoi(toks[1])
+		toks := strings.SplitN(s, " ", 3)
+		if len(toks) < 2 {
+			return errors.New("Bad response status line")
+		}
+		s, err := strconv.Atoi(toks[1])
 		if err != nil {
-			return errors.New("Invalid status")
+			return errors.New("Bad response status code")
+		}
+		msg.Status = s
+		if len(toks) == 3 {
+			msg.Phrase = toks[2]
+		} else {
+			msg.Phrase = Phrase(msg.Status)
 		}
 	} else {
-		err = errors.New("Bad protocol or request line")
+		j := strings.Index(s, " ")
+		msg.Method = s[:j]
+		msg.Request = new(URI)
+		r, err := ParseURI(s[j+1 : i-1])
+		msg.Request = r
+		if err != nil {
+			return err
+		}
 	}
-	return err
+	return nil
 }

@@ -2,6 +2,7 @@ package sip
 
 import (
 	"errors"
+	"github.com/jart/gosip/util"
 	"log"
 	"net"
 )
@@ -11,12 +12,52 @@ type AddressRoute struct {
 	Next    *AddressRoute
 }
 
+func PopulateMessage(via *Via, contact *Addr, msg *Msg) {
+	if !msg.IsResponse {
+		if msg.Method == "" {
+			msg.Method = "INVITE"
+		}
+		if msg.Via == nil {
+			msg.Via = via
+		}
+		if msg.Contact == nil {
+			msg.Contact = contact
+		}
+		if msg.To == nil {
+			msg.To = &Addr{Uri: msg.Request}
+		}
+		if msg.From == nil {
+			msg.From = msg.Contact
+		}
+		if msg.CallID == "" {
+			msg.CallID = util.GenerateCallID()
+		}
+		if msg.CSeq == 0 {
+			msg.CSeq = util.GenerateCSeq()
+		}
+		if msg.CSeqMethod == "" {
+			msg.CSeqMethod = msg.Method
+		}
+		if msg.MaxForwards == 0 {
+			msg.MaxForwards = 70
+		}
+		if _, ok := msg.Via.Params["branch"]; !ok {
+			msg.Via = msg.Via.Copy()
+			msg.Via.Params["branch"] = util.GenerateBranch()
+		}
+		if _, ok := msg.From.Params["tag"]; !ok {
+			msg.From = msg.From.Copy()
+			msg.From.Params["tag"] = util.GenerateTag()
+		}
+		if _, ok := msg.Headers["User-Agent"]; !ok {
+			msg.Headers["User-Agent"] = GosipUserAgent
+		}
+	}
+}
+
 func RouteMessage(via *Via, contact *Addr, old *Msg) (msg *Msg, host string, port uint16, err error) {
 	msg = new(Msg)
 	*msg = *old // Start off with a shallow copy.
-	if msg.Contact == nil {
-		msg.Contact = contact
-	}
 	if msg.IsResponse {
 		if via.CompareHostPort(msg.Via) {
 			msg.Via = msg.Via.Next
@@ -61,12 +102,15 @@ func RouteAddress(host string, port uint16) (routes *AddressRoute, err error) {
 	if port == 0 {
 		_, srvs, err := net.LookupSRV("sip", "udp", host)
 		if err == nil && len(srvs) > 0 {
+			s := ""
 			for i := len(srvs) - 1; i >= 0; i-- {
 				routes = &AddressRoute{
 					Address: net.JoinHostPort(srvs[i].Target, portstr(srvs[i].Port)),
 					Next:    routes,
 				}
+				s = " " + routes.Address + s
 			}
+			log.Printf("%s routes to: %s", host, s)
 			return routes, nil
 		}
 		log.Println("net.LookupSRV(sip, udp, %s) failed: %s", err)
