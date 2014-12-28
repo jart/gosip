@@ -34,7 +34,7 @@ func ReceiveMessages(contact *Addr, sock *net.UDPConn, c chan<- *Msg, e chan<- e
 		c <- msg
 	}
 	close(c)
-	close(e)
+	close(e) // Must be unbuffered!
 }
 
 func addReceived(msg *Msg, addr *net.UDPAddr) {
