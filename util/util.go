@@ -5,14 +5,19 @@ import (
 	"math/rand"
 	"net"
 	"strings"
+	"syscall"
 )
 
 // Returns true if error is an i/o timeout.
 func IsTimeout(err error) bool {
-	if operr, ok := err.(*net.OpError); ok {
-		return operr.Timeout()
-	}
-	return false
+	operr, ok := err.(*net.OpError)
+	return ok && operr.Timeout()
+}
+
+// Returns true if error is ICMP connection refused.
+func IsRefused(err error) bool {
+	operr, ok := err.(*net.OpError)
+	return ok && operr.Err == syscall.ECONNREFUSED
 }
 
 // Returns true if error was caused by reading from a closed socket.
