@@ -24,7 +24,7 @@ import (
 	"bytes"
 	"errors"
 	"github.com/jart/gosip/util"
-	"strings"
+	"sort"
 )
 
 const (
@@ -32,86 +32,25 @@ const (
 )
 
 var (
-	URIEmpty          = errors.New("empty uri")
 	URISchemeNotFound = errors.New("scheme not found")
 	URIMissingHost    = errors.New("host missing")
 	URIBadPort        = errors.New("invalid port number")
 )
 
 type Params map[string]string
+type URIHeaders map[string]string
 
 type URI struct {
-	Scheme string // sip, tel, etc.
-	User   string // sip:USER@host
-	Pass   string // sip:user:PASS@host
-	Host   string // example.com, 1.2.3.4, etc.
-	Port   uint16 // 5060, 80, etc.
-	Params Params // semicolon delimited params after uris and addrs
+	Scheme  string     // e.g. sip, sips, tel, etc.
+	User    string     // e.g. sip:USER@host
+	Pass    string     // e.g. sip:user:PASS@host
+	Host    string     // e.g. example.com, 1.2.3.4, etc.
+	Port    uint16     // e.g. 5060, 80, etc.
+	Params  Params     // e.g. ;isup-oli=00;day=tuesday
+	Headers URIHeaders // e.g. ?subject=project%20x&lol=cat
 }
 
-// Parses a SIP URI.
-func ParseURI(s string) (uri *URI, err error) {
-	uri = new(URI)
-	if s == "" {
-		return nil, URIEmpty
-	}
-
-	// Extract scheme.
-	n := strings.IndexAny(s, delims)
-	if n < 0 || s[n] != ':' {
-		return nil, URISchemeNotFound
-	}
-	uri.Scheme, s = s[0:n], s[n+1:]
-
-	// Extract user/pass.
-	n = strings.IndexAny(s, delims)
-	if n > 0 && s[n] == ':' { // sip:user:pass@host
-		// if next token isn't '@' then assume 'sip:host:port'
-		s2 := s[n+1:]
-		n2 := strings.IndexAny(s2, delims)
-		if n2 > 0 && s2[n2] == '@' {
-			uri.User = s[0:n]
-			s, n = s2, n2
-			if n < 0 || s[n] != '@' {
-				return nil, URIMissingHost
-			}
-			uri.Pass, s = s[0:n], s[n+1:]
-		}
-	} else if n > 0 && s[n] == '@' { // user@host
-		uri.User, s = s[0:n], s[n+1:]
-	}
-
-	// Extract host/port.
-	s, uri.Host, uri.Port, err = extractHostPort(s)
-	if err != nil {
-		return nil, err
-	}
-
-	// Extract semicolon delimited params.
-	if s != "" && s[0] == ';' {
-		uri.Params = parseParams(s[1:])
-		s = ""
-	}
-
-	// if s != "" {
-	// 	fmt.Fprintf(os.Stderr, "leftover data: %v\n", s)
-	// }
-
-	uri.User, err = util.URLUnescape(uri.User, false)
-	if err != nil {
-		return nil, err
-	}
-	uri.Pass, err = util.URLUnescape(uri.Pass, false)
-	if err != nil {
-		return nil, err
-	}
-	uri.Host, err = util.URLUnescape(uri.Host, false)
-	if err != nil {
-		return nil, err
-	}
-
-	return uri, nil
-}
+//go:generate ragel -Z -G2 -o uri_parse.go uri_parse.rl
 
 // Deep copies a URI object.
 func (uri *URI) Copy() *URI {
@@ -121,8 +60,11 @@ func (uri *URI) Copy() *URI {
 	res := new(URI)
 	*res = *uri
 	res.Params = uri.Params.Copy()
+	res.Headers = uri.Headers.Copy()
 	return res
 }
+
+// TODO(jart): URI Comparison https://tools.ietf.org/html/rfc3261#section-19.1.4
 
 func (uri *URI) String() string {
 	if uri == nil {
@@ -158,6 +100,7 @@ func (uri *URI) Append(b *bytes.Buffer) {
 		b.WriteString(":" + portstr((uri.Port)))
 	}
 	uri.Params.Append(b)
+	uri.Headers.Append(b)
 }
 
 func (uri *URI) CompareHostPort(other *URI) bool {
@@ -191,9 +134,17 @@ func (params Params) Copy() Params {
 
 func (params Params) Append(b *bytes.Buffer) {
 	if params != nil && len(params) > 0 {
-		for k, v := range params {
+		keys := make([]string, len(params))
+		i := 0
+		for k, _ := range params {
+			keys[i] = k
+			i++
+		}
+		sort.Strings(keys)
+		for _, k := range keys {
 			b.WriteString(";")
 			b.WriteString(util.URLEscape(k, false))
+			v := params[k]
 			if v != "" {
 				b.WriteString("=")
 				b.WriteString(util.URLEscape(v, false))
@@ -205,4 +156,39 @@ func (params Params) Append(b *bytes.Buffer) {
 func (params Params) Has(k string) bool {
 	_, ok := params["lr"]
 	return ok
+}
+
+func (headers URIHeaders) Copy() URIHeaders {
+	res := make(URIHeaders, len(headers))
+	for k, v := range headers {
+		res[k] = v
+	}
+	return res
+}
+
+func (headers URIHeaders) Append(b *bytes.Buffer) {
+	if headers != nil && len(headers) > 0 {
+		keys := make([]string, len(headers))
+		i := 0
+		for k, _ := range headers {
+			keys[i] = k
+			i++
+		}
+		sort.Strings(keys)
+		first := true
+		for _, k := range keys {
+			if first {
+				b.WriteString("?")
+				first = false
+			} else {
+				b.WriteString("&")
+			}
+			b.WriteString(util.URLEscape(k, false))
+			v := headers[k]
+			if v != "" {
+				b.WriteString("=")
+				b.WriteString(util.URLEscape(v, false))
+			}
+		}
+	}
 }

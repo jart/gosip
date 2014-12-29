@@ -82,3 +82,15 @@ func parsePort(s string) (port uint16, err error) {
 	port = uint16(i)
 	return
 }
+
+func unhex(b byte) byte {
+	switch {
+	case '0' <= b && b <= '9':
+		return b - '0'
+	case 'a' <= b && b <= 'f':
+		return b - 'a' + 10
+	case 'A' <= b && b <= 'F':
+		return b - 'A' + 10
+	}
+	return 0
+}

@@ -1,185 +1,232 @@
 package sip_test
 
 import (
+	"errors"
 	"github.com/jart/gosip/sip"
 	"reflect"
 	"testing"
 )
 
 type uriTest struct {
-	s   string  // user input we want to convert
-	uri sip.URI // what 's' should become after parsing
-	err error   // if we expect parsing to fail
+	s          string
+	e          error
+	uri        *sip.URI
+	skipFormat bool
 }
 
 var uriTests = []uriTest{
 
 	uriTest{
-		s: "sip:google.com",
-		uri: sip.URI{
+		s: "",
+		e: errors.New("Empty URI"),
+	},
+
+	uriTest{
+		s: "sip:",
+		e: errors.New("Unexpected EOF: sip:"),
+	},
+
+	uriTest{
+		s: "sip:example.com:LOL",
+		e: errors.New("Error in URI at pos 16: sip:example.com:LOL"),
+	},
+
+	uriTest{
+		s: "sip:example.com",
+		uri: &sip.URI{
 			Scheme: "sip",
-			Host:   "google.com",
+			Host:   "example.com",
 		},
 	},
 
 	uriTest{
-		s: "sip:jart@google.com",
-		uri: sip.URI{
+		s: "sip:example.com:",
+		uri: &sip.URI{
 			Scheme: "sip",
-			User:   "jart",
-			Host:   "google.com",
+			Host:   "example.com",
 		},
+		skipFormat: true,
 	},
 
 	uriTest{
-		s: "sip:jart@google.com:5060",
-		uri: sip.URI{
+		s: "sip:example.com:5060",
+		uri: &sip.URI{
 			Scheme: "sip",
-			User:   "jart",
-			Host:   "google.com",
+			Host:   "example.com",
 			Port:   5060,
 		},
 	},
 
 	uriTest{
-		s: "sip:google.com:666",
-		uri: sip.URI{
-			Scheme: "sip",
-			Host:   "google.com",
-			Port:   666,
-		},
-	},
-
-	uriTest{
-		s: "sip:+12125650666@cat.lol",
-		uri: sip.URI{
-			Scheme: "sip",
-			User:   "+12125650666",
-			Host:   "cat.lol",
-		},
-	},
-
-	uriTest{
-		s: "sip:jart:lawl@google.com",
-		uri: sip.URI{
-			Scheme: "sip",
-			User:   "jart",
-			Pass:   "lawl",
-			Host:   "google.com",
-		},
-	},
-
-	uriTest{
-		s: "sip:jart:lawl@google.com;isup-oli=00;omg;lol=cat",
-		uri: sip.URI{
-			Scheme: "sip",
-			User:   "jart",
-			Pass:   "lawl",
-			Host:   "google.com",
-			Params: sip.Params{
-				"isup-oli": "00",
-				"omg":      "",
-				"lol":      "cat",
-			},
-		},
-	},
-
-	uriTest{
-		s: "sip:jart@google.com;isup-oli=00;omg;lol=cat",
-		uri: sip.URI{
-			Scheme: "sip",
-			User:   "jart",
-			Host:   "google.com",
-			Params: sip.Params{
-				"isup-oli": "00",
-				"omg":      "",
-				"lol":      "cat",
-			},
-		},
-	},
-
-	uriTest{
-		s: "sip:[dead:beef::666]",
-		uri: sip.URI{
-			Scheme: "sip",
-			Host:   "dead:beef::666",
-		},
-	},
-
-	uriTest{
-		s: "sips:[dead:beef::666]:5060",
-		uri: sip.URI{
+		s: "sips:jart@google.com",
+		uri: &sip.URI{
 			Scheme: "sips",
+			User:   "jart",
+			Host:   "google.com",
+		},
+	},
+
+	uriTest{
+		s: "sips:jart@google.com:5060",
+		uri: &sip.URI{
+			Scheme: "sips",
+			User:   "jart",
+			Host:   "google.com",
+			Port:   5060,
+		},
+	},
+
+	uriTest{
+		s: "sips:jart:letmein@google.com",
+		uri: &sip.URI{
+			Scheme: "sips",
+			User:   "jart",
+			Pass:   "letmein",
+			Host:   "google.com",
+		},
+	},
+
+	uriTest{
+		s: "sips:jart:LetMeIn@google.com:5060",
+		uri: &sip.URI{
+			Scheme: "sips",
+			User:   "jart",
+			Pass:   "LetMeIn",
+			Host:   "google.com",
+			Port:   5060,
+		},
+	},
+
+	uriTest{
+		s: "sips:GOOGLE.com",
+		uri: &sip.URI{
+			Scheme: "sips",
+			Host:   "google.com",
+		},
+		skipFormat: true,
+	},
+
+	uriTest{
+		s: "sip:[dead:beef::666]:5060",
+		uri: &sip.URI{
+			Scheme: "sip",
 			Host:   "dead:beef::666",
 			Port:   5060,
 		},
 	},
 
 	uriTest{
-		s: "sip:lol:cat@[dead:beef::666]:65535",
-		uri: sip.URI{
-			Scheme: "sip",
-			User:   "lol",
-			Pass:   "cat",
-			Host:   "dead:beef::666",
-			Port:   65535,
+		s: "sip:dead:beef::666:5060",
+		e: errors.New("Error in URI at pos 9: sip:dead:beef::666:5060"),
+	},
+
+	uriTest{
+		s: "tel:+12126660420",
+		uri: &sip.URI{
+			Scheme: "tel",
+			Host:   "+12126660420",
 		},
 	},
 
 	uriTest{
-		s: "sip:lol:cat@[dead:beef::666]:65535;oh;my;goth",
-		uri: sip.URI{
+		s: "sip:bob%20barker:priceisright@[dead:beef::666]:5060;isup-oli=00",
+		uri: &sip.URI{
 			Scheme: "sip",
-			User:   "lol",
-			Pass:   "cat",
+			User:   "bob barker",
+			Pass:   "priceisright",
 			Host:   "dead:beef::666",
-			Port:   65535,
+			Port:   5060,
 			Params: sip.Params{
-				"oh":   "",
-				"my":   "",
-				"goth": "",
+				"isup-oli": "00",
 			},
 		},
 	},
 
 	uriTest{
-		s: "sip:jart%3e:la%3ewl@google%3e.net:65535" +
-			";isup%3e-oli=00%3e;%3eomg;omg;lol=cat",
-		uri: sip.URI{
-			Scheme: "sip",
-			User:   "jart>",
-			Pass:   "la>wl",
-			Host:   "google>.net",
-			Port:   65535,
+		s: "sips:google.com ;lol ;h=omg",
+		uri: &sip.URI{
+			Scheme: "sips",
+			Host:   "google.com",
 			Params: sip.Params{
-				"isup>-oli": "00>",
-				">omg":      "",
-				"omg":       "",
-				"lol":       "cat",
+				"lol": "",
+				"h":   "omg",
+			},
+		},
+		skipFormat: true,
+	},
+
+	uriTest{
+		s: "SIP:example.com",
+		uri: &sip.URI{
+			Scheme: "sip",
+			Host:   "example.com",
+		},
+		skipFormat: true,
+	},
+
+	uriTest{
+		s: "sips:alice@atlanta.com?priority=urgent&subject=project%20x",
+		uri: &sip.URI{
+			Scheme: "sips",
+			User:   "alice",
+			Host:   "atlanta.com",
+			Headers: sip.URIHeaders{
+				"subject":  "project x",
+				"priority": "urgent",
 			},
 		},
 	},
+
+	uriTest{
+		s: "sip:+1-212-555-1212:1234@gateway.com;user=phone",
+		uri: &sip.URI{
+			Scheme: "sip",
+			User:   "+1-212-555-1212",
+			Pass:   "1234",
+			Host:   "gateway.com",
+			Params: sip.Params{
+				"user": "phone",
+			},
+		},
+	},
+
+	uriTest{
+		s: "sip:atlanta.com;method=register?to=alice%40atlanta.com",
+		uri: &sip.URI{
+			Scheme: "sip",
+			Host:   "atlanta.com",
+			Params: sip.Params{
+				"method": "register",
+			},
+			Headers: sip.URIHeaders{
+				"to": "alice@atlanta.com",
+			},
+		},
+	},
+
+	// TODO(jart): sip:alice;day=tuesday@atlanta.com
 }
 
-func TestParse(t *testing.T) {
+func TestParseURI(t *testing.T) {
 	for _, test := range uriTests {
 		uri, err := sip.ParseURI(test.s)
 		if err != nil {
-			if test.err == nil {
-				t.Errorf("%v", err)
-				continue
-			} else { // test was supposed to fail
-				panic("TODO(jart): Implement failing support.")
+			if !reflect.DeepEqual(test.e, err) {
+				t.Errorf("%s\nWant: %#v\nGot:  %#v", test.s, test.e, err)
 			}
-		}
-		if !reflect.DeepEqual(&test.uri, uri) {
-			t.Errorf("%#v != %#v", &test.uri, uri)
+		} else {
+			if !reflect.DeepEqual(test.uri, uri) {
+				t.Errorf("%s\nWant: %#v\nGot:  %#v", test.s, test.uri, uri)
+			}
 		}
 	}
 }
 
-func TestFormat(t *testing.T) {
+func TestFormatURI(t *testing.T) {
 	for _, test := range uriTests {
+		if test.skipFormat || test.e != nil {
+			continue
+		}
 		uri := test.uri.String()
 		if test.s != uri {
 			t.Error(test.s, "!=", uri)
