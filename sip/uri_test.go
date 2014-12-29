@@ -23,7 +23,7 @@ var uriTests = []uriTest{
 
 	uriTest{
 		s: "sip:",
-		e: errors.New("Unexpected EOF: sip:"),
+		e: errors.New("Incomplete URI: sip:"),
 	},
 
 	uriTest{
@@ -37,15 +37,6 @@ var uriTests = []uriTest{
 			Scheme: "sip",
 			Host:   "example.com",
 		},
-	},
-
-	uriTest{
-		s: "sip:example.com:",
-		uri: &sip.URI{
-			Scheme: "sip",
-			Host:   "example.com",
-		},
-		skipFormat: true,
 	},
 
 	uriTest{
@@ -204,7 +195,15 @@ var uriTests = []uriTest{
 		},
 	},
 
-	// TODO(jart): sip:alice;day=tuesday@atlanta.com
+	uriTest{
+		s: "sip:alice;day=tuesday@atlanta.com",
+		uri: &sip.URI{
+			Scheme: "sip",
+			User:   "alice;day=tuesday",
+			Host:   "atlanta.com",
+		},
+		skipFormat: true, // TODO(jart): Fix this.
+	},
 }
 
 func TestParseURI(t *testing.T) {
