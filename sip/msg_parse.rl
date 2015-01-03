@@ -23,6 +23,10 @@ func ParseMsgBytes(data []byte) (msg *Msg, err error) {
     return nil, nil
   }
   msg = new(Msg)
+  viap := &msg.Via
+  routep := &msg.Route
+  rroutep := &msg.RecordRoute
+  contactp := &msg.Contact
   cs := 0
   p := 0
   pe := len(data)
@@ -148,8 +152,9 @@ func ParseMsgBytes(data []byte) (msg *Msg, err error) {
     }
 
     action Contact {
-      msg.Contact, err = ParseAddr(string(data[mark:p]))
+      *contactp, err = ParseAddr(string(data[mark:p]))
       if err != nil { return nil, err }
+      for *contactp != nil { contactp = &(*contactp).Next }
     }
 
     action ContentDisposition {
@@ -255,8 +260,9 @@ func ParseMsgBytes(data []byte) (msg *Msg, err error) {
     }
 
     action RecordRoute {
-      msg.RecordRoute, err = ParseAddr(string(data[mark:p]))
+      *rroutep, err = ParseAddr(string(data[mark:p]))
       if err != nil { return nil, err }
+      for *rroutep != nil { rroutep = &(*rroutep).Next }
     }
 
     action ReferTo {
@@ -281,8 +287,9 @@ func ParseMsgBytes(data []byte) (msg *Msg, err error) {
     }
 
     action Route {
-      msg.Route, err = ParseAddr(string(data[mark:p]))
+      *routep, err = ParseAddr(string(data[mark:p]))
       if err != nil { return nil, err }
+      for *routep != nil { routep = &(*routep).Next }
     }
 
     action Server {
@@ -315,8 +322,9 @@ func ParseMsgBytes(data []byte) (msg *Msg, err error) {
     }
 
     action Via {
-      msg.Via, err = ParseVia(string(data[mark:p]))
+      *viap, err = ParseVia(string(data[mark:p]))
       if err != nil { return nil, err }
+      for *viap != nil { viap = &(*viap).Next }
     }
 
     action Warning {

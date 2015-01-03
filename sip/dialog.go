@@ -18,12 +18,12 @@ const (
 	DialogRinging    = 2
 	DialogAnswered   = 3
 	DialogHangup     = 4
-	resendInterval   = 200 * time.Millisecond
-	maxResends       = 2
 )
 
 var (
-	looseSignalling = flag.Bool("looseSignalling", true, "Permit SIP messages from servers other than the next hop.")
+	looseSignalling = flag.Bool("looseSignalling", false, "Permit SIP messages from servers other than the next hop.")
+	resendInterval  = flag.Int("resendInterval", 200, "Milliseconds between SIP resends.")
+	maxResends      = flag.Int("maxResends", 2, "Max SIP message retransmits.")
 )
 
 // Dialog represents an outbound SIP phone call.
@@ -163,15 +163,15 @@ func (dls *dialogState) popRoute() bool {
 		dls.lseq = dls.request.CSeq
 	}
 	dls.requestResends = 0
-	dls.requestTimer = time.After(resendInterval)
+	dls.requestTimer = time.After(duration(resendInterval))
 	return dls.send(dls.request)
 }
 
 func (dls *dialogState) connect() bool {
 	if dls.sock == nil || dls.sock.RemoteAddr().String() != dls.addr {
-		// Create socket through which we send messages. This socket is connected to
-		// the remote address so we can receive ICMP unavailable errors. It also
-		// allows us to discover the appropriate IP address for this machine.
+		// Create socket through which we send messages. This socket is connected
+		// to the remote address so we can receive ICMP unavailable errors. It also
+		// allows us to discover the appropriate IP address for the local machine.
 		dls.cleanupSock()
 		conn, err := net.Dial("udp", dls.addr)
 		if err != nil {
@@ -345,7 +345,7 @@ func (dls *dialogState) handleRequest(msg *Msg) bool {
 }
 
 func (dls *dialogState) checkSDP(msg *Msg) {
-	if msg.Headers["Content-Type"] == sdp.ContentType {
+	if msg.ContentType == sdp.ContentType {
 		ms, err := sdp.Parse(msg.Payload)
 		if err != nil {
 			log.Println("Bad SDP payload:", err)
@@ -382,12 +382,12 @@ func (dls *dialogState) resendRequest() bool {
 	if dls.request == nil {
 		return true
 	}
-	if dls.requestResends < maxResends {
+	if dls.requestResends < *maxResends {
 		if !dls.send(dls.request) {
 			return false
 		}
 		dls.requestResends++
-		dls.requestTimer = time.After(resendInterval)
+		dls.requestTimer = time.After(duration(resendInterval))
 	} else {
 		log.Printf("Timeout: %s (%s)", dls.sock.RemoteAddr(), dls.dest)
 		if !dls.popRoute() {
@@ -401,7 +401,7 @@ func (dls *dialogState) resendRequest() bool {
 func (dls *dialogState) sendResponse(msg *Msg) bool {
 	dls.response = msg
 	dls.responseResends = 0
-	dls.responseTimer = time.After(resendInterval)
+	dls.responseTimer = time.After(duration(resendInterval))
 	return dls.send(dls.response)
 }
 
@@ -409,12 +409,12 @@ func (dls *dialogState) resendResponse() bool {
 	if dls.response == nil {
 		return true
 	}
-	if dls.responseResends < maxResends {
+	if dls.responseResends < *maxResends {
 		if !dls.send(dls.response) {
 			return false
 		}
 		dls.responseResends++
-		dls.responseTimer = time.After(resendInterval)
+		dls.responseTimer = time.After(duration(resendInterval))
 	} else {
 		// TODO(jart): If resending INVITE 200 OK, start sending BYE.
 		log.Printf("Timeout sending response: %s (%s)", dls.sock.RemoteAddr(), dls.dest)

@@ -166,6 +166,95 @@ var msgTests = []msgTest{
 	},
 
 	msgTest{
+		s: "SIP/2.0 200 OK\r\n" +
+			"Via: SIP/2.0/UDP 1.2.3.4:55345;branch=z9hG4bK-d1d81e94a099\r\n" +
+			"From: <sip:+12126660420@fl.gg>;tag=68e274dbd83b\r\n" +
+			"To: <sip:+12125650666@fl.gg>;tag=gK0cacc73a\r\n" +
+			"Call-ID: 042736d4-0bd9-4681-ab86-7321443ff58a\r\n" +
+			"CSeq: 31109 INVITE\r\n" +
+			"Record-Route: <sip:216.115.69.133:5060;lr>\r\n" +
+			"Record-Route: <sip:216.115.69.144:5060;lr>\r\n" +
+			"Contact: <sip:+12125650666@4.55.22.99:5060>\r\n" +
+			"Content-Type: application/sdp\r\n" +
+			"Content-Length:  168\r\n" +
+			"\r\n" +
+			"v=0\r\n" +
+			"o=- 24294 7759 IN IP4 4.55.22.66\r\n" +
+			"s=-\r\n" +
+			"c=IN IP4 4.55.22.66\r\n" +
+			"t=0 0\r\n" +
+			"m=audio 19580 RTP/AVP 0 101\r\n" +
+			"a=rtpmap:101 telephone-event/8000\r\n" +
+			"a=fmtp:101 0-15\r\n" +
+			"a=maxptime:20\r\n",
+		msg: sip.Msg{
+			VersionMajor: 2,
+			Status:       200,
+			Phrase:       "OK",
+			CallID:       "042736d4-0bd9-4681-ab86-7321443ff58a",
+			CSeq:         31109,
+			CSeqMethod:   "INVITE",
+			ContentType:  "application/sdp",
+			Via: &sip.Via{
+				Version: "2.0",
+				Proto:   "UDP",
+				Host:    "1.2.3.4",
+				Port:    55345,
+				Params:  sip.Params{"branch": "z9hG4bK-d1d81e94a099"},
+			},
+			From: &sip.Addr{
+				Uri: &sip.URI{
+					Scheme: "sip",
+					User:   "+12126660420",
+					Host:   "fl.gg",
+				},
+				Params: sip.Params{"tag": "68e274dbd83b"},
+			},
+			To: &sip.Addr{
+				Uri: &sip.URI{
+					Scheme: "sip",
+					User:   "+12125650666",
+					Host:   "fl.gg",
+				},
+				Params: sip.Params{"tag": "gK0cacc73a"},
+			},
+			Contact: &sip.Addr{
+				Uri: &sip.URI{
+					Scheme: "sip",
+					User:   "+12125650666",
+					Host:   "4.55.22.99",
+					Port:   5060,
+				},
+			},
+			RecordRoute: &sip.Addr{
+				Uri: &sip.URI{
+					Scheme: "sip",
+					Host:   "216.115.69.133",
+					Port:   5060,
+					Params: sip.Params{"lr": ""},
+				},
+				Next: &sip.Addr{
+					Uri: &sip.URI{
+						Scheme: "sip",
+						Host:   "216.115.69.144",
+						Port:   5060,
+						Params: sip.Params{"lr": ""},
+					},
+				},
+			},
+			Payload: "v=0\r\n" +
+				"o=- 24294 7759 IN IP4 4.55.22.66\r\n" +
+				"s=-\r\n" +
+				"c=IN IP4 4.55.22.66\r\n" +
+				"t=0 0\r\n" +
+				"m=audio 19580 RTP/AVP 0 101\r\n" +
+				"a=rtpmap:101 telephone-event/8000\r\n" +
+				"a=fmtp:101 0-15\r\n" +
+				"a=maxptime:20\r\n",
+		},
+	},
+
+	msgTest{
 		name: "INVITE",
 		s: "INVITE sip:10.11.34.37 SIP/2.0\r\n" +
 			"via: SIP/2.0/UDP 10.11.34.37:59516;rport;branch=z9hG4bKS308QB9UUpNyD\r\n" +
@@ -294,6 +383,9 @@ func TestParseMsg(t *testing.T) {
 			}
 			if !reflect.DeepEqual(test.msg.Contact, msg.Contact) {
 				t.Errorf("Contact:\n%#v !=\n%#v", test.msg.Contact, msg.Contact)
+			}
+			if !reflect.DeepEqual(test.msg.RecordRoute, msg.RecordRoute) {
+				t.Errorf("RecordRoute:\n%#v !=\n%#v", test.msg.RecordRoute, msg.RecordRoute)
 			}
 		}
 	}

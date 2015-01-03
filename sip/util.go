@@ -4,7 +4,12 @@ import (
 	"github.com/jart/gosip/util"
 	"strconv"
 	"strings"
+	"time"
 )
+
+func duration(ms *int) time.Duration {
+	return time.Duration(*ms) * time.Millisecond
+}
 
 func or5060(port uint16) uint16 {
 	if port == 0 {
