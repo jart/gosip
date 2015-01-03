@@ -50,7 +50,7 @@ func NewTransport(contact *Addr) (tp *Transport, err error) {
 			Port: uint16(addr.Port),
 		},
 	}
-	go ReceiveMessages(contact, sock, c, e)
+	go ReceiveMessages(sock, c, e)
 	return
 }
 

@@ -6,6 +6,13 @@ import (
 	"strings"
 )
 
+func or5060(port uint16) uint16 {
+	if port == 0 {
+		return 5060
+	}
+	return port
+}
+
 func portstr(port uint16) string {
 	return strconv.FormatInt(int64(port), 10)
 }

@@ -85,7 +85,6 @@ func NewBye(invite, remote *Msg, lseq *int) *Msg {
 	return &Msg{
 		Method:     MethodBye,
 		Request:    remote.Contact.Uri,
-		Via:        invite.Via.Copy().Branch(),
 		From:       invite.From,
 		To:         remote.To,
 		CallID:     invite.CallID,

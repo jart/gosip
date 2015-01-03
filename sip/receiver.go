@@ -7,8 +7,11 @@ import (
 	"time"
 )
 
-func ReceiveMessages(contact *Addr, sock *net.UDPConn, c chan<- *Msg, e chan<- error) {
+func ReceiveMessages(sock *net.UDPConn, c chan<- *Msg, e chan<- error) {
 	buf := make([]byte, 2048)
+	laddr := sock.LocalAddr().(*net.UDPAddr)
+	lhost := laddr.IP.String()
+	lport := uint16(laddr.Port)
 	for {
 		amt, addr, err := sock.ReadFromUDP(buf)
 		if err != nil {
@@ -27,10 +30,10 @@ func ReceiveMessages(contact *Addr, sock *net.UDPConn, c chan<- *Msg, e chan<- e
 		}
 		addReceived(msg, addr)
 		addTimestamp(msg, ts)
-		if contact.CompareHostPort(msg.Route) {
+		if msg.Route != nil && msg.Route.Uri.Host == lhost && or5060(msg.Route.Uri.Port) == lport {
 			msg.Route = msg.Route.Next
 		}
-		fixMessagesFromStrictRouters(contact, msg)
+		fixMessagesFromStrictRouters(lhost, lport, msg)
 		c <- msg
 	}
 	close(c)
@@ -51,8 +54,12 @@ func addTimestamp(msg *Msg, ts time.Time) {
 
 // RFC3261 16.4 Route Information Preprocessing
 // RFC3261 16.12.1.2: Traversing a Strict-Routing Proxy
-func fixMessagesFromStrictRouters(contacts *Addr, msg *Msg) {
-	if msg.Request != nil && msg.Request.Params.Has("lr") && msg.Route != nil && contacts.Uri.CompareHostPort(msg.Request) {
+func fixMessagesFromStrictRouters(lhost string, lport uint16, msg *Msg) {
+	if msg.Request != nil &&
+		msg.Request.Params.Has("lr") &&
+		msg.Route != nil &&
+		msg.Request.Host == lhost &&
+		or5060(msg.Request.Port) == lport {
 		var oldReq, newReq *URI
 		if msg.Route.Next == nil {
 			oldReq, newReq = msg.Request, msg.Route.Uri

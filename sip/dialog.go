@@ -14,7 +14,6 @@ import (
 )
 
 const (
-	DialogInit       = 0
 	DialogProceeding = 1
 	DialogRinging    = 2
 	DialogAnswered   = 3
@@ -24,7 +23,7 @@ const (
 )
 
 var (
-	looseSignalling = flag.Bool("looseSignalling", false, "Permit SIP messages from servers other than the next hop.")
+	looseSignalling = flag.Bool("looseSignalling", true, "Permit SIP messages from servers other than the next hop.")
 )
 
 // Dialog represents an outbound SIP phone call.
@@ -87,7 +86,7 @@ func NewDialog(invite *Msg) (dl *Dialog, err error) {
 func (dls *dialogState) run() {
 	defer dls.sabotage()
 	defer dls.cleanup()
-	if !dls.sendRequest(dls.invite, true) {
+	if !dls.sendRequest(dls.invite) {
 		return
 	}
 	for {
@@ -129,12 +128,13 @@ func (dls *dialogState) run() {
 	}
 }
 
-func (dls *dialogState) sendRequest(request *Msg, wantSRV bool) bool {
+func (dls *dialogState) sendRequest(request *Msg) bool {
 	host, port, err := RouteMessage(nil, nil, request)
 	if err != nil {
 		dls.errChan <- err
 		return false
 	}
+	wantSRV := dls.state < DialogAnswered
 	routes, err := RouteAddress(host, port, wantSRV)
 	if err != nil {
 		dls.errChan <- err
@@ -156,73 +156,69 @@ func (dls *dialogState) popRoute() bool {
 	if !dls.connect() {
 		return dls.popRoute()
 	}
-	PopulateMessage(nil, nil, dls.request)
-	dls.lseq = dls.request.CSeq
+	dls.populate(dls.request)
+	if dls.state < DialogAnswered {
+		dls.rseq = 0
+		dls.remote = nil
+		dls.lseq = dls.request.CSeq
+	}
 	dls.requestResends = 0
 	dls.requestTimer = time.After(resendInterval)
 	return dls.send(dls.request)
 }
 
 func (dls *dialogState) connect() bool {
-	if dls.sock != nil && dls.sock.RemoteAddr().String() == dls.addr {
-		return true
-	}
+	if dls.sock == nil || dls.sock.RemoteAddr().String() != dls.addr {
+		// Create socket through which we send messages. This socket is connected to
+		// the remote address so we can receive ICMP unavailable errors. It also
+		// allows us to discover the appropriate IP address for this machine.
+		dls.cleanupSock()
+		conn, err := net.Dial("udp", dls.addr)
+		if err != nil {
+			log.Printf("net.Dial(udp, %s) failed: %s", dls.addr, err)
+			return false
+		}
+		dls.sock = conn.(*net.UDPConn)
+		sockMsgs := make(chan *Msg)
+		sockErrs := make(chan error)
+		dls.sockMsgs = sockMsgs
+		dls.sockErrs = sockErrs
+		go ReceiveMessages(dls.sock, sockMsgs, sockErrs)
 
-	// Create socket through which we send messages. This socket is connected to
-	// the remote address so we can receive ICMP unavailable errors. It also
-	// allows us to discover the appropriate IP address for this machine.
-	dls.cleanupSock()
-	conn, err := net.Dial("udp", dls.addr)
-	if err != nil {
-		log.Printf("net.Dial(udp, %s) failed: %s", dls.addr, err)
-		return false
-	}
-	dls.sock = conn.(*net.UDPConn)
-	dls.rseq = 0
-	dls.remote = nil
-	laddr := conn.LocalAddr().(*net.UDPAddr)
-	lhost := laddr.IP.String()
-	lport := uint16(laddr.Port)
-	dls.request.Via = &Via{
-		Host:   lhost,
-		Port:   lport,
-		Params: Params{"branch": util.GenerateBranch()},
-	}
-	sockMsgs := make(chan *Msg)
-	sockErrs := make(chan error)
-	dls.sockMsgs = sockMsgs
-	dls.sockErrs = sockErrs
-	go ReceiveMessages(dls.request.Contact, dls.sock, sockMsgs, sockErrs)
-
-	// But a connected UDP socket can only receive packets from a single host.
-	// SIP signalling paths can change depending on the environment, so we need
-	// to be able to accept packets from anyone.
-	if *looseSignalling {
-		if dls.csock == nil {
+		// But a connected UDP socket can only receive packets from a single host.
+		// SIP signalling paths can change depending on the environment, so we need
+		// to be able to accept packets from anyone.
+		if dls.csock == nil && *looseSignalling {
 			cconn, err := net.ListenPacket("udp", ":0")
 			if err != nil {
 				log.Printf("net.ListenPacket(udp, :0) failed: %s", err)
 				return false
 			}
 			dls.csock = cconn.(*net.UDPConn)
-			dls.request.Contact = &Addr{
-				Uri: &URI{
-					Scheme: "sip",
-					Host:   lhost,
-					Port:   uint16(dls.csock.LocalAddr().(*net.UDPAddr).Port),
-					Params: Params{"transport": "udp"},
-				},
-			}
-		} else {
-			dls.request.Contact.Uri.Host = lhost
+			csockMsgs := make(chan *Msg)
+			csockErrs := make(chan error)
+			dls.csockMsgs = csockMsgs
+			dls.csockErrs = csockErrs
+			go ReceiveMessages(dls.csock, csockMsgs, csockErrs)
 		}
-		csockMsgs := make(chan *Msg)
-		csockErrs := make(chan error)
-		dls.csockMsgs = csockMsgs
-		dls.csockErrs = csockErrs
-		go ReceiveMessages(dls.request.Contact, dls.csock, csockMsgs, csockErrs)
-	} else {
-		dls.request.Contact = &Addr{
+	}
+	return true
+}
+
+func (dls *dialogState) populate(msg *Msg) {
+	laddr := dls.sock.LocalAddr().(*net.UDPAddr)
+	lhost := laddr.IP.String()
+	lport := uint16(laddr.Port)
+	msg.Via = &Via{
+		Host:   lhost,
+		Port:   lport,
+		Params: Params{"branch": util.GenerateBranch()},
+	}
+	if msg.Contact == nil {
+		if dls.csock != nil {
+			lport = uint16(dls.csock.LocalAddr().(*net.UDPAddr).Port)
+		}
+		msg.Contact = &Addr{
 			Uri: &URI{
 				Scheme: "sip",
 				Host:   lhost,
@@ -231,8 +227,7 @@ func (dls *dialogState) connect() bool {
 			},
 		}
 	}
-
-	return true
+	PopulateMessage(nil, nil, msg)
 }
 
 func (dls *dialogState) handleMessage(msg *Msg) bool {
@@ -300,7 +295,7 @@ func (dls *dialogState) handleResponse(msg *Msg) bool {
 	case StatusMovedPermanently, StatusMovedTemporarily:
 		dls.invite.Request = msg.Contact.Uri
 		dls.invite.Route = nil
-		return dls.sendRequest(dls.invite, true)
+		return dls.sendRequest(dls.invite)
 	default:
 		if msg.Status > StatusOK {
 			dls.errChan <- &ResponseError{Msg: msg}
@@ -435,7 +430,7 @@ func (dls *dialogState) sendHangup() bool {
 	case DialogProceeding, DialogRinging:
 		return dls.send(NewCancel(dls.invite))
 	case DialogAnswered:
-		return dls.sendRequest(NewBye(dls.invite, dls.remote, &dls.lseq), false)
+		return dls.sendRequest(NewBye(dls.invite, dls.remote, &dls.lseq))
 	case DialogHangup:
 		panic("Why didn't the event loop break?")
 	default:
