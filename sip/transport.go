@@ -11,20 +11,10 @@ import (
 
 // Transport sends and receives SIP messages over UDP with stateless routing.
 type Transport struct {
-
-	// Channel to which received SIP messages and errors are published.
-	C <-chan *Msg
-	E <-chan error
-
-	// Underlying UDP socket.
-	Sock *net.UDPConn
-
-	// When you send an outbound request (not a response) you have to set the via
-	// tag: ``msg.Via = tp.Via.Copy().Branch().SetNext(msg.Via)``. The details of
-	// the branch parameter... are tricky.
-	Via *Via
-
-	// Contact that gets put in outbound SIP messages.
+	C       <-chan *Msg
+	E       <-chan error
+	Sock    *net.UDPConn
+	Via     *Via
 	Contact *Addr
 }
 
@@ -67,7 +57,7 @@ func NewTransport(contact *Addr) (tp *Transport, err error) {
 // Sends a SIP message.
 func (tp *Transport) Send(msg *Msg) error {
 	PopulateMessage(tp.Via, tp.Contact, msg)
-	msg, host, port, err := RouteMessage(tp.Via, tp.Contact, msg)
+	host, port, err := RouteMessage(tp.Via, tp.Contact, msg)
 	if err != nil {
 		return err
 	}

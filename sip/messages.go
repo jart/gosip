@@ -7,8 +7,8 @@ import (
 )
 
 const (
-	GosipUserAgent = "gosip/1.o"
-	GosipAllow     = MethodInvite + ", " + MethodAck + ", " + MethodCancel + ", " + MethodBye + ", " + MethodOptions
+	GosipUA    = "gosip/0.1"
+	GosipAllow = "INVITE, ACK, CANCEL, BYE, OPTIONS"
 )
 
 func NewRequest(tp *Transport, method string, to, from *Addr) *Msg {
@@ -21,13 +21,12 @@ func NewRequest(tp *Transport, method string, to, from *Addr) *Msg {
 		CallID:     util.GenerateCallID(),
 		CSeq:       util.GenerateCSeq(),
 		CSeqMethod: method,
-		Headers:    DefaultHeaders(),
+		UserAgent:  GosipUA,
 	}
 }
 
 func NewResponse(msg *Msg, status int) *Msg {
 	return &Msg{
-		IsResponse:  true,
 		Status:      status,
 		Phrase:      Phrase(status),
 		Via:         msg.Via,
@@ -37,28 +36,31 @@ func NewResponse(msg *Msg, status int) *Msg {
 		CSeq:        msg.CSeq,
 		CSeqMethod:  msg.CSeqMethod,
 		RecordRoute: msg.RecordRoute,
-		Headers:     DefaultHeaders(),
+		UserAgent:   GosipUA,
+		Allow:       GosipAllow,
 	}
 }
 
 // http://tools.ietf.org/html/rfc3261#section-17.1.1.3
-func NewAck(original, msg *Msg) *Msg {
+func NewAck(msg, invite *Msg) *Msg {
 	return &Msg{
-		Method:     MethodAck,
-		Request:    msg.Contact.Uri,
-		Via:        original.Via.Copy().SetNext(nil),
-		From:       msg.From,
-		To:         msg.To,
-		CallID:     original.CallID,
-		CSeq:       original.CSeq,
-		CSeqMethod: "ACK",
-		Route:      msg.RecordRoute.Reversed(),
-		Headers:    DefaultHeaders(),
+		Method:             MethodAck,
+		Request:            msg.Contact.Uri,
+		From:               msg.From,
+		To:                 msg.To,
+		Via:                msg.Via.Detach(),
+		CallID:             msg.CallID,
+		CSeq:               msg.CSeq,
+		CSeqMethod:         "ACK",
+		Route:              msg.RecordRoute.Reversed(),
+		Authorization:      invite.Authorization,
+		ProxyAuthorization: invite.ProxyAuthorization,
+		UserAgent:          GosipUA,
 	}
 }
 
 func NewCancel(invite *Msg) *Msg {
-	if invite.IsResponse || invite.Method != MethodInvite {
+	if invite.IsResponse() || invite.Method != MethodInvite {
 		log.Printf("Can't CANCEL anything non-INVITE:\n%s", invite)
 	}
 	return &Msg{
@@ -71,39 +73,43 @@ func NewCancel(invite *Msg) *Msg {
 		CSeq:       invite.CSeq,
 		CSeqMethod: MethodCancel,
 		Route:      invite.Route,
-		Headers:    DefaultHeaders(),
 	}
 }
 
-func NewBye(invite, last *Msg) *Msg {
+func NewBye(invite, remote *Msg, lseq *int) *Msg {
+	if lseq == nil {
+		lseq = new(int)
+		*lseq = invite.CSeq
+	}
+	*lseq++
 	return &Msg{
 		Method:     MethodBye,
-		Request:    last.Contact.Uri,
-		Via:        invite.Via,
+		Request:    remote.Contact.Uri,
+		Via:        invite.Via.Copy().Branch(),
 		From:       invite.From,
-		To:         last.To,
+		To:         remote.To,
 		CallID:     invite.CallID,
-		CSeq:       invite.CSeq + 1,
+		CSeq:       *lseq,
 		CSeqMethod: MethodBye,
-		Route:      last.RecordRoute.Reversed(),
-		Headers:    DefaultHeaders(),
+		Route:      remote.RecordRoute.Reversed(),
 	}
 }
 
 // Returns true if `resp` can be considered an appropriate response to `msg`.
 // Do not use for ACKs.
-func ResponseMatch(msg, resp *Msg) bool {
-	return (resp.IsResponse &&
-		resp.CSeq == msg.CSeq &&
-		resp.CSeqMethod == msg.Method &&
-		resp.Via.Last().CompareHostPort(msg.Via))
+func ResponseMatch(req, rsp *Msg) bool {
+	return (rsp.IsResponse() &&
+		rsp.CSeq == req.CSeq &&
+		rsp.CSeqMethod == req.Method &&
+		rsp.Via.Last().CompareHostPort(req.Via) &&
+		rsp.Via.Last().CompareBranch(req.Via))
 }
 
 // Returns true if `ack` can be considered an appropriate response to `msg`.
 // We don't enforce a matching Via because some VoIP software will generate a
 // new branch for ACKs.
 func AckMatch(msg, ack *Msg) bool {
-	return (!ack.IsResponse &&
+	return (!ack.IsResponse() &&
 		ack.Method == MethodAck &&
 		ack.CSeq == msg.CSeq &&
 		ack.CSeqMethod == MethodAck &&
@@ -114,13 +120,6 @@ func AttachSDP(msg *Msg, ms *sdp.SDP) {
 	if msg.Headers == nil {
 		msg.Headers = Headers{}
 	}
-	msg.Headers["Content-Type"] = sdp.ContentType
+	msg.ContentType = sdp.ContentType
 	msg.Payload = ms.String()
-}
-
-func DefaultHeaders() Headers {
-	return Headers{
-		"User-Agent": GosipUserAgent,
-		"Allow":      GosipAllow,
-	}
 }

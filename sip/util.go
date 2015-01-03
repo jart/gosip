@@ -94,3 +94,26 @@ func unhex(b byte) byte {
 	}
 	return 0
 }
+
+func appendCollapse(buf []byte, amt int, fc byte) int {
+	switch fc {
+	case ' ', '\t', '\r', '\n':
+		if amt == 0 || buf[amt-1] != ' ' {
+			buf[amt] = ' '
+			amt++
+		}
+	default:
+		buf[amt] = fc
+		amt++
+	}
+	return amt
+}
+
+func appendLower(buf []byte, amt int, fc byte) int {
+	if 'A' <= fc && fc <= 'Z' {
+		buf[amt] = fc + 0x20
+	} else {
+		buf[amt] = fc
+	}
+	return amt + 1
+}

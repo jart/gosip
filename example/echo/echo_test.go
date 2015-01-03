@@ -204,11 +204,9 @@ func TestCallToEchoApp(t *testing.T) {
 				Port:   uint16(laddr.Port),
 			},
 		},
-		Headers: sip.Headers{
-			"Content-Type": "application/sdp",
-			"User-Agent":   "gosip/1.o",
-		},
-		Payload: sdp.New(rtpaddr, sdp.ULAWCodec, sdp.DTMFCodec).String(),
+		ContentType: "application/sdp",
+		UserAgent:   "gosip/1.o",
+		Payload:     sdp.New(rtpaddr, sdp.ULAWCodec, sdp.DTMFCodec).String(),
 	}
 
 	// Turn invite message into a packet and send via UDP socket.
@@ -231,7 +229,7 @@ func TestCallToEchoApp(t *testing.T) {
 	if err != nil {
 		t.Fatal("parse 100 trying", err)
 	}
-	if !msg.IsResponse || msg.Status != 100 || msg.Phrase != "Trying" {
+	if !msg.IsResponse() || msg.Status != 100 || msg.Phrase != "Trying" {
 		t.Fatal("didn't get 100 trying :[")
 	}
 
@@ -246,10 +244,10 @@ func TestCallToEchoApp(t *testing.T) {
 	if err != nil {
 		t.Fatal("parse 200 ok:", err)
 	}
-	if !msg.IsResponse || msg.Status != 200 || msg.Phrase != "OK" {
+	if !msg.IsResponse() || msg.Status != 200 || msg.Phrase != "OK" {
 		t.Fatal("wanted 200 ok but got:", msg.Status, msg.Phrase)
 	}
-	if msg.Payload == "" || msg.Headers["Content-Type"] != "application/sdp" {
+	if msg.Payload == "" || msg.ContentType != "application/sdp" {
 		t.Fatal("200 ok didn't have sdp payload")
 	}
 
@@ -350,7 +348,7 @@ func TestCallToEchoApp(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if !msg.IsResponse || msg.Status != 200 || msg.Phrase != "OK" {
+	if !msg.IsResponse() || msg.Status != 200 || msg.Phrase != "OK" {
 		t.Fatal("wanted bye response 200 ok but got:", msg.Status, msg.Phrase)
 	}
 }

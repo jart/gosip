@@ -81,7 +81,7 @@ func (via *Via) Append(b *bytes.Buffer) error {
 	return nil
 }
 
-// deep copies a new Via object
+// Copy returns a deep copy of via.
 func (via *Via) Copy() *Via {
 	if via == nil {
 		return nil
@@ -96,19 +96,21 @@ func (via *Via) Copy() *Via {
 	return res
 }
 
-// Sets newly generated branch ID and returns self.
+// Branch mutates via with a newly generated branch ID.
 func (via *Via) Branch() *Via {
 	via.Params["branch"] = util.GenerateBranch()
 	return via
 }
 
-// Sets Next field and returns self.
-func (via *Via) SetNext(next *Via) *Via {
-	via.Next = next
-	return via
+// Detach returns a shallow copy of via with Next set to nil.
+func (via *Via) Detach() *Via {
+	res := new(Via)
+	*res = *via
+	res.Next = nil
+	return res
 }
 
-// returns pointer to last via in linked list.
+// Last returns pointer to last via in linked list.
 func (via *Via) Last() *Via {
 	if via != nil {
 		for ; via.Next != nil; via = via.Next {

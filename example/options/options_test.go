@@ -86,7 +86,7 @@ func TestOptions(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	if !msg.IsResponse || msg.Status != 200 || msg.Phrase != "OK" {
+	if !msg.IsResponse() || msg.Status != 200 || msg.Phrase != "OK" {
 		t.Error("Not OK :[")
 	}
 	if options.CallID != msg.CallID {

@@ -75,9 +75,9 @@ loop:
 				t.Fatal("RTP send failed:", err)
 			}
 		case msg = <-tp.C:
-			if msg.IsResponse {
+			if msg.IsResponse() {
 				if msg.Status >= sip.StatusOK && msg.CSeq == invite.CSeq {
-					err = tp.Send(sip.NewAck(invite, msg))
+					err = tp.Send(sip.NewAck(msg, invite))
 					if err != nil {
 						t.Fatal("SIP send failed:", err)
 					}
@@ -108,7 +108,7 @@ loop:
 					t.Errorf("Got %d %s", msg.Status, msg.Phrase)
 					return
 				}
-				if msg.Headers["Content-Type"] == sdp.ContentType {
+				if msg.ContentType == sdp.ContentType {
 					log.Printf("Establishing media session")
 					ms, err := sdp.Parse(msg.Payload)
 					if err != nil {
@@ -138,7 +138,7 @@ loop:
 			resendTimer = time.After(resendInterval)
 		case <-deathTimer:
 			if answered {
-				resend = sip.NewBye(invite, msg)
+				resend = sip.NewBye(invite, msg, nil)
 			} else {
 				resend = sip.NewCancel(invite)
 			}

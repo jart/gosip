@@ -5,11 +5,9 @@ package sip
 import (
 	"bytes"
 	"errors"
-	"fmt"
 	"log"
 	"net"
 	"strconv"
-	"strings"
 )
 
 type Headers map[string]string
@@ -17,37 +15,81 @@ type Headers map[string]string
 // Msg represents a SIP message. This can either be a request or a response.
 // These fields are never nil unless otherwise specified.
 type Msg struct {
-	// Special non-SIP fields.
-	SourceAddr *net.UDPAddr // Set by transport layer as received address
-
 	// Fields that aren't headers.
-	IsResponse bool   // This is a response (like 404 Not Found)
-	Method     string // Indicates type of request (if request)
-	Request    *URI   // dest URI (nil if response)
-	Status     int    // Indicates happiness of response (if response)
-	Phrase     string // Explains happiness of response (if response)
-	Payload    string // Stuff that comes after two line breaks
+	VersionMajor uint8
+	VersionMinor uint8
+	Method       string // Indicates type of request (if request)
+	Request      *URI   // dest URI (nil if response)
+	Status       int    // Indicates happiness of response (if response)
+	Phrase       string // Explains happiness of response (if response)
+	Payload      string // Stuff that comes after two line breaks
 
-	// Mandatory headers.
+	// Special non-SIP fields.
+	SourceAddr *net.UDPAddr // Set by transport layer as received address.
+
+	// Important headers should be further up in the struct.
+	From        *Addr  // Logical sender of message
+	To          *Addr  // Logical destination of message
 	Via         *Via   // Linked list of agents traversed (must have one)
 	Route       *Addr  // Used for goose routing and loose routing
 	RecordRoute *Addr  // Used for loose routing
-	From        *Addr  // Logical sender of message
-	To          *Addr  // Logical destination of message
+	Contact     *Addr  // Where we send response packets or nil
 	CallID      string // Identifies call from invite to bye
 	CSeq        int    // Counter for network packet ordering
 	CSeqMethod  string // Helps with matching to orig message
+	MaxForwards int    // 0 has context specific meaning
+	UserAgent   string
+	ContentType string
 
-	// Convenience headers.
-	MaxForwards int   // 0 has context specific meaning
-	MinExpires  int   // Registrars need this when responding
-	Expires     int   // Seconds registration should expire
-	Paid        *Addr // P-Asserted-Identity or nil (used for PSTN ANI)
-	Rpid        *Addr // Remote-Party-Id or nil
-	Contact     *Addr // Where we send response packets or nil
+	// All the other RFC 3261 headers in plus some extras.
+	Accept             string
+	AcceptContact      string
+	AcceptEncoding     string
+	AcceptLanguage     string
+	AlertInfo          string
+	Allow              string
+	AllowEvents        string
+	AuthenticationInfo string
+	Authorization      string
+	CallInfo           string
+	ContentDisposition string
+	ContentEncoding    string
+	ContentLanguage    string
+	Date               string
+	ErrorInfo          string
+	Event              string
+	Expires            int // Seconds registration should expire.
+	InReplyTo          string
+	MIMEVersion        string
+	MinExpires         int // Registrars need this when responding
+	Organization       string
+	PAssertedIdentity  *Addr // P-Asserted-Identity or nil (used for PSTN ANI)
+	Priority           string
+	ProxyAuthenticate  string
+	ProxyAuthorization string
+	ProxyRequire       string
+	ReferTo            string
+	ReferredBy         string
+	RemotePartyID      *Addr // Evil twin of P-Asserted-Identity.
+	ReplyTo            string
+	Require            string
+	RetryAfter         string
+	Server             string
+	Subject            string
+	Supported          string
+	Timestamp          string
+	Unsupported        string
+	WWWAuthenticate    string
+	Warning            string
 
-	// All the other headers (never nil)
+	// Extension headers.
 	Headers Headers
+}
+
+//go:generate ragel -Z -G2 -o msg_parse.go msg_parse.rl
+
+func (msg *Msg) IsResponse() bool {
+	return msg.Method == ""
 }
 
 func (msg *Msg) String() string {
@@ -62,182 +104,31 @@ func (msg *Msg) String() string {
 	return b.String()
 }
 
-// Parses a SIP message into a data structure. This takes ~70 µs on average.
-func ParseMsg(packet string) (msg *Msg, err error) {
-	msg = new(Msg)
-	if packet == "" {
-		return nil, errors.New("Empty msg")
-	}
-	if n := strings.Index(packet, "\r\n\r\n"); n > 0 {
-		packet, msg.Payload = packet[0:n], packet[n+4:]
-	}
-	lines := strings.Split(packet, "\r\n")
-	if lines == nil || len(lines) < 2 {
-		return nil, errors.New("Too few lines")
-	}
-	var k, v string
-	var okVia, okTo, okFrom, okCallID, okComputer bool
-	err = msg.parseFirstLine(lines[0])
-	if err != nil {
-		return nil, err
-	}
-	hdrs := lines[1:]
-	msg.Headers = make(map[string]string, len(hdrs))
-	msg.MaxForwards = 70
-	viap := &msg.Via
-	contactp := &msg.Contact
-	routep := &msg.Route
-	rroutep := &msg.RecordRoute
-	for _, hdr := range hdrs {
-		if hdr == "" {
-			continue
-		}
-		if hdr[0] == ' ' || hdr[0] == '\t' {
-			v = strings.Trim(hdr, "\t ") // Line continuation.
-		} else {
-			if i := strings.Index(hdr, ": "); i > 0 {
-				k, v = hdr[0:i], hdr[i+2:]
-				k = strings.Trim(k, " \t")
-				v = strings.Trim(v, " \t")
-				k = uncompactHeader(k)
-				if k == "" || v == "" {
-					log.Println("Blank header found:", hdr)
-				}
-			} else {
-				log.Println("Header missing delimiter:", hdr)
-				continue
-			}
-		}
-		switch strings.ToLower(k) {
-		case "call-id":
-			okCallID = true
-			msg.CallID = v
-		case "via":
-			okVia = true
-			*viap, err = ParseVia(v)
-			if err != nil {
-				return nil, errors.New("Bad Via header: " + err.Error())
-			} else {
-				viap = &(*viap).Next
-			}
-		case "to":
-			okTo = true
-			msg.To, err = ParseAddr(v)
-			if err != nil {
-				return nil, errors.New("Bad To header: " + err.Error())
-			}
-		case "from":
-			okFrom = true
-			msg.From, err = ParseAddr(v)
-			if err != nil {
-				return nil, errors.New("Bad From header: " + err.Error())
-			}
-		case "contact":
-			*contactp, err = ParseAddr(v)
-			if err != nil {
-				return nil, errors.New("Bad Contact header: " + err.Error())
-			} else {
-				contactp = &(*contactp).Last().Next
-			}
-		case "cseq":
-			okComputer = false
-			if n := strings.Index(v, " "); n > 0 {
-				sseq, method := v[0:n], v[n+1:]
-				if seq, err := strconv.Atoi(sseq); err == nil {
-					msg.CSeq, msg.CSeqMethod = seq, method
-					okComputer = true
-				}
-			}
-			if !okComputer {
-				return nil, errors.New("Bad CSeq Header")
-			}
-		case "content-length":
-			if cl, err := strconv.Atoi(v); err == nil {
-				if cl != len(msg.Payload) {
-					return nil, errors.New(fmt.Sprintf(
-						"Content-Length (%d) differs from payload length (%d)",
-						cl, len(msg.Payload)))
-				}
-			} else {
-				return nil, errors.New("Bad Content-Length header")
-			}
-		case "expires":
-			if cl, err := strconv.Atoi(v); err == nil && cl >= 0 {
-				msg.Expires = cl
-			} else {
-				return nil, errors.New("Bad Expires header")
-			}
-		case "min-expires":
-			if cl, err := strconv.Atoi(v); err == nil && cl > 0 {
-				msg.MinExpires = cl
-			} else {
-				return nil, errors.New("Bad Min-Expires header")
-			}
-		case "max-forwards":
-			if cl, err := strconv.Atoi(v); err == nil && cl > 0 {
-				msg.MaxForwards = cl
-			} else {
-				return nil, errors.New("Bad Max-Forwards header")
-			}
-		case "route":
-			*routep, err = ParseAddr(v)
-			if err != nil {
-				return nil, errors.New("Bad Route header: " + err.Error())
-			} else {
-				routep = &(*routep).Last().Next
-			}
-		case "record-route":
-			*rroutep, err = ParseAddr(v)
-			if err != nil {
-				return nil, errors.New("Bad Record-Route header: " + err.Error())
-			} else {
-				rroutep = &(*rroutep).Last().Next
-			}
-		case "p-asserted-identity":
-			msg.Paid, err = ParseAddr(v)
-			if err != nil {
-				return nil, errors.New("Bad P-Asserted-Identity header: " + err.Error())
-			}
-		case "remote-party-id":
-			msg.Rpid, err = ParseAddr(v)
-			if err != nil {
-				return nil, errors.New("Bad Remote-Party-ID header: " + err.Error())
-			}
-		default:
-			msg.Headers[k] = v
-		}
-	}
-	if !okVia || !okTo || !okFrom || !okCallID || !okComputer {
-		return nil, errors.New("Missing mandatory headers")
-	}
-	return
-}
-
 func (msg *Msg) Copy() *Msg {
 	if msg == nil {
 		return nil
 	}
 	res := new(Msg)
 	*res = *msg
+	res.Request = msg.Request.Copy()
 	res.To = msg.To.Copy()
 	res.From = msg.From.Copy()
 	res.Via = msg.Via.Copy()
-	res.Paid = msg.Paid.Copy()
-	res.Rpid = msg.Rpid.Copy()
+	res.PAssertedIdentity = msg.PAssertedIdentity.Copy()
+	res.RemotePartyID = msg.RemotePartyID.Copy()
 	res.Route = msg.Route.Copy()
-	res.Request = msg.Request.Copy()
 	res.Contact = msg.Contact.Copy()
 	res.RecordRoute = msg.RecordRoute.Copy()
-	res.Headers = make(map[string]string, len(msg.Headers))
+	res.Headers = make(Headers, len(msg.Headers))
 	for k, v := range msg.Headers {
 		res.Headers[k] = v
 	}
 	return res
 }
 
-// i turn a sip message back into a packet
+// I turn a SIP message back into a packet.
 func (msg *Msg) Append(b *bytes.Buffer) error {
-	if !msg.IsResponse {
+	if !msg.IsResponse() {
 		if msg.Method == "" {
 			return errors.New("Msg.Method not set")
 		}
@@ -247,27 +138,29 @@ func (msg *Msg) Append(b *bytes.Buffer) error {
 		b.WriteString(msg.Method)
 		b.WriteString(" ")
 		msg.Request.Append(b)
-		b.WriteString(" SIP/2.0\r\n")
+		b.WriteString(" ")
+		msg.appendVersion(b)
+		b.WriteString("\r\n")
 	} else {
-		if msg.Status < 100 {
-			return errors.New("Msg.Status < 100")
-		}
-		if msg.Status >= 700 {
-			return errors.New("Msg.Status >= 700")
-		}
 		if msg.Phrase == "" {
 			msg.Phrase = Phrase(msg.Status)
 		}
-		b.WriteString("SIP/2.0 ")
+		msg.appendVersion(b)
+		b.WriteString(" ")
 		b.WriteString(strconv.Itoa(msg.Status))
 		b.WriteString(" ")
 		b.WriteString(msg.Phrase)
 		b.WriteString("\r\n")
 	}
 
-	if msg.Via == nil {
-		return errors.New("Need moar Via headers")
-	}
+	b.WriteString("From: ")
+	msg.From.Append(b)
+	b.WriteString("\r\n")
+
+	b.WriteString("To: ")
+	msg.To.Append(b)
+	b.WriteString("\r\n")
+
 	for viap := msg.Via; viap != nil; viap = viap.Next {
 		b.WriteString("Via: ")
 		if err := viap.Append(b); err != nil {
@@ -292,51 +185,154 @@ func (msg *Msg) Append(b *bytes.Buffer) error {
 		b.WriteString("\r\n")
 	}
 
-	if msg.MaxForwards < 0 {
-		return errors.New("MaxForwards is less than 0!!")
-	} else if msg.MaxForwards == 0 {
-		b.WriteString("Max-Forwards: 70\r\n")
-	} else {
-		b.WriteString("Max-Forwards: ")
-		b.WriteString(strconv.Itoa(msg.MaxForwards))
-		b.WriteString("\r\n")
-	}
-
-	b.WriteString("From: ")
-	msg.From.Append(b)
-	b.WriteString("\r\n")
-
-	b.WriteString("To: ")
-	msg.To.Append(b)
-	b.WriteString("\r\n")
-
-	if msg.CallID == "" {
-		return errors.New("CallID is blank")
-	}
-	b.WriteString("Call-ID: ")
-	b.WriteString(msg.CallID)
-	b.WriteString("\r\n")
-
-	if msg.CSeq < 0 || msg.CSeqMethod == "" {
-		return errors.New("Bad CSeq")
-	}
-	b.WriteString("CSeq: ")
-	b.WriteString(strconv.Itoa(msg.CSeq))
-	b.WriteString(" ")
-	b.WriteString(msg.CSeqMethod)
-	b.WriteString("\r\n")
-
 	if msg.Contact != nil {
 		b.WriteString("Contact: ")
 		msg.Contact.Append(b)
 		b.WriteString("\r\n")
 	}
 
+	b.WriteString("Call-ID: ")
+	b.WriteString(msg.CallID)
+	b.WriteString("\r\n")
+
+	b.WriteString("CSeq: ")
+	b.WriteString(strconv.Itoa(msg.CSeq))
+	b.WriteString(" ")
+	b.WriteString(msg.CSeqMethod)
+	b.WriteString("\r\n")
+
+	if msg.UserAgent != "" {
+		b.WriteString("User-Agent: ")
+		b.WriteString(msg.UserAgent)
+		b.WriteString("\r\n")
+	}
+
+	if !msg.IsResponse() {
+		if msg.MaxForwards == 0 {
+			b.WriteString("Max-Forwards: 70\r\n")
+		} else {
+			b.WriteString("Max-Forwards: ")
+			b.WriteString(strconv.Itoa(msg.MaxForwards))
+			b.WriteString("\r\n")
+		}
+	}
+
+	if msg.ContentType != "" {
+		b.WriteString("Content-Type: ")
+		b.WriteString(msg.ContentType)
+		b.WriteString("\r\n")
+	}
+
+	b.WriteString("Content-Length: ")
+	b.WriteString(strconv.Itoa(len(msg.Payload)))
+	b.WriteString("\r\n")
+
+	if msg.Accept != "" {
+		b.WriteString("Accept: ")
+		b.WriteString(msg.Accept)
+		b.WriteString("\r\n")
+	}
+
+	if msg.AcceptEncoding != "" {
+		b.WriteString("Accept-Encoding: ")
+		b.WriteString(msg.AcceptEncoding)
+		b.WriteString("\r\n")
+	}
+
+	if msg.AcceptLanguage != "" {
+		b.WriteString("Accept-Language: ")
+		b.WriteString(msg.AcceptLanguage)
+		b.WriteString("\r\n")
+	}
+
+	if msg.AlertInfo != "" {
+		b.WriteString("Alert-Info: ")
+		b.WriteString(msg.AlertInfo)
+		b.WriteString("\r\n")
+	}
+
+	if msg.Allow != "" {
+		b.WriteString("Allow: ")
+		b.WriteString(msg.Allow)
+		b.WriteString("\r\n")
+	}
+
+	if msg.AllowEvents != "" {
+		b.WriteString("Allow-Events: ")
+		b.WriteString(msg.AllowEvents)
+		b.WriteString("\r\n")
+	}
+
+	if msg.AuthenticationInfo != "" {
+		b.WriteString("Authentication-Info: ")
+		b.WriteString(msg.AuthenticationInfo)
+		b.WriteString("\r\n")
+	}
+
+	if msg.Authorization != "" {
+		b.WriteString("Authorization: ")
+		b.WriteString(msg.Authorization)
+		b.WriteString("\r\n")
+	}
+
+	if msg.CallInfo != "" {
+		b.WriteString("Call-Info: ")
+		b.WriteString(msg.CallInfo)
+		b.WriteString("\r\n")
+	}
+
+	if msg.ContentDisposition != "" {
+		b.WriteString("Content-Disposition: ")
+		b.WriteString(msg.ContentDisposition)
+		b.WriteString("\r\n")
+	}
+
+	if msg.ContentEncoding != "" {
+		b.WriteString("Content-Encoding: ")
+		b.WriteString(msg.ContentEncoding)
+		b.WriteString("\r\n")
+	}
+
+	if msg.ContentLanguage != "" {
+		b.WriteString("Content-Language: ")
+		b.WriteString(msg.ContentLanguage)
+		b.WriteString("\r\n")
+	}
+
+	if msg.Date != "" {
+		b.WriteString("Date: ")
+		b.WriteString(msg.Date)
+		b.WriteString("\r\n")
+	}
+
+	if msg.ErrorInfo != "" {
+		b.WriteString("Error-Info: ")
+		b.WriteString(msg.ErrorInfo)
+		b.WriteString("\r\n")
+	}
+
+	if msg.Event != "" {
+		b.WriteString("Event: ")
+		b.WriteString(msg.Event)
+		b.WriteString("\r\n")
+	}
+
 	// Expires is allowed to be 0 for for REGISTER stuff.
-	if msg.Expires > 0 ||
-		msg.Method == "REGISTER" || msg.CSeqMethod == "REGISTER" {
+	if msg.Expires > 0 || msg.Method == "REGISTER" || msg.CSeqMethod == "REGISTER" {
 		b.WriteString("Expires: ")
 		b.WriteString(strconv.Itoa(msg.Expires))
+		b.WriteString("\r\n")
+	}
+
+	if msg.InReplyTo != "" {
+		b.WriteString("In-Reply-To: ")
+		b.WriteString(msg.InReplyTo)
+		b.WriteString("\r\n")
+	}
+
+	if msg.MIMEVersion != "" {
+		b.WriteString("MIME-Version: ")
+		b.WriteString(msg.MIMEVersion)
 		b.WriteString("\r\n")
 	}
 
@@ -346,11 +342,122 @@ func (msg *Msg) Append(b *bytes.Buffer) error {
 		b.WriteString("\r\n")
 	}
 
+	if msg.Organization != "" {
+		b.WriteString("Organization: ")
+		b.WriteString(msg.Organization)
+		b.WriteString("\r\n")
+	}
+
+	if msg.PAssertedIdentity != nil {
+		b.WriteString("P-Asserted-Identity: ")
+		msg.PAssertedIdentity.Append(b)
+		b.WriteString("\r\n")
+	}
+
+	if msg.Priority != "" {
+		b.WriteString("Priority: ")
+		b.WriteString(msg.Priority)
+		b.WriteString("\r\n")
+	}
+
+	if msg.ProxyAuthenticate != "" {
+		b.WriteString("Proxy-Authenticate: ")
+		b.WriteString(msg.ProxyAuthenticate)
+		b.WriteString("\r\n")
+	}
+
+	if msg.ProxyAuthorization != "" {
+		b.WriteString("Proxy-Authorization: ")
+		b.WriteString(msg.ProxyAuthorization)
+		b.WriteString("\r\n")
+	}
+
+	if msg.ProxyRequire != "" {
+		b.WriteString("Proxy-Require: ")
+		b.WriteString(msg.ProxyRequire)
+		b.WriteString("\r\n")
+	}
+
+	if msg.ReferTo != "" {
+		b.WriteString("Refer-To: ")
+		b.WriteString(msg.ReferTo)
+		b.WriteString("\r\n")
+	}
+
+	if msg.ReferredBy != "" {
+		b.WriteString("Referred-By: ")
+		b.WriteString(msg.ReferredBy)
+		b.WriteString("\r\n")
+	}
+
+	if msg.RemotePartyID != nil {
+		b.WriteString("Remote-Party-ID: ")
+		msg.RemotePartyID.Append(b)
+		b.WriteString("\r\n")
+	}
+
+	if msg.ReplyTo != "" {
+		b.WriteString("Reply-To: ")
+		b.WriteString(msg.ReplyTo)
+		b.WriteString("\r\n")
+	}
+
+	if msg.Require != "" {
+		b.WriteString("Require: ")
+		b.WriteString(msg.Require)
+		b.WriteString("\r\n")
+	}
+
+	if msg.RetryAfter != "" {
+		b.WriteString("RetryAfter: ")
+		b.WriteString(msg.RetryAfter)
+		b.WriteString("\r\n")
+	}
+
+	if msg.Server != "" {
+		b.WriteString("Server: ")
+		b.WriteString(msg.Server)
+		b.WriteString("\r\n")
+	}
+
+	if msg.Subject != "" {
+		b.WriteString("Subject: ")
+		b.WriteString(msg.Subject)
+		b.WriteString("\r\n")
+	}
+
+	if msg.Supported != "" {
+		b.WriteString("Supported: ")
+		b.WriteString(msg.Supported)
+		b.WriteString("\r\n")
+	}
+
+	if msg.Timestamp != "" {
+		b.WriteString("Timestamp: ")
+		b.WriteString(msg.Timestamp)
+		b.WriteString("\r\n")
+	}
+
+	if msg.Unsupported != "" {
+		b.WriteString("Unsupported: ")
+		b.WriteString(msg.Unsupported)
+		b.WriteString("\r\n")
+	}
+
+	if msg.Warning != "" {
+		b.WriteString("Warning: ")
+		b.WriteString(msg.Warning)
+		b.WriteString("\r\n")
+	}
+
+	if msg.WWWAuthenticate != "" {
+		b.WriteString("WWW-Authenticate: ")
+		b.WriteString(msg.WWWAuthenticate)
+		b.WriteString("\r\n")
+	}
+
 	if msg.Headers != nil {
 		for k, v := range msg.Headers {
-			if k == "" || v == "" {
-				return errors.New("Header blank")
-			}
 			b.WriteString(k)
 			b.WriteString(": ")
 			b.WriteString(v)
@@ -358,55 +465,18 @@ func (msg *Msg) Append(b *bytes.Buffer) error {
 		}
 	}
 
-	if msg.Paid != nil {
-		b.WriteString("P-Asserted-Identity: ")
-		msg.Paid.Append(b)
-		b.WriteString("\r\n")
-	}
-
-	if msg.Rpid != nil {
-		b.WriteString("Remote-Party-ID: ")
-		msg.Rpid.Append(b)
-		b.WriteString("\r\n")
-	}
-
-	b.WriteString("Content-Length: ")
-	b.WriteString(strconv.Itoa(len(msg.Payload)))
-	b.WriteString("\r\n\r\n")
+	b.WriteString("\r\n")
 	b.WriteString(msg.Payload)
-
 	return nil
 }
 
-func (msg *Msg) parseFirstLine(s string) error {
-	i := strings.Index(s, "SIP/2.0")
-	if i == -1 {
-		return errors.New("Not a SIP message")
-	} else if i == 0 {
-		msg.IsResponse = true
-		toks := strings.SplitN(s, " ", 3)
-		if len(toks) < 2 {
-			return errors.New("Bad response status line")
-		}
-		s, err := strconv.Atoi(toks[1])
-		if err != nil {
-			return errors.New("Bad response status code")
-		}
-		msg.Status = s
-		if len(toks) == 3 {
-			msg.Phrase = toks[2]
-		} else {
-			msg.Phrase = Phrase(msg.Status)
-		}
+func (msg *Msg) appendVersion(b *bytes.Buffer) {
+	b.WriteString("SIP/")
+	if msg.VersionMajor == 0 {
+		b.WriteString("2.0")
 	} else {
-		j := strings.Index(s, " ")
-		msg.Method = s[:j]
-		msg.Request = new(URI)
-		r, err := ParseURI(s[j+1 : i-1])
-		msg.Request = r
-		if err != nil {
-			return err
-		}
+		b.WriteString(strconv.FormatUint(uint64(msg.VersionMajor), 10))
+		b.WriteString(".")
+		b.WriteString(strconv.FormatUint(uint64(msg.VersionMinor), 10))
 	}
-	return nil
 }

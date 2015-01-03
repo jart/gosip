@@ -14,11 +14,12 @@ import (
 
 func TestCallToEchoApp(t *testing.T) {
 	invite := &sip.Msg{
+		Method:  sip.MethodInvite,
 		Request: &sip.URI{User: "echo", Host: "127.0.0.1", Port: 5060},
 	}
 
 	// Create RTP audio session.
-	rs, err := rtp.NewSession("")
+	rs, err := rtp.NewSession("127.0.0.1")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -57,7 +58,7 @@ func TestCallToEchoApp(t *testing.T) {
 			if err := rs.Send(&frame); err != nil {
 				t.Fatal("RTP send failed:", err)
 			}
-		case <-dl.OnErr:
+		case err := <-dl.OnErr:
 			t.Error(err)
 			return
 		case state := <-dl.OnState:
@@ -65,6 +66,9 @@ func TestCallToEchoApp(t *testing.T) {
 			case sip.DialogAnswered:
 				answered = true
 			case sip.DialogHangup:
+				if !answered {
+					t.Error("Call didn't get answered!")
+				}
 				return
 			}
 		case ms := <-dl.OnSDP:
@@ -72,10 +76,5 @@ func TestCallToEchoApp(t *testing.T) {
 		case <-death:
 			dl.Hangup <- true
 		}
-	}
-
-	// The dialog has shut down cleanly. Was it answered?
-	if !answered {
-		t.Error("Call didn't get answered!")
 	}
 }
