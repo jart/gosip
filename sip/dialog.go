@@ -30,7 +30,7 @@ var (
 type Dialog struct {
 	OnErr   <-chan error
 	OnState <-chan int
-	OnSDP   <-chan *sdp.SDP
+	OnPeer  <-chan *net.UDPAddr
 	Hangup  chan<- bool
 }
 
@@ -40,14 +40,15 @@ type dialogState struct {
 	csockMsgs       <-chan *Msg
 	csockErrs       <-chan error
 	errChan         chan<- error
-	sdpChan         chan<- *sdp.SDP
 	stateChan       chan<- int
-	doHangupChan    <-chan bool
+	peerChan        chan<- *net.UDPAddr
+	sendHangupChan  <-chan bool
 	state           int              // Current state of the dialog.
 	dest            string           // Destination hostname (or IP).
 	addr            string           // Destination ip:port.
 	sock            *net.UDPConn     // Outbound message socket (connected for ICMP)
 	csock           *net.UDPConn     // Inbound socket for Contact field.
+	sdp             *sdp.SDP         // Media session description.
 	routes          *AddressRoute    // List of SRV addresses to attempt contacting.
 	invite          *Msg             // Our INVITE that established the dialog.
 	remote          *Msg             // Message from remote UA that established dialog.
@@ -59,32 +60,42 @@ type dialogState struct {
 	responseTimer   <-chan time.Time // Resend timer for message.
 	lseq            int              // Local CSeq value.
 	rseq            int              // Remote CSeq value.
+	b               bytes.Buffer     // Outbound message buffer.
 }
 
 // NewDialog creates a phone call.
-func NewDialog(invite *Msg) (dl *Dialog, err error) {
+func NewDialog(invite *Msg, rtpPort uint16) (dl *Dialog, err error) {
 	errChan := make(chan error)
-	sdpChan := make(chan *sdp.SDP)
 	stateChan := make(chan int)
-	doHangupChan := make(chan bool, 4)
+	peerChan := make(chan *net.UDPAddr)
+	sendHangupChan := make(chan bool, 4)
+	ms := &sdp.SDP{
+		Origin: sdp.Origin{
+			ID: util.GenerateOriginID(),
+		},
+		Audio: &sdp.Media{
+			Port:   rtpPort,
+			Codecs: []sdp.Codec{sdp.ULAWCodec, sdp.DTMFCodec},
+		},
+	}
 	dls := &dialogState{
-		errChan:      errChan,
-		sdpChan:      sdpChan,
-		stateChan:    stateChan,
-		doHangupChan: doHangupChan,
-		invite:       invite,
+		errChan:        errChan,
+		stateChan:      stateChan,
+		peerChan:       peerChan,
+		sendHangupChan: sendHangupChan,
+		invite:         invite,
+		sdp:            ms,
 	}
 	go dls.run()
 	return &Dialog{
 		OnErr:   errChan,
 		OnState: stateChan,
-		OnSDP:   sdpChan,
-		Hangup:  doHangupChan,
+		OnPeer:  peerChan,
+		Hangup:  sendHangupChan,
 	}, nil
 }
 
 func (dls *dialogState) run() {
-	defer dls.sabotage()
 	defer dls.cleanup()
 	if !dls.sendRequest(dls.invite) {
 		return
@@ -92,6 +103,8 @@ func (dls *dialogState) run() {
 	for {
 		select {
 		case err := <-dls.sockErrs:
+			dls.sock.Close()
+			dls.sock = nil
 			if util.IsRefused(err) {
 				log.Printf("ICMP refusal: %s (%s)", dls.sock.RemoteAddr(), dls.dest)
 				if !dls.popRoute() {
@@ -102,6 +115,8 @@ func (dls *dialogState) run() {
 				return
 			}
 		case err := <-dls.csockErrs:
+			dls.csock.Close()
+			dls.csock = nil
 			dls.errChan <- err
 			return
 		case <-dls.requestTimer:
@@ -112,16 +127,16 @@ func (dls *dialogState) run() {
 			if !dls.resendResponse() {
 				return
 			}
-		case <-dls.doHangupChan:
-			if !dls.sendHangup() {
-				return
-			}
 		case msg := <-dls.sockMsgs:
 			if !dls.handleMessage(msg) {
 				return
 			}
 		case msg := <-dls.csockMsgs:
 			if !dls.handleMessage(msg) {
+				return
+			}
+		case <-dls.sendHangupChan:
+			if !dls.sendHangup() {
 				return
 			}
 		}
@@ -168,7 +183,7 @@ func (dls *dialogState) popRoute() bool {
 }
 
 func (dls *dialogState) connect() bool {
-	if dls.sock == nil || dls.sock.RemoteAddr().String() != dls.addr {
+	if dls.sock == nil || dls.addr != dls.sock.RemoteAddr().String() {
 		// Create socket through which we send messages. This socket is connected
 		// to the remote address so we can receive ICMP unavailable errors. It also
 		// allows us to discover the appropriate IP address for the local machine.
@@ -226,6 +241,11 @@ func (dls *dialogState) populate(msg *Msg) {
 				Params: Params{"transport": "udp"},
 			},
 		}
+	}
+	if msg.Method == MethodInvite {
+		dls.sdp.Addr = lhost
+		dls.sdp.Origin.Addr = lhost
+		AttachSDP(msg, dls.sdp)
 	}
 	PopulateMessage(nil, nil, msg)
 }
@@ -350,7 +370,7 @@ func (dls *dialogState) checkSDP(msg *Msg) {
 		if err != nil {
 			log.Println("Bad SDP payload:", err)
 		} else {
-			dls.sdpChan <- ms
+			dls.peerChan <- &net.UDPAddr{IP: net.ParseIP(ms.Addr), Port: int(ms.Audio.Port)}
 		}
 	}
 }
@@ -365,12 +385,12 @@ func (dls *dialogState) send(msg *Msg) bool {
 	}
 	ts := time.Now()
 	addTimestamp(msg, ts)
-	var b bytes.Buffer
-	msg.Append(&b)
+	dls.b.Reset()
+	msg.Append(&dls.b)
 	if *tracing {
-		trace("send", b.String(), dls.sock.RemoteAddr(), ts)
+		trace("send", dls.b.String(), dls.sock.RemoteAddr(), ts)
 	}
-	_, err := dls.sock.Write(b.Bytes())
+	_, err := dls.sock.Write(dls.b.Bytes())
 	if err != nil {
 		dls.errChan <- err
 		return false
@@ -450,6 +470,9 @@ func (dls *dialogState) transition(state int) {
 func (dls *dialogState) cleanup() {
 	dls.cleanupSock()
 	dls.cleanupCSock()
+	close(dls.errChan)
+	close(dls.stateChan)
+	close(dls.peerChan)
 }
 
 func (dls *dialogState) cleanupSock() {
@@ -468,10 +491,4 @@ func (dls *dialogState) cleanupCSock() {
 		_, _ = <-dls.csockMsgs
 		<-dls.csockErrs
 	}
-}
-
-func (dls *dialogState) sabotage() {
-	close(dls.errChan)
-	close(dls.sdpChan)
-	close(dls.stateChan)
 }

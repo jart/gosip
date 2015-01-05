@@ -27,6 +27,7 @@ type Session struct {
 
 	// Channel to which received RTP frames and errors are published.
 	C <-chan *Frame
+	R chan<- *Frame
 	E <-chan error
 
 	// Underlying UDP socket.
@@ -50,12 +51,14 @@ func NewSession(host string) (rs *Session, err error) {
 		return nil, err
 	}
 	sock := conn.(*net.UDPConn)
-	c := make(chan *Frame, 4)
+	c := make(chan *Frame)
+	r := make(chan *Frame)
 	e := make(chan error, 1)
-	go receiver(sock, c, e)
+	go receiver(sock, c, e, r)
 	return &Session{
 		C:    c,
 		E:    e,
+		R:    r,
 		Sock: sock,
 		Header: Header{
 			PT:   sdp.ULAWCodec.PT,
@@ -68,7 +71,7 @@ func NewSession(host string) (rs *Session, err error) {
 }
 
 func (rs *Session) Send(frame *Frame) (err error) {
-	if rs.Peer == nil {
+	if rs == nil || rs.Sock == nil || rs.Peer == nil {
 		return nil
 	}
 	rs.Header.Write(rs.obuf)
@@ -81,7 +84,29 @@ func (rs *Session) Send(frame *Frame) (err error) {
 	return
 }
 
-func receiver(sock *net.UDPConn, c chan<- *Frame, e chan<- error) {
+func (rs *Session) Close() {
+	if rs == nil || rs.Sock == nil {
+		return
+	}
+	rs.Sock.Close()
+	if frame, ok := <-rs.C; ok {
+		rs.R <- frame
+	}
+	<-rs.E
+	rs.Sock = nil
+	close(rs.R)
+}
+
+func (rs *Session) CloseAfterError() {
+	if rs == nil || rs.Sock == nil {
+		return
+	}
+	rs.Sock.Close()
+	rs.Sock = nil
+	close(rs.R)
+}
+
+func receiver(sock *net.UDPConn, c chan<- *Frame, e chan<- error, r <-chan *Frame) {
 	buf := make([]byte, 2048)
 	frame := new(Frame)
 	for {
@@ -109,8 +134,10 @@ func receiver(sock *net.UDPConn, c chan<- *Frame, e chan<- error) {
 			frame[n] = int16(dsp.UlawToLinear(int64(buf[HeaderSize+n])))
 		}
 		c <- frame
+		frame = <-r
 	}
 	close(c)
+	close(e)
 }
 
 func listenRTP(host string) (sock net.PacketConn, err error) {
