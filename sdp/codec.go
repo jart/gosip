@@ -2,7 +2,6 @@ package sdp
 
 import (
 	"bytes"
-	"errors"
 	"strconv"
 )
 
@@ -17,25 +16,23 @@ type Codec struct {
 	Fmtp  string // some extra info; i.e. dtmf might set as "0-16"
 }
 
-func (codec *Codec) Append(b *bytes.Buffer) error {
-	if codec.Name == "" {
-		return errors.New("Codec.Name is blank")
-	}
-	if codec.Rate < 8000 {
-		return errors.New("Codec.Rate < 8000")
-	}
+func (codec *Codec) Append(b *bytes.Buffer) {
 	b.WriteString("a=rtpmap:")
-	b.WriteString(strconv.Itoa(int(codec.PT)) + " ")
-	b.WriteString(codec.Name + "/")
+	b.WriteString(strconv.FormatInt(int64(codec.PT), 10))
+	b.WriteString(" ")
+	b.WriteString(codec.Name)
+	b.WriteString("/")
 	b.WriteString(strconv.Itoa(codec.Rate))
 	if codec.Param != "" {
-		b.WriteString("/" + codec.Param)
+		b.WriteString("/")
+		b.WriteString(codec.Param)
 	}
 	b.WriteString("\r\n")
 	if codec.Fmtp != "" {
 		b.WriteString("a=fmtp:")
-		b.WriteString(strconv.Itoa(int(codec.PT)) + " ")
-		b.WriteString(codec.Fmtp + "\r\n")
+		b.WriteString(strconv.FormatInt(int64(codec.PT), 10))
+		b.WriteString(" ")
+		b.WriteString(codec.Fmtp)
+		b.WriteString("\r\n")
 	}
-	return nil
 }

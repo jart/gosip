@@ -57,7 +57,6 @@ import (
 	"errors"
 	"github.com/jart/gosip/util"
 	"log"
-	"math/rand"
 	"net"
 	"strconv"
 	"strings"
@@ -70,32 +69,31 @@ const (
 
 // SDP represents a Session Description Protocol SIP payload.
 type SDP struct {
-	SendOnly bool        // true if 'a=sendonly' was specified in sdp
-	RecvOnly bool        // true if 'a=recvonly' was specified in sdp
-	Ptime    int         // transmit every X millisecs (0 means not set)
-	Addr     string      // connect to this ip; never blank (from c=)
-	Audio    *Media      // non nil if we can establish audio
-	Video    *Media      // non nil if we can establish video
-	Origin   Origin      // this must always be present
-	Session  string      // s= Session Name (defaults to "-")
-	Time     string      // t= Active Time (defaults to "0 0")
-	Attrs    [][2]string // a= lines we don't recognize (never nil)
+	Origin   Origin      // This must always be present
+	Addr     string      // Connect to this IP; never blank (from c=)
+	Audio    *Media      // Non-nil if we can establish audio
+	Video    *Media      // Non-nil if we can establish video
+	Session  string      // s= Session Name (default "-")
+	Time     string      // t= Active Time (default "0 0")
+	Ptime    int         // Transmit frame every N milliseconds (default 20)
+	SendOnly bool        // True if 'a=sendonly' was specified in SDP
+	RecvOnly bool        // True if 'a=recvonly' was specified in SDP
+	Attrs    [][2]string // a= lines we don't recognize
 }
 
 // Easy way to create a basic, everyday SDP for VoIP.
-func New(addr *net.UDPAddr, codecs ...*Codec) *SDP {
+func New(addr *net.UDPAddr, codecs ...Codec) *SDP {
 	sdp := new(SDP)
 	sdp.Addr = addr.IP.String()
-	sdp.Origin.ID = strconv.FormatInt(int64(rand.Uint32()), 10)
+	sdp.Origin.ID = util.GenerateOriginID()
 	sdp.Origin.Version = sdp.Origin.ID
 	sdp.Origin.Addr = sdp.Addr
 	sdp.Audio = new(Media)
-	sdp.Audio.Type = "audio"
 	sdp.Audio.Proto = "RTP/AVP"
-	sdp.Audio.Port = addr.Port
+	sdp.Audio.Port = uint16(addr.Port)
 	sdp.Audio.Codecs = make([]Codec, len(codecs))
 	for i := 0; i < len(codecs); i++ {
-		sdp.Audio.Codecs[i] = *codecs[i]
+		sdp.Audio.Codecs[i] = codecs[i]
 	}
 	sdp.Attrs = make([][2]string, 0, 8)
 	return sdp
@@ -216,7 +214,6 @@ func Parse(s string) (sdp *SDP, err error) {
 
 	if audioinfo != "" {
 		sdp.Audio = new(Media)
-		sdp.Audio.Type = "audio"
 		sdp.Audio.Port, sdp.Audio.Proto, pts, err = parseMediaInfo(audioinfo)
 		if err != nil {
 			return nil, err
@@ -231,7 +228,6 @@ func Parse(s string) (sdp *SDP, err error) {
 
 	if videoinfo != "" {
 		sdp.Video = new(Media)
-		sdp.Video.Type = "video"
 		sdp.Video.Port, sdp.Video.Proto, pts, err = parseMediaInfo(videoinfo)
 		if err != nil {
 			return nil, err
@@ -256,58 +252,62 @@ func (sdp *SDP) String() string {
 		return ""
 	}
 	var b bytes.Buffer
-	if err := sdp.Append(&b); err != nil {
-		log.Println("Bad SDP!", err)
-		return ""
-	}
+	sdp.Append(&b)
 	return b.String()
 }
 
-func (sdp *SDP) Append(b *bytes.Buffer) error {
-	if sdp.Audio == nil && sdp.Video == nil {
-		return errors.New("sdp lonely no media :[")
-	}
-	if sdp.Session == "" {
-		sdp.Session = "my people call themselves dark angels"
-	}
-	if sdp.Time == "" {
-		sdp.Time = "0 0"
-	}
+func (sdp *SDP) Append(b *bytes.Buffer) {
 	b.WriteString("v=0\r\n")
-	if err := sdp.Origin.Append(b); err != nil {
-		return err
-	}
-	b.WriteString("s=" + sdp.Session + "\r\n")
-	if util.IsIPv6(sdp.Addr) {
-		b.WriteString("c=IN IP6 " + sdp.Addr + "\r\n")
+	sdp.Origin.Append(b)
+	b.WriteString("s=")
+	if sdp.Session == "" {
+		b.WriteString("my people call themselves dark angels")
 	} else {
-		b.WriteString("c=IN IP4 " + sdp.Addr + "\r\n")
+		b.WriteString(sdp.Session)
 	}
-	b.WriteString("t=" + sdp.Time + "\r\n")
+	b.WriteString("\r\n")
+	if util.IsIPv6(sdp.Addr) {
+		b.WriteString("c=IN IP6 ")
+	} else {
+		b.WriteString("c=IN IP4 ")
+	}
+	if sdp.Addr == "" {
+		// In case of bugs, keep calm and DDOS NASA.
+		b.WriteString("69.28.157.198")
+	} else {
+		b.WriteString(sdp.Addr)
+	}
+	b.WriteString("\r\n")
+	b.WriteString("t=")
+	if sdp.Time == "" {
+		b.WriteString("0 0")
+	} else {
+		b.WriteString(sdp.Time)
+	}
+	b.WriteString("\r\n")
 	if sdp.Audio != nil {
-		if err := sdp.Audio.Append(b); err != nil {
-			return err
-		}
+		sdp.Audio.Append("audio", b)
 	}
 	if sdp.Video != nil {
-		if err := sdp.Video.Append(b); err != nil {
-			return err
-		}
+		sdp.Video.Append("video", b)
 	}
-	if sdp.Attrs != nil {
-		for _, attr := range sdp.Attrs {
-			if attr[0] == "" {
-				return errors.New("SDP.Attrs key empty!")
-			}
-			if attr[1] == "" {
-				b.WriteString("a=" + attr[0] + "\r\n")
-			} else {
-				b.WriteString("a=" + attr[0] + ":" + attr[1] + "\r\n")
-			}
+	for _, attr := range sdp.Attrs {
+		if attr[1] == "" {
+			b.WriteString("a=")
+			b.WriteString(attr[0])
+			b.WriteString("\r\n")
+		} else {
+			b.WriteString("a=")
+			b.WriteString(attr[0])
+			b.WriteString(":")
+			b.WriteString(attr[1])
+			b.WriteString("\r\n")
 		}
 	}
 	if sdp.Ptime > 0 {
-		b.WriteString("a=ptime:" + strconv.Itoa(sdp.Ptime) + "\r\n")
+		b.WriteString("a=ptime:")
+		b.WriteString(strconv.Itoa(sdp.Ptime))
+		b.WriteString("\r\n")
 	}
 	if sdp.SendOnly {
 		b.WriteString("a=sendonly\r\n")
@@ -316,7 +316,6 @@ func (sdp *SDP) Append(b *bytes.Buffer) error {
 	} else {
 		b.WriteString("a=sendrecv\r\n")
 	}
-	return nil
 }
 
 // Here we take the list of payload types from the m= line (e.g. 9 18 0 101)
@@ -344,7 +343,7 @@ func populateCodecs(media *Media, pts []uint8, rtpmaps, fmtps []string) (err err
 				return errors.New("dynamic codec missing rtpmap")
 			} else {
 				if v, ok := StandardCodecs[pt]; ok {
-					*codec = *v
+					*codec = v
 				} else {
 					return errors.New("unknown iana codec id: " +
 						strconv.Itoa(int(pt)))
@@ -386,7 +385,7 @@ func parseRtpmapInfo(codec *Codec, s string) (err error) {
 }
 
 // Give me the part of an "m=" line that looks like: "30126 RTP/AVP 0 101".
-func parseMediaInfo(s string) (port int, proto string, pts []uint8, err error) {
+func parseMediaInfo(s string) (port uint16, proto string, pts []uint8, err error) {
 	toks := strings.Split(s, " ")
 	if toks == nil || len(toks) < 3 {
 		return 0, "", nil, errors.New("invalid m= line")
@@ -400,10 +399,11 @@ func parseMediaInfo(s string) (port int, proto string, pts []uint8, err error) {
 	}
 
 	// Convert port to int and check range.
-	port, err = strconv.Atoi(portS)
+	portU, err := strconv.ParseUint(portS, 10, 16)
 	if err != nil || !(0 <= port && port <= 65535) {
 		return 0, "", nil, errors.New("invalid m= port")
 	}
+	port = uint16(portU)
 
 	// Is it rtp? srtp? udp? tcp? etc. (must be 3+ chars)
 	proto = toks[1]

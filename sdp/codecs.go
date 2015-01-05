@@ -19,44 +19,33 @@
 package sdp
 
 var (
-	ULAWCodec = &Codec{PT: 0, Name: "PCMU", Rate: 8000}
-	DTMFCodec = &Codec{PT: 101, Name: "telephone-event", Rate: 8000, Fmtp: "0-16"}
+	ULAWCodec = Codec{PT: 0, Name: "PCMU", Rate: 8000}
+	DTMFCodec = Codec{PT: 101, Name: "telephone-event", Rate: 8000, Fmtp: "0-16"}
 
-	StandardCodecs = map[uint8]*Codec{
-		// G.711 μ-Law is the de-facto codec (SpanDSP g711.h)
-		0: ULAWCodec,
-		// Uncool codec asterisk ppl like (SpanDSP gsm0610.h)
-		3: &Codec{PT: 3, Name: "GSM", Rate: 8000},
-		4: &Codec{PT: 4, Name: "G723", Rate: 8000},
-		// adaptive pulse code modulation (SpanDSP ima_adpcm.h)
-		5: &Codec{PT: 5, Name: "DVI4", Rate: 8000},
-		6: &Codec{PT: 6, Name: "DVI4", Rate: 16000},
-		// chat with your friends ww2 field marshall style (SpanDSP lpc10.h)
-		7: &Codec{PT: 7, Name: "LPC", Rate: 8000},
-		// G.711 variant of μ-Law used in yurop (SpanDSP g711.h)
-		8: &Codec{PT: 8, Name: "PCMA", Rate: 8000},
-		// used for Polycom HD Voice; rate actually 16khz lol (SpanDSP g722.h)
-		9: &Codec{PT: 9, Name: "G722", Rate: 8000},
-		// 16-bit signed PCM stereo/mono (mind your MTU; adjust ptime)
-		10: &Codec{PT: 10, Name: "L16", Rate: 44100, Param: "2"},
-		11: &Codec{PT: 11, Name: "L16", Rate: 44100},
-		12: &Codec{PT: 12, Name: "QCELP", Rate: 8000},
-		// RFC3389 comfort noise
-		13: &Codec{PT: 13, Name: "CN", Rate: 8000},
-		14: &Codec{PT: 14, Name: "MPA", Rate: 90000},
-		15: &Codec{PT: 15, Name: "G728", Rate: 8000},
-		16: &Codec{PT: 16, Name: "DVI4", Rate: 11025},
-		17: &Codec{PT: 17, Name: "DVI4", Rate: 22050},
-		// best voice codec (if you got $10 bucks)
-		18: &Codec{PT: 18, Name: "G729", Rate: 8000},
-		25: &Codec{PT: 25, Name: "CelB", Rate: 90000},
-		26: &Codec{PT: 26, Name: "JPEG", Rate: 90000},
-		28: &Codec{PT: 28, Name: "nv", Rate: 90000},
-		// RFC4587 video
-		31: &Codec{PT: 31, Name: "H261", Rate: 90000},
-		32: &Codec{PT: 32, Name: "MPV", Rate: 90000},
-		33: &Codec{PT: 33, Name: "MP2T", Rate: 90000},
-		// $$$ video
-		34: &Codec{PT: 34, Name: "H263", Rate: 90000},
+	StandardCodecs = map[uint8]Codec{
+		0:  ULAWCodec,                                           // G.711 μ-Law is the de-facto codec (SpanDSP g711.h)
+		3:  Codec{PT: 3, Name: "GSM", Rate: 8000},               // Uncool codec asterisk ppl like (SpanDSP gsm0610.h)
+		4:  Codec{PT: 4, Name: "G723", Rate: 8000},              // Worthless.
+		5:  Codec{PT: 5, Name: "DVI4", Rate: 8000},              // Adaptive pulse code modulation (SpanDSP ima_adpcm.h)
+		6:  Codec{PT: 6, Name: "DVI4", Rate: 16000},             // Adaptive pulse code modulation 16khz (SpanDSP ima_adpcm.h)
+		7:  Codec{PT: 7, Name: "LPC", Rate: 8000},               // Chat with your friends ww2 field marshall style (SpanDSP lpc10.h)
+		8:  Codec{PT: 8, Name: "PCMA", Rate: 8000},              // G.711 variant of μ-Law used in yurop (SpanDSP g711.h)
+		9:  Codec{PT: 9, Name: "G722", Rate: 8000},              // Used for Polycom HD Voice; Rate actually 16khz LOL (SpanDSP g722.h)
+		10: Codec{PT: 10, Name: "L16", Rate: 44100, Param: "2"}, // 16-bit signed PCM stereo/mono (mind your MTU; adjust ptime)
+		11: Codec{PT: 11, Name: "L16", Rate: 44100},
+		12: Codec{PT: 12, Name: "QCELP", Rate: 8000},
+		13: Codec{PT: 13, Name: "CN", Rate: 8000}, // RFC3389 comfort noise
+		14: Codec{PT: 14, Name: "MPA", Rate: 90000},
+		15: Codec{PT: 15, Name: "G728", Rate: 8000},
+		16: Codec{PT: 16, Name: "DVI4", Rate: 11025},
+		17: Codec{PT: 17, Name: "DVI4", Rate: 22050},
+		18: Codec{PT: 18, Name: "G729", Rate: 8000}, // Best telephone voice codec (if you got $10 bucks)
+		25: Codec{PT: 25, Name: "CelB", Rate: 90000},
+		26: Codec{PT: 26, Name: "JPEG", Rate: 90000},
+		28: Codec{PT: 28, Name: "nv", Rate: 90000},
+		31: Codec{PT: 31, Name: "H261", Rate: 90000}, // RFC4587 Video
+		32: Codec{PT: 32, Name: "MPV", Rate: 90000},
+		33: Codec{PT: 33, Name: "MP2T", Rate: 90000},
+		34: Codec{PT: 34, Name: "H263", Rate: 90000}, // $$$ video
 	}
 )

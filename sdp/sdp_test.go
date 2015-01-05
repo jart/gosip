@@ -41,7 +41,6 @@ var sdpTests = []sdpTest{
 			Time:    "0 0",
 			Addr:    "10.0.0.38",
 			Audio: &sdp.Media{
-				Type:  "audio",
 				Proto: "RTP/AVP",
 				Port:  30126,
 				Codecs: []sdp.Codec{
@@ -86,7 +85,6 @@ var sdpTests = []sdpTest{
 			Session: "pokémon",
 			Time:    "0 0",
 			Audio: &sdp.Media{
-				Type:  "audio",
 				Proto: "RTP/AVP",
 				Port:  32898,
 				Codecs: []sdp.Codec{
@@ -94,7 +92,6 @@ var sdpTests = []sdpTest{
 				},
 			},
 			Video: &sdp.Media{
-				Type:  "video",
 				Proto: "RTP/AVP",
 				Port:  32900,
 				Codecs: []sdp.Codec{
@@ -138,7 +135,6 @@ var sdpTests = []sdpTest{
 			Time:    "0 0",
 			Addr:    "1.2.3.4",
 			Audio: &sdp.Media{
-				Type:  "audio",
 				Proto: "RTP/AVP",
 				Port:  32898,
 				Codecs: []sdp.Codec{
@@ -186,7 +182,6 @@ var sdpTests = []sdpTest{
 			Time:    "0 0",
 			Addr:    "dead:beef::666",
 			Audio: &sdp.Media{
-				Type:  "audio",
 				Proto: "RTP/AVP",
 				Port:  32898,
 				Codecs: []sdp.Codec{
@@ -235,7 +230,6 @@ var sdpTests = []sdpTest{
 			Time:    "0 0",
 			Addr:    "10.11.34.37",
 			Audio: &sdp.Media{
-				Type:  "audio",
 				Proto: "RTP/AVP",
 				Port:  4000,
 				Codecs: []sdp.Codec{
@@ -280,7 +274,6 @@ var sdpTests = []sdpTest{
 			Addr:     "dead:beef::666",
 			SendOnly: true,
 			Audio: &sdp.Media{
-				Type:  "audio",
 				Proto: "TCP/IP",
 				Port:  80,
 				Codecs: []sdp.Codec{
@@ -356,9 +349,6 @@ func sdpCompareMedia(t *testing.T, name string, correct, media *sdp.Media) {
 		return
 	}
 
-	if correct.Type != media.Type {
-		t.Error(name, "Type", correct.Type, "!=", media.Type)
-	}
 	if correct.Proto != media.Proto {
 		t.Error(name, "Proto", correct.Proto, "!=", media.Proto)
 	}

@@ -4,6 +4,7 @@ import (
 	"encoding/hex"
 	"math/rand"
 	"net"
+	"strconv"
 	"strings"
 	"syscall"
 )
@@ -76,6 +77,11 @@ func GenerateCallID() string {
 	uuid4 := digs[0:8] + "-" + digs[8:12] + "-4" + digs[12:15] +
 		"-a" + digs[15:18] + "-" + digs[18:]
 	return uuid4
+}
+
+// Generates a random ID for an SDP.
+func GenerateOriginID() string {
+	return strconv.FormatUint(uint64(rand.Uint32()), 10)
 }
 
 func randomBytes(l int) (b []byte) {
