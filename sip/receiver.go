@@ -21,7 +21,7 @@ func ReceiveMessages(sock *net.UDPConn, c chan<- *Msg, e chan<- error) {
 		ts := time.Now()
 		packet := string(buf[0:amt])
 		if *tracing {
-			trace("recv", packet, addr, ts)
+			trace("recv", packet, addr)
 		}
 		msg, err := ParseMsg(packet)
 		if err != nil {

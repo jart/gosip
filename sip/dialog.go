@@ -21,7 +21,7 @@ const (
 )
 
 var (
-	looseSignalling = flag.Bool("looseSignalling", false, "Permit SIP messages from servers other than the next hop.")
+	looseSignalling = flag.Bool("looseSignalling", true, "Permit SIP messages from servers other than the next hop.")
 	resendInterval  = flag.Int("resendInterval", 200, "Milliseconds between SIP resends.")
 	maxResends      = flag.Int("maxResends", 2, "Max SIP message retransmits.")
 )
@@ -388,7 +388,7 @@ func (dls *dialogState) send(msg *Msg) bool {
 	dls.b.Reset()
 	msg.Append(&dls.b)
 	if *tracing {
-		trace("send", dls.b.String(), dls.sock.RemoteAddr(), ts)
+		trace("send", dls.b.String(), dls.sock.RemoteAddr())
 	}
 	_, err := dls.sock.Write(dls.b.Bytes())
 	if err != nil {

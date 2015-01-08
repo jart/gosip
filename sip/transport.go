@@ -73,7 +73,7 @@ func (tp *Transport) Send(msg *Msg) error {
 	var b bytes.Buffer
 	msg.Append(&b)
 	if *tracing {
-		trace("send", b.String(), addr, ts)
+		trace("send", b.String(), addr)
 	}
 	_, err = tp.Sock.WriteTo(b.Bytes(), addr)
 	if err != nil {
