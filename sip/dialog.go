@@ -14,10 +14,10 @@ import (
 )
 
 const (
-	DialogProceeding = 1
-	DialogRinging    = 2
-	DialogAnswered   = 3
-	DialogHangup     = 4
+	DialogProceeding = iota
+	DialogRinging
+	DialogAnswered
+	DialogHangup
 )
 
 var (
