@@ -247,6 +247,19 @@ func Parse(s string) (sdp *SDP, err error) {
 	return sdp, nil
 }
 
+func (sdp *SDP) ContentType() string {
+	return ContentType
+}
+
+func (sdp *SDP) Data() []byte {
+	if sdp == nil {
+		return nil
+	}
+	var b bytes.Buffer
+	sdp.Append(&b)
+	return b.Bytes()
+}
+
 func (sdp *SDP) String() string {
 	if sdp == nil {
 		return ""

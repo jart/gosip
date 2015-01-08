@@ -18,11 +18,11 @@ type Msg struct {
 	// Fields that aren't headers.
 	VersionMajor uint8
 	VersionMinor uint8
-	Method       string // Indicates type of request (if request)
-	Request      *URI   // dest URI (nil if response)
-	Status       int    // Indicates happiness of response (if response)
-	Phrase       string // Explains happiness of response (if response)
-	Payload      string // Stuff that comes after two line breaks
+	Method       string  // Indicates type of request (if request)
+	Request      *URI    // dest URI (nil if response)
+	Status       int     // Indicates happiness of response (if response)
+	Phrase       string  // Explains happiness of response (if response)
+	Payload      Payload // Stuff that comes after two line breaks
 
 	// Special non-SIP fields.
 	SourceAddr *net.UDPAddr // Set by transport layer as received address.
@@ -39,7 +39,6 @@ type Msg struct {
 	CSeqMethod  string // Helps with matching to orig message
 	MaxForwards int    // 0 has context specific meaning
 	UserAgent   string
-	ContentType string
 
 	// All the other RFC 3261 headers in plus some extras.
 	Accept             string
@@ -216,16 +215,6 @@ func (msg *Msg) Append(b *bytes.Buffer) error {
 			b.WriteString("\r\n")
 		}
 	}
-
-	if msg.ContentType != "" {
-		b.WriteString("Content-Type: ")
-		b.WriteString(msg.ContentType)
-		b.WriteString("\r\n")
-	}
-
-	b.WriteString("Content-Length: ")
-	b.WriteString(strconv.Itoa(len(msg.Payload)))
-	b.WriteString("\r\n")
 
 	if msg.Accept != "" {
 		b.WriteString("Accept: ")
@@ -465,8 +454,19 @@ func (msg *Msg) Append(b *bytes.Buffer) error {
 		}
 	}
 
-	b.WriteString("\r\n")
-	b.WriteString(msg.Payload)
+	if msg.Payload != nil {
+		b.WriteString("Content-Type: ")
+		b.WriteString(msg.Payload.ContentType())
+		b.WriteString("\r\n")
+		payload := msg.Payload.Data()
+		b.WriteString("Content-Length: ")
+		b.WriteString(strconv.Itoa(len(payload)))
+		b.WriteString("\r\n\n\n")
+		b.Write(payload)
+	} else {
+		b.WriteString("Content-Length: 0\r\n\r\n")
+	}
+
 	return nil
 }
 

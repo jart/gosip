@@ -48,7 +48,6 @@ type dialogState struct {
 	addr            string           // Destination ip:port.
 	sock            *net.UDPConn     // Outbound message socket (connected for ICMP)
 	csock           *net.UDPConn     // Inbound socket for Contact field.
-	sdp             *sdp.SDP         // Media session description.
 	routes          *AddressRoute    // List of SRV addresses to attempt contacting.
 	invite          *Msg             // Our INVITE that established the dialog.
 	remote          *Msg             // Message from remote UA that established dialog.
@@ -64,27 +63,17 @@ type dialogState struct {
 }
 
 // NewDialog creates a phone call.
-func NewDialog(invite *Msg, rtpPort uint16) (dl *Dialog, err error) {
+func NewDialog(invite *Msg) (dl *Dialog, err error) {
 	errChan := make(chan error)
 	stateChan := make(chan int)
 	peerChan := make(chan *net.UDPAddr)
 	sendHangupChan := make(chan bool, 4)
-	ms := &sdp.SDP{
-		Origin: sdp.Origin{
-			ID: util.GenerateOriginID(),
-		},
-		Audio: &sdp.Media{
-			Port:   rtpPort,
-			Codecs: []sdp.Codec{sdp.ULAWCodec, sdp.DTMFCodec},
-		},
-	}
 	dls := &dialogState{
 		errChan:        errChan,
 		stateChan:      stateChan,
 		peerChan:       peerChan,
 		sendHangupChan: sendHangupChan,
 		invite:         invite,
-		sdp:            ms,
 	}
 	go dls.run()
 	return &Dialog{
@@ -243,9 +232,10 @@ func (dls *dialogState) populate(msg *Msg) {
 		}
 	}
 	if msg.Method == MethodInvite {
-		dls.sdp.Addr = lhost
-		dls.sdp.Origin.Addr = lhost
-		AttachSDP(msg, dls.sdp)
+		if ms, ok := msg.Payload.(*sdp.SDP); ok {
+			ms.Addr = lhost
+			ms.Origin.Addr = lhost
+		}
 	}
 	PopulateMessage(nil, nil, msg)
 }
@@ -365,13 +355,8 @@ func (dls *dialogState) handleRequest(msg *Msg) bool {
 }
 
 func (dls *dialogState) checkSDP(msg *Msg) {
-	if msg.ContentType == sdp.ContentType {
-		ms, err := sdp.Parse(msg.Payload)
-		if err != nil {
-			log.Println("Bad SDP payload:", err)
-		} else {
-			dls.peerChan <- &net.UDPAddr{IP: net.ParseIP(ms.Addr), Port: int(ms.Audio.Port)}
-		}
+	if ms, ok := msg.Payload.(*sdp.SDP); ok {
+		dls.peerChan <- &net.UDPAddr{IP: net.ParseIP(ms.Addr), Port: int(ms.Audio.Port)}
 	}
 }
 

@@ -1,7 +1,6 @@
 package sip
 
 import (
-	"github.com/jart/gosip/sdp"
 	"github.com/jart/gosip/util"
 	"log"
 )
@@ -113,12 +112,4 @@ func AckMatch(msg, ack *Msg) bool {
 		ack.CSeq == msg.CSeq &&
 		ack.CSeqMethod == MethodAck &&
 		ack.Via.Last().CompareHostPort(msg.Via))
-}
-
-func AttachSDP(msg *Msg, ms *sdp.SDP) {
-	if msg.Headers == nil {
-		msg.Headers = Headers{}
-	}
-	msg.ContentType = sdp.ContentType
-	msg.Payload = ms.String()
 }

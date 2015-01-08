@@ -5,18 +5,15 @@ package echo2_test
 import (
 	"github.com/jart/gosip/dsp"
 	"github.com/jart/gosip/rtp"
+	"github.com/jart/gosip/sdp"
 	"github.com/jart/gosip/sip"
+	"github.com/jart/gosip/util"
 	"net"
 	"testing"
 	"time"
 )
 
 func TestCallToEchoApp(t *testing.T) {
-	invite := &sip.Msg{
-		Method:  sip.MethodInvite,
-		Request: &sip.URI{User: "echo", Host: "127.0.0.1", Port: 5060},
-	}
-
 	// Create RTP audio session.
 	rs, err := rtp.NewSession("")
 	if err != nil {
@@ -25,8 +22,20 @@ func TestCallToEchoApp(t *testing.T) {
 	defer rs.Close()
 	rtpPort := uint16(rs.Sock.LocalAddr().(*net.UDPAddr).Port)
 
+	invite := &sip.Msg{
+		Method:  sip.MethodInvite,
+		Request: &sip.URI{User: "echo", Host: "127.0.0.1", Port: 5060},
+		Payload: &sdp.SDP{
+			Origin: sdp.Origin{ID: util.GenerateOriginID()},
+			Audio: &sdp.Media{
+				Port:   rtpPort,
+				Codecs: []sdp.Codec{sdp.ULAWCodec, sdp.DTMFCodec},
+			},
+		},
+	}
+
 	// Create a SIP phone call.
-	dl, err := sip.NewDialog(invite, rtpPort)
+	dl, err := sip.NewDialog(invite)
 	if err != nil {
 		t.Fatal(err)
 	}

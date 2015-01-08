@@ -87,7 +87,7 @@ var msgTests = []msgTest{
 			"Allow: INVITE, ACK, CANCEL, OPTIONS, BYE, REFER, SUBSCRIBE, NOTIFY, INFO, PUBLISH\r\n" +
 			"Supported: replaces, timer\r\n" +
 			"Contact: <sip:echo@127.0.0.1:5060>\r\n" +
-			"Content-Type: application/sdp\r\n" +
+			"Content-Type: application/sdp-lol\r\n" +
 			"Content-Length: 255\r\n" +
 			"\r\n" +
 			"v=0\r\n" +
@@ -149,19 +149,21 @@ var msgTests = []msgTest{
 					Port:   5060,
 				},
 			},
-			ContentType: "application/sdp",
-			Payload: "v=0\r\n" +
-				"o=root 736606944 736606944 IN IP4 127.0.0.1\r\n" +
-				"s=Asterisk PBX 10.11.1\r\n" +
-				"c=IN IP4 127.0.0.1\r\n" +
-				"t=0 0\r\n" +
-				"m=audio 23452 RTP/AVP 0 101\r\n" +
-				"a=rtpmap:0 PCMU/8000\r\n" +
-				"a=rtpmap:101 telephone-event/8000\r\n" +
-				"a=fmtp:101 0-16\r\n" +
-				"a=silenceSupp:off - - - -\r\n" +
-				"a=ptime:20\r\n" +
-				"a=sendrecv\r\n",
+			Payload: &sip.MiscPayload{
+				T: "application/sdp-lol",
+				D: []byte("v=0\r\n" +
+					"o=root 736606944 736606944 IN IP4 127.0.0.1\r\n" +
+					"s=Asterisk PBX 10.11.1\r\n" +
+					"c=IN IP4 127.0.0.1\r\n" +
+					"t=0 0\r\n" +
+					"m=audio 23452 RTP/AVP 0 101\r\n" +
+					"a=rtpmap:0 PCMU/8000\r\n" +
+					"a=rtpmap:101 telephone-event/8000\r\n" +
+					"a=fmtp:101 0-16\r\n" +
+					"a=silenceSupp:off - - - -\r\n" +
+					"a=ptime:20\r\n" +
+					"a=sendrecv\r\n"),
+			},
 		},
 	},
 
@@ -175,7 +177,7 @@ var msgTests = []msgTest{
 			"Record-Route: <sip:216.115.69.133:5060;lr>\r\n" +
 			"Record-Route: <sip:216.115.69.144:5060;lr>\r\n" +
 			"Contact: <sip:+12125650666@4.55.22.99:5060>\r\n" +
-			"Content-Type: application/sdp\r\n" +
+			"Content-Type: application/sdp-lol\r\n" +
 			"Content-Length:  168\r\n" +
 			"\r\n" +
 			"v=0\r\n" +
@@ -194,7 +196,6 @@ var msgTests = []msgTest{
 			CallID:       "042736d4-0bd9-4681-ab86-7321443ff58a",
 			CSeq:         31109,
 			CSeqMethod:   "INVITE",
-			ContentType:  "application/sdp",
 			Via: &sip.Via{
 				Version: "2.0",
 				Proto:   "UDP",
@@ -242,15 +243,18 @@ var msgTests = []msgTest{
 					},
 				},
 			},
-			Payload: "v=0\r\n" +
-				"o=- 24294 7759 IN IP4 4.55.22.66\r\n" +
-				"s=-\r\n" +
-				"c=IN IP4 4.55.22.66\r\n" +
-				"t=0 0\r\n" +
-				"m=audio 19580 RTP/AVP 0 101\r\n" +
-				"a=rtpmap:101 telephone-event/8000\r\n" +
-				"a=fmtp:101 0-15\r\n" +
-				"a=maxptime:20\r\n",
+			Payload: &sip.MiscPayload{
+				T: "application/sdp-lol",
+				D: []byte("v=0\r\n" +
+					"o=- 24294 7759 IN IP4 4.55.22.66\r\n" +
+					"s=-\r\n" +
+					"c=IN IP4 4.55.22.66\r\n" +
+					"t=0 0\r\n" +
+					"m=audio 19580 RTP/AVP 0 101\r\n" +
+					"a=rtpmap:101 telephone-event/8000\r\n" +
+					"a=fmtp:101 0-15\r\n" +
+					"a=maxptime:20\r\n"),
+			},
 		},
 	},
 
@@ -270,7 +274,7 @@ var msgTests = []msgTest{
 			"Allow: INVITE, ACK, BYE, CANCEL, OPTIONS, PRACK, MESSAGE, SUBSCRIBE, NOTIFY, REFER, UPDATE, INFO\r\n" +
 			"Supported: timer, 100rel\r\n" +
 			"Allow-Events: talk\r\n" +
-			"Content-Type: application/sdp\r\n" +
+			"Content-Type: application/sdp-lol\r\n" +
 			"Content-Disposition: session\r\n" +
 			"Content-Length: 218\r\n" +
 			"\r\n" +
@@ -335,17 +339,19 @@ var msgTests = []msgTest{
 			AllowEvents:        "talk",
 			ContentDisposition: "session",
 			Supported:          "timer, 100rel",
-			ContentType:        "application/sdp",
-			Payload: "v=0\r\n" +
-				"o=- 2862054018559638081 6057228511765453924 IN IP4 10.11.34.37\r\n" +
-				"s=-\r\n" +
-				"c=IN IP4 10.11.34.37\r\n" +
-				"t=0 0\r\n" +
-				"m=audio 23448 RTP/AVP 0 101\r\n" +
-				"a=rtpmap:0 PCMU/8000\r\n" +
-				"a=rtpmap:101 telephone-event/8000\r\n" +
-				"a=fmtp:101 0-16\r\n" +
-				"a=ptime:20\r\n",
+			Payload: &sip.MiscPayload{
+				T: "application/sdp-lol",
+				D: []byte("v=0\r\n" +
+					"o=- 2862054018559638081 6057228511765453924 IN IP4 10.11.34.37\r\n" +
+					"s=-\r\n" +
+					"c=IN IP4 10.11.34.37\r\n" +
+					"t=0 0\r\n" +
+					"m=audio 23448 RTP/AVP 0 101\r\n" +
+					"a=rtpmap:0 PCMU/8000\r\n" +
+					"a=rtpmap:101 telephone-event/8000\r\n" +
+					"a=fmtp:101 0-16\r\n" +
+					"a=ptime:20\r\n"),
+			},
 		},
 	},
 }

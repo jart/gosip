@@ -34,7 +34,7 @@ func TestCallToEchoApp(t *testing.T) {
 
 	// Send an INVITE message with an SDP media session description.
 	invite := sip.NewRequest(tp, sip.MethodInvite, to, from)
-	sip.AttachSDP(invite, sdp.New(rtpaddr, sdp.ULAWCodec, sdp.DTMFCodec))
+	invite.Payload = sdp.New(rtpaddr, sdp.ULAWCodec, sdp.DTMFCodec)
 	err = tp.Send(invite)
 	if err != nil {
 		t.Fatal(err)
@@ -108,12 +108,8 @@ loop:
 					t.Errorf("Got %d %s", msg.Status, msg.Phrase)
 					return
 				}
-				if msg.ContentType == sdp.ContentType {
+				if ms, ok := msg.Payload.(*sdp.SDP); ok {
 					log.Printf("Establishing media session")
-					ms, err := sdp.Parse(msg.Payload)
-					if err != nil {
-						t.Fatal("Failed to parse SDP", err)
-					}
 					rs.Peer = &net.UDPAddr{IP: net.ParseIP(ms.Addr), Port: int(ms.Audio.Port)}
 				}
 			} else {

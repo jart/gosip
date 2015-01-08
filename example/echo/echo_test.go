@@ -204,9 +204,8 @@ func TestCallToEchoApp(t *testing.T) {
 				Port:   uint16(laddr.Port),
 			},
 		},
-		ContentType: "application/sdp",
-		UserAgent:   "gosip/1.o",
-		Payload:     sdp.New(rtpaddr, sdp.ULAWCodec, sdp.DTMFCodec).String(),
+		UserAgent: "gosip/1.o",
+		Payload:   sdp.New(rtpaddr, sdp.ULAWCodec, sdp.DTMFCodec),
 	}
 
 	// Turn invite message into a packet and send via UDP socket.
@@ -247,16 +246,14 @@ func TestCallToEchoApp(t *testing.T) {
 	if !msg.IsResponse() || msg.Status != 200 || msg.Phrase != "OK" {
 		t.Fatal("wanted 200 ok but got:", msg.Status, msg.Phrase)
 	}
-	if msg.Payload == "" || msg.ContentType != "application/sdp" {
-		t.Fatal("200 ok didn't have sdp payload")
-	}
 
 	// Figure out where they want us to send RTP.
-	rsdp, err := sdp.Parse(msg.Payload)
-	if err != nil {
-		t.Fatal("failed to parse sdp", err)
+	var rrtpaddr *net.UDPAddr
+	if ms, ok := msg.Payload.(*sdp.SDP); ok {
+		rrtpaddr = &net.UDPAddr{IP: net.ParseIP(ms.Addr), Port: int(ms.Audio.Port)}
+	} else {
+		t.Fatal("200 ok didn't have sdp payload")
 	}
-	rrtpaddr := &net.UDPAddr{IP: net.ParseIP(rsdp.Addr), Port: int(rsdp.Audio.Port)}
 
 	// Acknowledge the 200 OK to answer the call.
 	var ack sip.Msg
