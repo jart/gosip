@@ -338,9 +338,7 @@ func ParseMsgBytes(data []byte) (msg *Msg, err error) {
 			msg.WWWAuthenticate = string(data[mark:p])
 		}
 
-		action lookAheadWSP {
-			p + 2 < pe && (data[p+2] == ' ' || data[p+2] == '\t')
-		}
+		action lookAheadWSP { p + 2 < pe && (data[p+2] == ' ' || data[p+2] == '\t') }
 
 		# https://tools.ietf.org/html/rfc2234
 		SP              = " ";
