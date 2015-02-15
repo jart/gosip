@@ -53,7 +53,7 @@ func NewSession(host string) (rs *Session, err error) {
 	sock := conn.(*net.UDPConn)
 	c := make(chan *Frame)
 	r := make(chan *Frame)
-	e := make(chan error, 1)
+	e := make(chan error)
 	go receiver(sock, c, e, r)
 	return &Session{
 		C:    c,
@@ -104,6 +104,7 @@ func (rs *Session) CloseAfterError() {
 	rs.Sock.Close()
 	rs.Sock = nil
 	close(rs.R)
+	<-rs.E
 }
 
 func receiver(sock *net.UDPConn, c chan<- *Frame, e chan<- error, r <-chan *Frame) {
@@ -112,6 +113,7 @@ func receiver(sock *net.UDPConn, c chan<- *Frame, e chan<- error, r <-chan *Fram
 	for {
 		amt, _, err := sock.ReadFrom(buf)
 		if err != nil {
+			close(c)
 			e <- err
 			break
 		}
@@ -136,7 +138,6 @@ func receiver(sock *net.UDPConn, c chan<- *Frame, e chan<- error, r <-chan *Fram
 		c <- frame
 		frame = <-r
 	}
-	close(c)
 	close(e)
 }
 
