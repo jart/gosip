@@ -3,10 +3,10 @@
 package sip
 
 import (
-	"bytes"
 	"errors"
 	"fmt"
 	"github.com/jart/gosip/sdp"
+	"strings"
 )
 
 %% machine msg;
@@ -26,16 +26,18 @@ func ParseMsgBytes(data []byte) (msg *Msg, err error) {
 		return nil, nil
 	}
 	msg = new(Msg)
+	fromp := &msg.From
+	top := &msg.To
 	viap := &msg.Via
 	routep := &msg.Route
 	rroutep := &msg.RecordRoute
 	contactp := &msg.Contact
+	paidp := &msg.PAssertedIdentity
+	rpidp := &msg.RemotePartyID
 	cs := 0
 	p := 0
 	pe := len(data)
 	eof := len(data)
-	//stack := make([]int, 2)
-	//top := 0
 	line := 1
 	linep := 0
 	buf := make([]byte, len(data))
@@ -43,9 +45,11 @@ func ParseMsgBytes(data []byte) (msg *Msg, err error) {
 	mark := 0
 	clen := 0
 	ctype := ""
-	var b1 string
+	var name string
 	var hex byte
-	var dest *string
+	var value *string
+	var addr *Addr
+	var addrpp ***Addr
 
 	%%{
 		action break {
@@ -63,6 +67,15 @@ func ParseMsgBytes(data []byte) (msg *Msg, err error) {
 		action append {
 			buf[amt] = fc
 			amt++
+		}
+
+		action space {
+			buf[amt] = ' '
+			amt++
+		}
+
+		action erase {
+			amt--
 		}
 
 		action collapse {
@@ -108,45 +121,78 @@ func ParseMsgBytes(data []byte) (msg *Msg, err error) {
 			msg.Phrase = string(buf[0:amt])
 		}
 
-		action header {
+		action goto_avalue {
+			fhold;
+			fgoto avalue;
+		}
+
+		action goto_header {
 			fgoto header;
 		}
 
-		action hname {
-			b1 = string(bytes.ToLower(data[mark:p]))
-		}
-
-		action svalue {
+		action goto_svalue {
 			fhold;
 			fgoto svalue;
 		}
 
-		action svalueDone {{
-			b := data[mark:p - 1]
-			if dest != nil {
-				*dest = string(b)
-			} else {
-				if msg.Headers == nil {
-					msg.Headers = Headers{}
-				}
-				msg.Headers[b1] = string(b)
-			}
-		}}
-
-		action xheader {
-			dest = nil;
+		action goto_xheader {
 			fhold;
 			fgoto xheader;
 		}
 
-		action CallID {
-			msg.CallID = string(data[mark:p])
+		# Shorthand notation.
+		action gxh {
+			fhold;
+			fgoto xheader;
 		}
 
-		action Contact {
-			*contactp, err = ParseAddr(string(data[mark:p]))
+		action store_name {
+			name = string(data[mark:p])
+		}
+
+		action store_value {{
+			b := data[mark:p - 1]
+			if value != nil {
+				*value = string(b)
+			} else {
+				if msg.Headers == nil {
+					msg.Headers = Headers{}
+				}
+				msg.Headers[name] = string(b)
+			}
+		}}
+
+		action store_addr {
+			// TODO(jart): Why does this fire multiple times?
+			if addr != nil {
+				**addrpp = addr
+				*addrpp = &addr.Next
+				addr = nil
+			}
+		}
+
+		action new_addr {
+			addr = new(Addr)
+		}
+
+		action addr_display {
+			addr.Display = strings.TrimRight(string(buf[0:amt]), " \t\r\n")
+		}
+
+		action addr_uri {
+			addr.Uri, err = ParseURIBytes(data[mark:p])
 			if err != nil { return nil, err }
-			for *contactp != nil { contactp = &(*contactp).Next }
+		}
+
+		action addr_param {
+			if addr.Params == nil {
+				addr.Params = Params{}
+			}
+			addr.Params[name] = string(buf[0:amt])
+		}
+
+		action CallID {
+			msg.CallID = string(data[mark:p])
 		}
 
 		action ContentLength {
@@ -169,44 +215,12 @@ func ParseMsgBytes(data []byte) (msg *Msg, err error) {
 			msg.Expires = msg.Expires * 10 + (int(fc) - 0x30)
 		}
 
-		action From {
-			msg.From, err = ParseAddr(string(data[mark:p]))
-			if err != nil { return nil, err }
-		}
-
 		action MaxForwards {
 			msg.MaxForwards = msg.MaxForwards * 10 + (int(fc) - 0x30)
 		}
 
 		action MinExpires {
 			msg.MinExpires = msg.MinExpires * 10 + (int(fc) - 0x30)
-		}
-
-		action PAssertedIdentity {
-			msg.PAssertedIdentity, err = ParseAddr(string(data[mark:p]))
-			if err != nil { return nil, err }
-		}
-
-		action RecordRoute {
-			*rroutep, err = ParseAddr(string(data[mark:p]))
-			if err != nil { return nil, err }
-			for *rroutep != nil { rroutep = &(*rroutep).Next }
-		}
-
-		action RemotePartyID {
-			msg.RemotePartyID, err = ParseAddr(string(data[mark:p]))
-			if err != nil { return nil, err }
-		}
-
-		action Route {
-			*routep, err = ParseAddr(string(data[mark:p]))
-			if err != nil { return nil, err }
-			for *routep != nil { routep = &(*routep).Next }
-		}
-
-		action To {
-			msg.To, err = ParseAddr(string(data[mark:p]))
-			if err != nil { return nil, err }
 		}
 
 		action Via {
@@ -226,13 +240,13 @@ func ParseMsgBytes(data []byte) (msg *Msg, err error) {
 		WSP             = SP | HTAB;
 		LWS             = ( WSP* ( CR when lookAheadWSP ) LF )? WSP+;
 		SWS             = LWS?;
-		UTF8_CONT       = 0x80..0xBF;
-		UTF8_NONASCII   = 0xC0..0xDF UTF8_CONT {1}
-		                | 0xE0..0xEF UTF8_CONT {2}
-		                | 0xF0..0xF7 UTF8_CONT {3}
-		                | 0xF8..0xFb UTF8_CONT {4}
-		                | 0xFC..0xFD UTF8_CONT {5};
-		UTF8            = 0x21..0x7F | UTF8_NONASCII;
+		UTF8_CONT       = 0x80..0xBF @append;
+		UTF8_NONASCII   = 0xC0..0xDF @append UTF8_CONT {1}
+		                | 0xE0..0xEF @append UTF8_CONT {2}
+		                | 0xF0..0xF7 @append UTF8_CONT {3}
+		                | 0xF8..0xFb @append UTF8_CONT {4}
+		                | 0xFC..0xFD @append UTF8_CONT {5};
+		UTF8            = 0x21..0x7F @append | UTF8_NONASCII;
 		UTF8_TRIM       = ( UTF8+ (LWS* UTF8)* ) >start @collapse;
 
 		# https://tools.ietf.org/html/rfc3261#section-25.1
@@ -247,6 +261,7 @@ func ParseMsgBytes(data []byte) (msg *Msg, err error) {
 		wordc           = alpha | digit | "-" | "." | "!" | "%" | "*" | "_"
 		                | "+" | "`" | "'" | "~" | "(" | ")" | "<" | ">" | ":"
 		                | "\\" | "\"" | "/" | "[" | "]" | "?" | "{" | "}" ;
+		schmchars       = alpha | digit | "+" | "-" | "." ;
 		word            = wordc+ ;
 		STAR            = SWS "*" SWS ;
 		SLASH           = SWS "/" SWS ;
@@ -261,92 +276,113 @@ func ParseMsgBytes(data []byte) (msg *Msg, err error) {
 		HCOLON          = WSP* ":" SWS ;
 		LDQUOT          = SWS "\"" ;
 		RDQUOT          = "\"" SWS ;
-		ctext           = 0x21..0x27 | 0x2A..0x5B | 0x5D..0x7E | UTF8_NONASCII | LWS ;
-		quoted_pair     = "\\" ( 0x00..0x09 | 0x0B..0x0C | 0x0E..0x7F ) ;
-		comment         = LPAREN ( ctext | quoted_pair )* <: RPAREN ;  # TODO(jart): Nested parens
-		qdtext          = LWS | 0x21 | 0x23..0x5B | 0x5D..0x7E | UTF8_NONASCII ;
-		quoted_string   = SWS "\"" ( qdtext | quoted_pair )* <: "\"" ;
+		ctext           = 0x21..0x27 | 0x2A..0x5B | 0x5D..0x7E | UTF8_NONASCII | LWS;
+		quoted_pair     = "\\" ( 0x00..0x09 | 0x0B..0x0C | 0x0E..0x7F ) @append;
+		comment         = LPAREN ( ctext | quoted_pair )* <: RPAREN;  # TODO(jart): Nested parens.
+		qdtext          = UTF8_NONASCII | LWS @append | ( 0x21 | 0x23..0x5B | 0x5D..0x7E ) @append;
 		escaped         = "%" ( xdigit @hexHi ) ( xdigit @hexLo ) ;
-		uric            = reserved | unreserved | escaped ;
+		uric            = reserved | unreserved | "%" ;
 		uric_no_slash   = unreserved | escaped | ";" | "?" | ":" | "@" | "&" | "="
 		                | "+" | "$" | "," ;
-		token           = tokenc+ >mark ;
-		reasonc         = reserved | unreserved | UTF8_NONASCII | SP | HTAB ;
-		reasonmc        = escaped | ( reasonc @append ) ;
-		cid             = word ( "@" word )? ;
+		uri             = alpha schmchars* ":" uric+;
+		token           = tokenc+;
+		tokenhost       = ( tokenc | "[" | "]" | ":" )+;
+		reasonc         = UTF8_NONASCII | ( reserved | unreserved | SP | HTAB ) @append;
+		reasonmc        = escaped | reasonc;
+		cid             = word ( "@" word )?;
 
-		Method          = token %Method;
+		quoted_content  = ( qdtext | quoted_pair )* >start;
+		quoted_string   = LDQUOT quoted_content <: RDQUOT;
+		param_name      = token >mark %store_name;
+		param_content   = tokenhost >start @append;
+		param_value     = param_content | quoted_string;
+		param           = ( param_name ( EQUAL param_value )? ) %addr_param;
+		display         = ( token @append LWS %space )* >start;
+		display_name    = ( display | quoted_string ) %addr_display;
+		addr_spec       = uri >mark %addr_uri;
+		name_addr       = display_name? LAQUOT addr_spec RAQUOT;
+		addr_omg        = ( ( addr_spec -- ";" ) | name_addr ) ( SEMI param )*;
+		addr            = addr_omg >new_addr %store_addr;
+
+		Method          = token >mark %Method;
 		SIPVersionNo    = digit+ @VersionMajor "." digit+ @VersionMinor;
 		RequestURI      = ^SP+ >mark %RequestURI;
 		StatusCode      = ( digit @StatusCode ) {3};
 		ReasonPhrase    = reasonmc+ >start %ReasonPhrase;
 		hval            = ( UTF8 | LWS )* >mark;
 
-		cheader  = ("Call-ID"i | "i"i) HCOLON cid >mark %CallID
-		         | ("Contact"i | "m"i) HCOLON <: hval %Contact
-		         | ("Content-Length"i | "l"i) HCOLON digit+ >{clen=0} @ContentLength
-		         | ("Content-Type"i | "c"i) HCOLON <: hval %ContentType
-		         | "CSeq"i HCOLON (digit+ @CSeq) LWS token %CSeqMethod
-		         | ("Expires"i | "l"i) HCOLON digit+ >{msg.Expires=0} @Expires
-		         | ("From"i | "f"i) HCOLON <: hval %From
-		         | ("Max-Forwards"i | "l"i) HCOLON digit+ >{msg.MaxForwards=0} @MaxForwards
-		         | ("Min-Expires"i | "l"i) HCOLON digit+ >{msg.MinExpires=0} @MinExpires
-		         | "P-Asserted-Identity"i HCOLON <: hval %PAssertedIdentity
-		         | "Record-Route"i HCOLON <: hval %RecordRoute
-		         | "Remote-Party-ID"i HCOLON <: hval %RemotePartyID
-		         | "Route"i HCOLON <: hval %Route
-		         | ("To"i | "t"i) HCOLON <: hval %To
-		         | ("Via"i | "v"i) HCOLON <: hval %Via
+		# Address Headers
+		aname    = ("Contact"i | "m"i) %{addrpp=&contactp}
+		         | ("From"i | "f"i) %{addrpp=&fromp}
+		         | "P-Asserted-Identity"i %{addrpp=&paidp}
+		         | "Record-Route"i %{addrpp=&rroutep}
+		         | "Remote-Party-ID"i %{addrpp=&rpidp}
+		         | "Route"i %{addrpp=&routep}
+		         | ("To"i | "t"i) %{addrpp=&top}
 		         ;
 
-		sname    = "Accept"i %{dest=&msg.Accept}
-		         | ("Accept-Contact"i | "a"i) %{dest=&msg.AcceptContact}
-		         | "Accept-Encoding"i %{dest=&msg.AcceptEncoding}
-		         | "Accept-Language"i %{dest=&msg.AcceptLanguage}
-		         | ("Allow"i | "u"i) %{dest=&msg.Allow}
-		         | ("Allow-Events"i | "u"i) %{dest=&msg.AllowEvents}
-		         | "Alert-Info"i %{dest=&msg.AlertInfo}
-		         | "Authentication-Info"i %{dest=&msg.AuthenticationInfo}
-		         | "Authorization"i %{dest=&msg.Authorization}
-		         | "Content-Disposition"i %{dest=&msg.ContentDisposition}
-		         | "Content-Language"i %{dest=&msg.ContentLanguage}
-		         | ("Content-Encoding"i | "e"i) %{dest=&msg.ContentEncoding}
-		         | "Call-Info"i %{dest=&msg.CallInfo}
-		         | "Date"i %{dest=&msg.Date}
-		         | "Error-Info"i %{dest=&msg.ErrorInfo}
-		         | ("Event"i | "o"i) %{dest=&msg.Event}
-		         | "In-Reply-To"i %{dest=&msg.InReplyTo}
-		         | "Reply-To"i %{dest=&msg.ReplyTo}
-		         | "MIME-Version"i %{dest=&msg.MIMEVersion}
-		         | "Organization"i %{dest=&msg.Organization}
-		         | "Priority"i %{dest=&msg.Priority}
-		         | "Proxy-Authenticate"i %{dest=&msg.ProxyAuthenticate}
-		         | "Proxy-Authorization"i %{dest=&msg.ProxyAuthorization}
-		         | "Proxy-Require"i %{dest=&msg.ProxyRequire}
-		         | ("Refer-To"i | "r"i) %{dest=&msg.ReferTo}
-		         | ("Referred-By"i | "b"i) %{dest=&msg.ReferredBy}
-		         | "Require"i %{dest=&msg.Require}
-		         | "Retry-After"i %{dest=&msg.RetryAfter}
-		         | "Server"i %{dest=&msg.Server}
-		         | ("Subject"i | "s"i) %{dest=&msg.Subject}
-		         | ("Supported"i | "k"i) %{dest=&msg.Supported}
-		         | "Timestamp"i %{dest=&msg.Timestamp}
-		         | "Unsupported"i %{dest=&msg.Unsupported}
-		         | "User-Agent"i %{dest=&msg.UserAgent}
-		         | "Warning"i %{dest=&msg.Warning}
-		         | "WWW-Authenticate"i %{dest=&msg.WWWAuthenticate}
+		# String Headers
+		sname    = "Accept"i %{value=&msg.Accept}
+		         | ("Accept-Contact"i | "a"i) %{value=&msg.AcceptContact}
+		         | "Accept-Encoding"i %{value=&msg.AcceptEncoding}
+		         | "Accept-Language"i %{value=&msg.AcceptLanguage}
+		         | ("Allow"i | "u"i) %{value=&msg.Allow}
+		         | ("Allow-Events"i | "u"i) %{value=&msg.AllowEvents}
+		         | "Alert-Info"i %{value=&msg.AlertInfo}
+		         | "Authentication-Info"i %{value=&msg.AuthenticationInfo}
+		         | "Authorization"i %{value=&msg.Authorization}
+		         | "Content-Disposition"i %{value=&msg.ContentDisposition}
+		         | "Content-Language"i %{value=&msg.ContentLanguage}
+		         | ("Content-Encoding"i | "e"i) %{value=&msg.ContentEncoding}
+		         | "Call-Info"i %{value=&msg.CallInfo}
+		         | "Date"i %{value=&msg.Date}
+		         | "Error-Info"i %{value=&msg.ErrorInfo}
+		         | ("Event"i | "o"i) %{value=&msg.Event}
+		         | "In-Reply-To"i %{value=&msg.InReplyTo}
+		         | "Reply-To"i %{value=&msg.ReplyTo}
+		         | "MIME-Version"i %{value=&msg.MIMEVersion}
+		         | "Organization"i %{value=&msg.Organization}
+		         | "Priority"i %{value=&msg.Priority}
+		         | "Proxy-Authenticate"i %{value=&msg.ProxyAuthenticate}
+		         | "Proxy-Authorization"i %{value=&msg.ProxyAuthorization}
+		         | "Proxy-Require"i %{value=&msg.ProxyRequire}
+		         | ("Refer-To"i | "r"i) %{value=&msg.ReferTo}
+		         | ("Referred-By"i | "b"i) %{value=&msg.ReferredBy}
+		         | "Require"i %{value=&msg.Require}
+		         | "Retry-After"i %{value=&msg.RetryAfter}
+		         | "Server"i %{value=&msg.Server}
+		         | ("Subject"i | "s"i) %{value=&msg.Subject}
+		         | ("Supported"i | "k"i) %{value=&msg.Supported}
+		         | "Timestamp"i %{value=&msg.Timestamp}
+		         | "Unsupported"i %{value=&msg.Unsupported}
+		         | "User-Agent"i %{value=&msg.UserAgent}
+		         | "Warning"i %{value=&msg.Warning}
+		         | "WWW-Authenticate"i %{value=&msg.WWWAuthenticate}
 		         ;
 
-		svalue  := hval CR LF @svalueDone @header;
-		xheader := token %hname HCOLON <: any @svalue;
+		# Custom Headers
+		cheader  = ("Call-ID"i | "i"i) @!gxh HCOLON cid >mark %CallID
+		         | ("Content-Length"i | "l"i) @!gxh HCOLON digit+ >{clen=0} @ContentLength
+		         | ("Content-Type"i | "c"i) @!gxh HCOLON <: hval %ContentType
+		         | "CSeq"i @!gxh HCOLON (digit+ @CSeq) LWS token >mark %CSeqMethod
+		         | ("Expires"i | "l"i) @!gxh HCOLON digit+ >{msg.Expires=0} @Expires
+		         | ("Max-Forwards"i | "l"i) @!gxh HCOLON digit+ >{msg.MaxForwards=0} @MaxForwards
+		         | ("Min-Expires"i | "l"i) @!gxh HCOLON digit+ >{msg.MinExpires=0} @MinExpires
+		         | ("Via"i | "v"i) @!gxh HCOLON <: hval %Via
+		         ;
+
+		avalue  := addr ( COMMA addr )* CR LF @goto_header;
+		svalue  := hval CR LF @store_value @goto_header;
+		xheader := token >mark %store_name HCOLON <: any @{value=nil} @goto_svalue;
 		header  := CR LF @break
-		         | cheader CR LF @header
-		         | sname >mark @err(xheader) HCOLON <: any @svalue
+		         | cheader CR LF @goto_header
+		         | aname >mark @err(goto_xheader) HCOLON <: any @goto_avalue
+		         | sname >mark @err(goto_xheader) HCOLON <: any @goto_svalue
 		         ;
 
 		SIPVersion    = "SIP/" SIPVersionNo;
-		Request       = Method SP RequestURI SP SIPVersion CR LF @header;
-		Response      = SIPVersion SP StatusCode SP ReasonPhrase CR LF @header;
+		Request       = Method SP RequestURI SP SIPVersion CR LF @goto_header;
+		Response      = SIPVersion SP StatusCode SP ReasonPhrase CR LF @goto_header;
 		main         := Request | Response;
 
 		write init;

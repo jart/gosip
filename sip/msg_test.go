@@ -16,6 +16,17 @@ type msgTest struct {
 var msgTests = []msgTest{
 
 	msgTest{
+		name: "UTF8 Phrase",
+		s: "SIP/2.0 200 ◕◡◕\r\n" +
+			"\r\n",
+		msg: sip.Msg{
+			VersionMajor: 2,
+			Status:       200,
+			Phrase:       "◕◡◕",
+		},
+	},
+
+	msgTest{
 		name: "Left Padding",
 		s: "SIP/2.0 200 OK\r\n" +
 			"Expires:    666\r\n" +
@@ -38,7 +49,180 @@ var msgTests = []msgTest{
 			Status:       200,
 			Phrase:       "OK",
 			Headers: sip.Headers{
-				"x-lol": "omfg",
+				"X-LOL": "omfg",
+			},
+		},
+	},
+
+	msgTest{
+		name: "Multiple Addresses",
+		s: "SIP/2.0 200 OK\r\n" +
+			"From:  <sip:lol.com> , <sip:bog.com> \r\n" +
+			"\r\n",
+		msg: sip.Msg{
+			VersionMajor: 2,
+			Status:       200,
+			Phrase:       "OK",
+			From: &sip.Addr{
+				Uri: &sip.URI{
+					Scheme: "sip",
+					Host:   "lol.com",
+				},
+				Next: &sip.Addr{
+					Uri: &sip.URI{
+						Scheme: "sip",
+						Host:   "bog.com",
+					},
+				},
+			},
+		},
+	},
+
+	msgTest{
+		name: "Line Continuations",
+		s: "SIP/2.0 200 OK\r\n" +
+			"From:\r\n" +
+			" <sip:lol.com>,\r\n" +
+			" <sip:bog.com>\r\n" +
+			"\r\n",
+		msg: sip.Msg{
+			VersionMajor: 2,
+			Status:       200,
+			Phrase:       "OK",
+			From: &sip.Addr{
+				Uri: &sip.URI{
+					Scheme: "sip",
+					Host:   "lol.com",
+				},
+				Next: &sip.Addr{
+					Uri: &sip.URI{
+						Scheme: "sip",
+						Host:   "bog.com",
+					},
+				},
+			},
+		},
+	},
+
+	msgTest{
+		name: "Address Unquoted Display",
+		s: "SIP/2.0 200 OK\r\n" +
+			"From: Kitty <sip:lol.com>\r\n" +
+			"\r\n",
+		msg: sip.Msg{
+			VersionMajor: 2,
+			Status:       200,
+			Phrase:       "OK",
+			From: &sip.Addr{
+				Display: "Kitty",
+				Uri: &sip.URI{
+					Scheme: "sip",
+					Host:   "lol.com",
+				},
+			},
+		},
+	},
+
+	msgTest{
+		name: "Address Quoted Display",
+		s: "SIP/2.0 200 OK\r\n" +
+			"From: \"Hello \\\"Kitty\\\" ◕◡◕\" <sip:lol.com>\r\n" +
+			"\r\n",
+		msg: sip.Msg{
+			VersionMajor: 2,
+			Status:       200,
+			Phrase:       "OK",
+			From: &sip.Addr{
+				Display: "Hello \"Kitty\" ◕◡◕",
+				Uri: &sip.URI{
+					Scheme: "sip",
+					Host:   "lol.com",
+				},
+			},
+		},
+	},
+
+	msgTest{
+		name: "Addr Tag",
+		s: "SIP/2.0 200 OK\r\n" +
+			"From: <sip:lol.com>;tag=omfg\r\n" +
+			"\r\n",
+		msg: sip.Msg{
+			VersionMajor: 2,
+			Status:       200,
+			Phrase:       "OK",
+			From: &sip.Addr{
+				Uri: &sip.URI{
+					Scheme: "sip",
+					Host:   "lol.com",
+				},
+				Params: sip.Params{
+					"tag": "omfg",
+				},
+			},
+		},
+	},
+
+	msgTest{
+		name: "Addr Tag Quoted",
+		// TODO(jart): Crash when extra spacing in here.
+		s: "SIP/2.0 200 OK\r\n" +
+			"From: <sip:lol.com>;tag=\"◕◡◕\"\r\n" +
+			"\r\n",
+		msg: sip.Msg{
+			VersionMajor: 2,
+			Status:       200,
+			Phrase:       "OK",
+			From: &sip.Addr{
+				Uri: &sip.URI{
+					Scheme: "sip",
+					Host:   "lol.com",
+				},
+				Params: sip.Params{
+					"tag": "◕◡◕",
+				},
+			},
+		},
+	},
+
+	msgTest{
+		name: "Addr Tag Bare",
+		s: "SIP/2.0 200 OK\r\n" +
+			"From: <sip:lol.com>;tag\r\n" +
+			"\r\n",
+		msg: sip.Msg{
+			VersionMajor: 2,
+			Status:       200,
+			Phrase:       "OK",
+			From: &sip.Addr{
+				Uri: &sip.URI{
+					Scheme: "sip",
+					Host:   "lol.com",
+				},
+				Params: sip.Params{
+					"tag": "",
+				},
+			},
+		},
+	},
+
+	msgTest{
+		name: "Missing Angle Brackets With Tag Belongs to Addr Not URI",
+		s: "SIP/2.0 200 OK\r\n" +
+			"From: sip:lol.com;tag=omfg\r\n" +
+			"\r\n",
+		msg: sip.Msg{
+			VersionMajor: 2,
+			Status:       200,
+			Phrase:       "OK",
+			From: &sip.Addr{
+				Uri: &sip.URI{
+					Scheme: "sip",
+					Host:   "lol.com",
+				},
+				Params: sip.Params{
+					"tag": "omfg",
+				},
 			},
 		},
 	},
