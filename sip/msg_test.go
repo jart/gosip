@@ -16,6 +16,22 @@ type msgTest struct {
 var msgTests = []msgTest{
 
 	msgTest{
+		name: "Digit Padding",
+		s: "OPTIONS sip:10.11.34.37 SIP/2.0\r\n" +
+			"Expires:    666\r\n" +
+			"\r\n",
+		msg: sip.Msg{
+			VersionMajor: 2,
+			Method:       "OPTIONS",
+			Expires:      666,
+			Request: &sip.URI{
+				Scheme: "sip",
+				Host:   "10.11.34.37",
+			},
+		},
+	},
+
+	msgTest{
 		name: "OPTIONS",
 		s: "OPTIONS sip:10.11.34.37:42367 SIP/2.0\r\n" +
 			"Via: SIP/2.0/UDP 10.11.34.37:42367;rport;branch=9dc39c3c3e84\r\n" +
@@ -368,7 +384,7 @@ func TestParseMsg(t *testing.T) {
 			}
 		}
 		if !reflect.DeepEqual(&test.msg, msg) {
-			t.Errorf("Message:\n%#v !=\n%#v", &test.msg, msg)
+			t.Errorf("%s:\n%#v !=\n%#v", test.name, &test.msg, msg)
 			if !reflect.DeepEqual(test.msg.Payload, msg.Payload) {
 				t.Errorf("Payload:\n%#v !=\n%#v", test.msg.Payload, msg.Payload)
 			}
