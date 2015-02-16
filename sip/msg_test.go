@@ -16,17 +16,29 @@ type msgTest struct {
 var msgTests = []msgTest{
 
 	msgTest{
-		name: "Digit Padding",
-		s: "OPTIONS sip:10.11.34.37 SIP/2.0\r\n" +
+		name: "Left Padding",
+		s: "SIP/2.0 200 OK\r\n" +
 			"Expires:    666\r\n" +
 			"\r\n",
 		msg: sip.Msg{
 			VersionMajor: 2,
-			Method:       "OPTIONS",
+			Status:       200,
+			Phrase:       "OK",
 			Expires:      666,
-			Request: &sip.URI{
-				Scheme: "sip",
-				Host:   "10.11.34.37",
+		},
+	},
+
+	msgTest{
+		name: "Extension Headers",
+		s: "SIP/2.0 200 OK\r\n" +
+			"X-LOL: omfg\r\n" +
+			"\r\n",
+		msg: sip.Msg{
+			VersionMajor: 2,
+			Status:       200,
+			Phrase:       "OK",
+			Headers: sip.Headers{
+				"x-lol": "omfg",
 			},
 		},
 	},

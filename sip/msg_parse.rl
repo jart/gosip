@@ -3,6 +3,7 @@
 package sip
 
 import (
+	"bytes"
 	"errors"
 	"fmt"
 	"github.com/jart/gosip/sdp"
@@ -32,7 +33,7 @@ func ParseMsgBytes(data []byte) (msg *Msg, err error) {
 	cs := 0
 	p := 0
 	pe := len(data)
-	//eof := len(data)
+	eof := len(data)
 	//stack := make([]int, 2)
 	//top := 0
 	line := 1
@@ -120,15 +121,22 @@ func ParseMsgBytes(data []byte) (msg *Msg, err error) {
 			fgoto svalue;
 		}
 
-		action svalueDone {
+		action svalueDone {{
+			b := data[mark:p - 1]
 			if dest != nil {
-				*dest = string(data[mark:p - 1])
+				*dest = string(b)
 			} else {
 				if msg.Headers == nil {
 					msg.Headers = Headers{}
 				}
-				msg.Headers[b1] = string(data[mark:p])
+				msg.Headers[b1] = string(b)
 			}
+		}}
+
+		action xheader {
+			dest = nil;
+			fhold;
+			fgoto xheader;
 		}
 
 		action CallID {
@@ -218,7 +226,12 @@ func ParseMsgBytes(data []byte) (msg *Msg, err error) {
 		WSP             = SP | HTAB;
 		LWS             = ( WSP* ( CR when lookAheadWSP ) LF )? WSP+;
 		SWS             = LWS?;
-		UTF8_NONASCII   = 0x80..0xFD;
+		UTF8_CONT       = 0x80..0xBF;
+		UTF8_NONASCII   = 0xC0..0xDF UTF8_CONT {1}
+		                | 0xE0..0xEF UTF8_CONT {2}
+		                | 0xF0..0xF7 UTF8_CONT {3}
+		                | 0xF8..0xFb UTF8_CONT {4}
+		                | 0xFC..0xFD UTF8_CONT {5};
 		UTF8            = 0x21..0x7F | UTF8_NONASCII;
 		UTF8_TRIM       = ( UTF8+ (LWS* UTF8)* ) >start @collapse;
 
@@ -325,10 +338,10 @@ func ParseMsgBytes(data []byte) (msg *Msg, err error) {
 		         ;
 
 		svalue  := hval CR LF @svalueDone @header;
-		xheader  = token %hname HCOLON @{dest=nil} @svalue;
+		xheader := token %hname HCOLON <: any @svalue;
 		header  := CR LF @break
-		         | sname HCOLON <: any @svalue
 		         | cheader CR LF @header
+		         | sname >mark @err(xheader) HCOLON <: any @svalue
 		         ;
 
 		SIPVersion    = "SIP/" SIPVersionNo;
