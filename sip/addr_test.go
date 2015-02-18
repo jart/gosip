@@ -153,3 +153,7 @@ func TestReversed(t *testing.T) {
 		t.Error("wtf", b.Next.Next)
 	}
 }
+
+func addrError(t *testing.T, name string, want, got *sip.Addr) {
+	t.Errorf("%s:\n%#v\n%#v\n!=\n%#v\n%#v", name, want, want.Uri, got, got.Uri)
+}

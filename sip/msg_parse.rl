@@ -6,13 +6,12 @@ import (
 	"errors"
 	"fmt"
 	"github.com/jart/gosip/sdp"
-	"strings"
 )
 
 %% machine msg;
 %% write data;
 
-// ParseMsg turns a a SIP message into a data structure.
+// ParseMsg turns a SIP message into a data structure.
 func ParseMsg(s string) (msg *Msg, err error) {
 	if s == "" {
 		return nil, errors.New("Empty SIP message")
@@ -20,20 +19,13 @@ func ParseMsg(s string) (msg *Msg, err error) {
 	return ParseMsgBytes([]byte(s))
 }
 
-// ParseMsg turns a a SIP message byte slice into a data structure.
+// ParseMsg turns a SIP message byte slice into a data structure.
 func ParseMsgBytes(data []byte) (msg *Msg, err error) {
 	if data == nil {
 		return nil, nil
 	}
 	msg = new(Msg)
-	fromp := &msg.From
-	top := &msg.To
 	viap := &msg.Via
-	routep := &msg.Route
-	rroutep := &msg.RecordRoute
-	contactp := &msg.Contact
-	paidp := &msg.PAssertedIdentity
-	rpidp := &msg.RemotePartyID
 	cs := 0
 	p := 0
 	pe := len(data)
@@ -48,12 +40,16 @@ func ParseMsgBytes(data []byte) (msg *Msg, err error) {
 	var name string
 	var hex byte
 	var value *string
-	var addr *Addr
-	var addrpp ***Addr
+	var addr **Addr
 
 	%%{
 		action break {
 			fbreak;
+		}
+
+		action line {
+			line++
+			linep = p + 1
 		}
 
 		action mark {
@@ -72,10 +68,6 @@ func ParseMsgBytes(data []byte) (msg *Msg, err error) {
 		action space {
 			buf[amt] = ' '
 			amt++
-		}
-
-		action erase {
-			amt--
 		}
 
 		action collapse {
@@ -121,18 +113,13 @@ func ParseMsgBytes(data []byte) (msg *Msg, err error) {
 			msg.Phrase = string(buf[0:amt])
 		}
 
-		action goto_avalue {
-			fhold;
-			fgoto avalue;
-		}
-
 		action goto_header {
 			fgoto header;
 		}
 
-		action goto_svalue {
+		action goto_value {
 			fhold;
-			fgoto svalue;
+			fgoto value;
 		}
 
 		action goto_xheader {
@@ -154,6 +141,9 @@ func ParseMsgBytes(data []byte) (msg *Msg, err error) {
 			b := data[mark:p - 1]
 			if value != nil {
 				*value = string(b)
+			} else if addr != nil {
+				*addr, err = ParseAddrBytes(b, *addr)
+				if err != nil { return nil, err }
 			} else {
 				if msg.Headers == nil {
 					msg.Headers = Headers{}
@@ -161,15 +151,6 @@ func ParseMsgBytes(data []byte) (msg *Msg, err error) {
 				msg.Headers[name] = string(b)
 			}
 		}}
-
-		action store_addr {
-			// TODO(jart): Why does this fire multiple times?
-			if addr != nil {
-				**addrpp = addr
-				*addrpp = &addr.Next
-				addr = nil
-			}
-		}
 
 		action new_addr {
 			addr = new(Addr)
@@ -229,17 +210,18 @@ func ParseMsgBytes(data []byte) (msg *Msg, err error) {
 			for *viap != nil { viap = &(*viap).Next }
 		}
 
-		action lookAheadWSP { p + 2 < pe && (data[p+2] == ' ' || data[p+2] == '\t') }
+		action lookAheadWSP { lookAheadWSP(data, p, pe) }
 
 		# https://tools.ietf.org/html/rfc2234
 		SP              = " ";
 		HTAB            = "\t";
 		CR              = "\r";
-		LF              = "\n" @{ line++; linep = p; };
+		LF              = "\n" @line;
 		CRLF            = CR LF;
 		WSP             = SP | HTAB;
 		LWS             = ( WSP* ( CR when lookAheadWSP ) LF )? WSP+;
 		SWS             = LWS?;
+
 		UTF8_CONT       = 0x80..0xBF @append;
 		UTF8_NONASCII   = 0xC0..0xDF @append UTF8_CONT {1}
 		                | 0xE0..0xEF @append UTF8_CONT {2}
@@ -247,41 +229,48 @@ func ParseMsgBytes(data []byte) (msg *Msg, err error) {
 		                | 0xF8..0xFb @append UTF8_CONT {4}
 		                | 0xFC..0xFD @append UTF8_CONT {5};
 		UTF8            = 0x21..0x7F @append | UTF8_NONASCII;
-		UTF8_TRIM       = ( UTF8+ (LWS* UTF8)* ) >start @collapse;
+
+		mUTF8_CONT      = 0x80..0xBF;
+		mUTF8_NONASCII  = 0xC0..0xDF mUTF8_CONT {1}
+		                | 0xE0..0xEF mUTF8_CONT {2}
+		                | 0xF0..0xF7 mUTF8_CONT {3}
+		                | 0xF8..0xFb mUTF8_CONT {4}
+		                | 0xFC..0xFD mUTF8_CONT {5};
+		mUTF8           = 0x21..0x7F | mUTF8_NONASCII;
 
 		# https://tools.ietf.org/html/rfc3261#section-25.1
 		reserved        = ";" | "/" | "?" | ":" | "@" | "&" | "=" | "+" | "$" | "," ;
 		mark            = "-" | "_" | "." | "!" | "~" | "*" | "'" | "(" | ")" ;
-		unreserved      = alpha | digit | mark ;
-		tokenc          = alpha | digit | "-" | "." | "!" | "%" | "*" | "_"
-		                | "+" | "`" | "'" | "~" ;
+		unreserved      = alnum | mark ;
+		tokenc          = alnum | "-" | "." | "!" | "%" | "*" | "_" | "+" | "`"
+		                | "'" | "~" ;
 		separators      = "("  | ")" | "<" | ">" | "@" | "," | ";" | ":" | "\\"
 		                | "\"" | "/" | "[" | "]" | "?" | "=" | "{" | "}" | SP
 		                | HTAB ;
-		wordc           = alpha | digit | "-" | "." | "!" | "%" | "*" | "_"
-		                | "+" | "`" | "'" | "~" | "(" | ")" | "<" | ">" | ":"
-		                | "\\" | "\"" | "/" | "[" | "]" | "?" | "{" | "}" ;
-		schmchars       = alpha | digit | "+" | "-" | "." ;
-		word            = wordc+ ;
-		STAR            = SWS "*" SWS ;
-		SLASH           = SWS "/" SWS ;
-		EQUAL           = SWS "=" SWS ;
-		LPAREN          = SWS "(" SWS ;
-		RPAREN          = SWS ")" SWS ;
-		RAQUOT          = ">" SWS ;
-		LAQUOT          = SWS "<" ;
-		COMMA           = SWS "," SWS ;
-		SEMI            = SWS ";" SWS ;
-		COLON           = SWS ":" SWS ;
-		HCOLON          = WSP* ":" SWS ;
-		LDQUOT          = SWS "\"" ;
-		RDQUOT          = "\"" SWS ;
+		wordc           = alnum | "-" | "." | "!" | "%" | "*" | "_" | "+" | "`"
+		                | "'" | "~" | "(" | ")" | "<" | ">" | ":" | "\\" | "\""
+		                | "/" | "[" | "]" | "?" | "{" | "}" ;
+		schmchars       = alnum | "+" | "-" | "." ;
+		word            = wordc+;
+		STAR            = SWS "*" SWS;
+		SLASH           = SWS "/" SWS;
+		EQUAL           = SWS "=" SWS;
+		LPAREN          = SWS "(" SWS;
+		RPAREN          = SWS ")" SWS;
+		RAQUOT          = ">" SWS;
+		LAQUOT          = SWS "<";
+		COMMA           = SWS "," SWS;
+		SEMI            = SWS ";" SWS;
+		COLON           = SWS ":" SWS;
+		HCOLON          = WSP* ":" SWS;
+		LDQUOT          = SWS "\"";
+		RDQUOT          = "\"" SWS;
 		ctext           = 0x21..0x27 | 0x2A..0x5B | 0x5D..0x7E | UTF8_NONASCII | LWS;
 		quoted_pair     = "\\" ( 0x00..0x09 | 0x0B..0x0C | 0x0E..0x7F ) @append;
 		comment         = LPAREN ( ctext | quoted_pair )* <: RPAREN;  # TODO(jart): Nested parens.
 		qdtext          = UTF8_NONASCII | LWS @append | ( 0x21 | 0x23..0x5B | 0x5D..0x7E ) @append;
 		escaped         = "%" ( xdigit @hexHi ) ( xdigit @hexLo ) ;
-		uric            = reserved | unreserved | "%" ;
+		uric            = reserved | unreserved | "%" | "[" | "]";
 		uric_no_slash   = unreserved | escaped | ";" | "?" | ":" | "@" | "&" | "="
 		                | "+" | "$" | "," ;
 		uri             = alpha schmchars* ":" uric+;
@@ -291,34 +280,21 @@ func ParseMsgBytes(data []byte) (msg *Msg, err error) {
 		reasonmc        = escaped | reasonc;
 		cid             = word ( "@" word )?;
 
-		quoted_content  = ( qdtext | quoted_pair )* >start;
-		quoted_string   = LDQUOT quoted_content <: RDQUOT;
-		param_name      = token >mark %store_name;
-		param_content   = tokenhost >start @append;
-		param_value     = param_content | quoted_string;
-		param           = ( param_name ( EQUAL param_value )? ) %addr_param;
-		display         = ( token @append LWS %space )* >start;
-		display_name    = ( display | quoted_string ) %addr_display;
-		addr_spec       = uri >mark %addr_uri;
-		name_addr       = display_name? LAQUOT addr_spec RAQUOT;
-		addr_omg        = ( ( addr_spec -- ";" ) | name_addr ) ( SEMI param )*;
-		addr            = addr_omg >new_addr %store_addr;
-
 		Method          = token >mark %Method;
 		SIPVersionNo    = digit+ @VersionMajor "." digit+ @VersionMinor;
 		RequestURI      = ^SP+ >mark %RequestURI;
 		StatusCode      = ( digit @StatusCode ) {3};
 		ReasonPhrase    = reasonmc+ >start %ReasonPhrase;
-		hval            = ( UTF8 | LWS )* >mark;
+		hval            = ( mUTF8 | LWS )* >mark;
 
 		# Address Headers
-		aname    = ("Contact"i | "m"i) %{addrpp=&contactp}
-		         | ("From"i | "f"i) %{addrpp=&fromp}
-		         | "P-Asserted-Identity"i %{addrpp=&paidp}
-		         | "Record-Route"i %{addrpp=&rroutep}
-		         | "Remote-Party-ID"i %{addrpp=&rpidp}
-		         | "Route"i %{addrpp=&routep}
-		         | ("To"i | "t"i) %{addrpp=&top}
+		aname    = ("Contact"i | "m"i) %{addr=&msg.Contact}
+		         | ("From"i | "f"i) %{addr=&msg.From}
+		         | "P-Asserted-Identity"i %{addr=&msg.PAssertedIdentity}
+		         | "Record-Route"i %{addr=&msg.RecordRoute}
+		         | "Remote-Party-ID"i %{addr=&msg.RemotePartyID}
+		         | "Route"i %{addr=&msg.Route}
+		         | ("To"i | "t"i) %{addr=&msg.To}
 		         ;
 
 		# String Headers
@@ -371,18 +347,17 @@ func ParseMsgBytes(data []byte) (msg *Msg, err error) {
 		         | ("Via"i | "v"i) @!gxh HCOLON <: hval %Via
 		         ;
 
-		avalue  := addr ( COMMA addr )* CR LF @goto_header;
-		svalue  := hval CR LF @store_value @goto_header;
-		xheader := token >mark %store_name HCOLON <: any @{value=nil} @goto_svalue;
-		header  := CR LF @break
-		         | cheader CR LF @goto_header
-		         | aname >mark @err(goto_xheader) HCOLON <: any @goto_avalue
-		         | sname >mark @err(goto_xheader) HCOLON <: any @goto_svalue
+		value   := hval <: CRLF @store_value @goto_header;
+		xheader := token >mark %store_name HCOLON <: any @{value=nil;addr=nil} @goto_value;
+		header  := CRLF @break
+		         | cheader <: CRLF @goto_header
+		         | aname >mark @err(goto_xheader) HCOLON <: any @{value=nil} @goto_value
+		         | sname >mark @err(goto_xheader) HCOLON <: any @{addr=nil} @goto_value
 		         ;
 
 		SIPVersion    = "SIP/" SIPVersionNo;
-		Request       = Method SP RequestURI SP SIPVersion CR LF @goto_header;
-		Response      = SIPVersion SP StatusCode SP ReasonPhrase CR LF @goto_header;
+		Request       = Method SP RequestURI SP SIPVersion CRLF @goto_header;
+		Response      = SIPVersion SP StatusCode SP ReasonPhrase CRLF @goto_header;
 		main         := Request | Response;
 
 		write init;
@@ -411,4 +386,8 @@ func ParseMsgBytes(data []byte) (msg *Msg, err error) {
 	}
 
 	return msg, nil
+}
+
+func lookAheadWSP(data []byte, p, pe int) bool {
+	return p + 2 < pe && (data[p+2] == ' ' || data[p+2] == '\t')
 }

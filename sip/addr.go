@@ -20,9 +20,7 @@ package sip
 
 import (
 	"bytes"
-	"errors"
 	"github.com/jart/gosip/util"
-	"strings"
 )
 
 // Represents a SIP Address Linked List
@@ -33,90 +31,7 @@ type Addr struct {
 	Next    *Addr  // for comma separated lists of addresses
 }
 
-// Parses a SIP address.
-func ParseAddr(s string) (addr *Addr, err error) {
-	addr = new(Addr)
-	l := len(s)
-	if l == 0 {
-		return nil, errors.New("empty addr")
-	}
-
-	// Extract display.
-	switch n := strings.IndexAny(s, "\"<"); {
-	case n < 0:
-		return nil, errors.New("Invalid address")
-	case s[n] == '<': // Display is not quoted.
-		addr.Display, s = strings.Trim(s[0:n], " "), s[n+1:]
-	case s[n] == '"': // We found an opening quote.
-		s = s[n+1:]
-	LOL:
-		for s != "" {
-			switch s[0] {
-			case '"': // Closing quote.
-				s = s[1:]
-				break LOL
-			case '\\': // Escape sequence.
-				if len(s) < 2 {
-					return nil, errors.New("Evil quote escape")
-				}
-				switch s[1] {
-				case '"':
-					addr.Display += "\""
-				case '\\':
-					addr.Display += "\\"
-				}
-				s = s[2:]
-			default: // Generic character.
-				addr.Display += string(s[0])
-				s = s[1:]
-			}
-		}
-		if s == "" {
-			return nil, errors.New("No closing quote in display")
-		}
-		for s != "" {
-			c := s[0]
-			s = s[1:]
-			if c == '<' {
-				break
-			}
-		}
-	}
-
-	if n := strings.Index(s, ">"); n > 0 {
-		addr.Uri, err = ParseURI(s[0:n])
-		if err != nil {
-			return nil, err
-		}
-		s = s[n+1:]
-	} else {
-		addr.Uri, err = ParseURI(s)
-		if err != nil {
-			return nil, err
-		}
-		s = ""
-	}
-
-	// Extract semicolon delimited params.
-	if s != "" && s[0] == ';' {
-		addr.Params = parseParams(s[1:])
-		s = ""
-	}
-
-	// Is there another address?
-	s = strings.TrimLeft(s, " \t")
-	if s != "" && s[0] == ',' {
-		s = strings.TrimLeft(s[1:], " \t")
-		if s != "" {
-			addr.Next, err = ParseAddr(s)
-			if err != nil {
-				return nil, err
-			}
-		}
-	}
-
-	return addr, nil
-}
+//go:generate ragel -Z -G2 -o addr_parse.go addr_parse.rl
 
 func (addr *Addr) String() string {
 	if addr == nil {

@@ -79,7 +79,30 @@ var msgTests = []msgTest{
 	},
 
 	msgTest{
-		name: "Line Continuations",
+		name: "Line Continuation Warning",
+		s: "SIP/2.0 200 OK\r\n" +
+			"Warning: Morning and evening\r\n" +
+			" Maids heard the goblins cry:\r\n" +
+			" “Come buy our orchard fruits,\r\n" +
+			" Come buy, come buy:\r\n" +
+			" Apples and quinces,\r\n" +
+			" Lemons and oranges\r\n" +
+			"\r\n",
+		msg: sip.Msg{
+			VersionMajor: 2,
+			Status:       200,
+			Phrase:       "OK",
+			Warning: "Morning and evening\r\n" +
+				" Maids heard the goblins cry:\r\n" +
+				" “Come buy our orchard fruits,\r\n" +
+				" Come buy, come buy:\r\n" +
+				" Apples and quinces,\r\n" +
+				" Lemons and oranges",
+		},
+	},
+
+	msgTest{
+		name: "Line Continuations Addr",
 		s: "SIP/2.0 200 OK\r\n" +
 			"From:\r\n" +
 			" <sip:lol.com>,\r\n" +
@@ -134,6 +157,52 @@ var msgTests = []msgTest{
 			Phrase:       "OK",
 			From: &sip.Addr{
 				Display: "Hello \"Kitty\" ◕◡◕",
+				Uri: &sip.URI{
+					Scheme: "sip",
+					Host:   "lol.com",
+				},
+			},
+		},
+	},
+
+	msgTest{
+		name: "Address Quoted Display Multiline",
+		s: "SIP/2.0 200 OK\r\n" +
+			"From: \"oh\r\n" +
+			"  my \r\n" +
+			" goth\" <sip:lol.com>\r\n" +
+			"\r\n",
+		msg: sip.Msg{
+			VersionMajor: 2,
+			Status:       200,
+			Phrase:       "OK",
+			From: &sip.Addr{
+				Display: "oh\r\n" +
+					"  my \r\n" +
+					" goth",
+				Uri: &sip.URI{
+					Scheme: "sip",
+					Host:   "lol.com",
+				},
+			},
+		},
+	},
+
+	msgTest{
+		name: "Address Unquoted Display Multiline",
+		s: "SIP/2.0 200 OK\r\n" +
+			"From: oh\r\n" +
+			"  my \r\n" +
+			" goth <sip:lol.com>\r\n" +
+			"\r\n",
+		msg: sip.Msg{
+			VersionMajor: 2,
+			Status:       200,
+			Phrase:       "OK",
+			From: &sip.Addr{
+				Display: "oh\r\n" +
+					"  my \r\n" +
+					" goth",
 				Uri: &sip.URI{
 					Scheme: "sip",
 					Host:   "lol.com",
@@ -594,16 +663,16 @@ func TestParseMsg(t *testing.T) {
 				t.Errorf("Request:\n%#v !=\n%#v", test.msg.Request, msg.Request)
 			}
 			if !reflect.DeepEqual(test.msg.To, msg.To) {
-				t.Errorf("To:\n%#v !=\n%#v", test.msg.To, msg.To)
+				addrError(t, "To", test.msg.To, msg.To)
 			}
 			if !reflect.DeepEqual(test.msg.From, msg.From) {
-				t.Errorf("From:\n%#v !=\n%#v", test.msg.From, msg.From)
+				addrError(t, "From", test.msg.From, msg.From)
 			}
 			if !reflect.DeepEqual(test.msg.Contact, msg.Contact) {
-				t.Errorf("Contact:\n%#v !=\n%#v", test.msg.Contact, msg.Contact)
+				addrError(t, "Contact", test.msg.Contact, msg.Contact)
 			}
 			if !reflect.DeepEqual(test.msg.RecordRoute, msg.RecordRoute) {
-				t.Errorf("RecordRoute:\n%#v !=\n%#v", test.msg.RecordRoute, msg.RecordRoute)
+				addrError(t, "RecordRoute", test.msg.RecordRoute, msg.RecordRoute)
 			}
 		}
 	}
