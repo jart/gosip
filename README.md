@@ -41,9 +41,16 @@ should consider Asterisk, FreeSWITCH, or SER.
 
 ## RFCs
 
-- [SIP (RFC 3261)](https://tools.ietf.org/html/rfc3261)
-- [SDP (RFC 4566)](https://tools.ietf.org/html/rfc4566)
-- [RTP (RFC 3550)](https://tools.ietf.org/html/rfc3550)
-- [RTP DTMF (RFC 4733)](https://tools.ietf.org/html/rfc4733)
-- [SIP 100rel (RFC 3262)](https://tools.ietf.org/html/rfc3262)
-- [SIP: Locating a Server (RFC 3263)](https://tools.ietf.org/html/rfc3263)
+- [RFC3261: SIP](https://tools.ietf.org/html/rfc3261)
+- [RFC4566: SDP](https://tools.ietf.org/html/rfc4566)
+- [RFC3550: RTP](https://tools.ietf.org/html/rfc3550)
+- [RFC4733: RTP DTMF](https://tools.ietf.org/html/rfc4733)
+- [RFC3262: SIP 100rel](https://tools.ietf.org/html/rfc3262)
+- [RFC3263: SIP: Locating a Server](https://tools.ietf.org/html/rfc3263)
+
+## Example RFCs
+
+- [RFC4475: SIP Torture Test Messages](https://tools.ietf.org/html/rfc4475)
+- [RFC3665: SIP basic call flows](https://tools.ietf.org/html/rfc3665)
+- [RFC3666: SIP PSTN call flows](https://tools.ietf.org/html/rfc3666)
+- [RFC6216: Example call flows using SIP security mechanisms](https://tools.ietf.org/html/rfc6216)
