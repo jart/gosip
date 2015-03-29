@@ -102,6 +102,71 @@ var msgTests = []msgTest{
 	},
 
 	msgTest{
+		name: "Line Continuation Warning Followed By Extended Header",
+		s: "SIP/2.0 200 OK\r\n" +
+			"Warning: Morning and evening\r\n" +
+			" Maids heard the goblins cry:\r\n" +
+			" “Come buy our orchard fruits,\r\n" +
+			" Come buy, come buy:\r\n" +
+			" Apples and quinces,\r\n" +
+			" Lemons and oranges\r\n" +
+			"X-LOL: omfg\r\n" +
+			"\r\n",
+		msg: sip.Msg{
+			VersionMajor: 2,
+			Status:       200,
+			Phrase:       "OK",
+			Warning: "Morning and evening\r\n" +
+				" Maids heard the goblins cry:\r\n" +
+				" “Come buy our orchard fruits,\r\n" +
+				" Come buy, come buy:\r\n" +
+				" Apples and quinces,\r\n" +
+				" Lemons and oranges",
+			Headers: sip.Headers{
+				"X-LOL": "omfg",
+			},
+		},
+	},
+
+	msgTest{
+		name: "Line Continuation Extended Followed By Extended",
+		s: "SIP/2.0 200 OK\r\n" +
+			"X-Warning: Come buy our orchard fruits,\r\n" +
+			" Come buy, come buy\r\n" +
+			"X-LOL: omfg\r\n" +
+			"\r\n",
+		msg: sip.Msg{
+			VersionMajor: 2,
+			Status:       200,
+			Phrase:       "OK",
+			Headers: sip.Headers{
+				"X-Warning": "Come buy our orchard fruits,\r\n" +
+					" Come buy, come buy",
+				"X-LOL": "omfg",
+			},
+		},
+	},
+
+	msgTest{
+		name: "Line Continuation Extended Followed By Extended 2",
+		s: "SIP/2.0 200 OK\r\n" +
+			"NewFangledHeader:   newfangled value\r\n" +
+			" continued newfangled value\r\n" +
+			"UnknownHeaderWithUnusualValue: ;;,,;;,;\r\n" +
+			"\r\n",
+		msg: sip.Msg{
+			VersionMajor: 2,
+			Status:       200,
+			Phrase:       "OK",
+			Headers: sip.Headers{
+				"NewFangledHeader": "newfangled value\r\n" +
+					" continued newfangled value",
+				"UnknownHeaderWithUnusualValue": ";;,,;;,;",
+			},
+		},
+	},
+
+	msgTest{
 		name: "Line Continuations Addr",
 		s: "SIP/2.0 200 OK\r\n" +
 			"From:\r\n" +
@@ -123,6 +188,29 @@ var msgTests = []msgTest{
 						Host:   "bog.com",
 					},
 				},
+			},
+		},
+	},
+
+	msgTest{
+		name: "Extended header looks like standard headers",
+		s: "SIP/2.0 200 OK\r\n" +
+			"Proxy-LOL: take\r\n" +
+			"CSeq2: back\r\n" +
+			"Contazt: the\r\n" +
+			"P-Asserted-LOL: dance\r\n" +
+			"viaz: floor\r\n" +
+			"\r\n",
+		msg: sip.Msg{
+			VersionMajor: 2,
+			Status:       200,
+			Phrase:       "OK",
+			Headers: sip.Headers{
+				"Proxy-LOL":      "take",
+				"CSeq2":          "back",
+				"Contazt":        "the",
+				"P-Asserted-LOL": "dance",
+				"viaz":           "floor",
 			},
 		},
 	},
@@ -296,6 +384,190 @@ var msgTests = []msgTest{
 		},
 	},
 
+	// // TODO(jart): Implement me.
+	// msgTest{
+	// 	name: "Content Type Params",
+	// 	s: "SIP/2.0 200 OK\r\n" +
+	// 		"Content-Type: multipart/signed;\r\n" +
+	// 		"        protocol=\"application/pkcs7-signature\";\r\n" +
+	// 		"        micalg=sha1; boundary=boundary42\r\n" +
+	// 		"\r\n",
+	// 	msg: sip.Msg{
+	// 		VersionMajor: 2,
+	// 		Status:       200,
+	// 		Phrase:       "OK",
+	// 		Expires:      666,
+	// 	},
+	// },
+
+	msgTest{
+		name: "Via Line Continuation",
+		s: "SIP/2.0 200 OK\r\n" +
+			"Via: SIP/2.0/UDP 10.11.34.37,\r\n" +
+			"     SIP/2.0/UDP 10.11.34.38\r\n" +
+			"Warning: Maids heard the goblins cry\r\n" +
+			"\r\n",
+		msg: sip.Msg{
+			VersionMajor: 2,
+			Status:       200,
+			Phrase:       "OK",
+			Warning:      "Maids heard the goblins cry",
+			Via: &sip.Via{
+				Protocol:  "SIP",
+				Version:   "2.0",
+				Transport: "UDP",
+				Host:      "10.11.34.37",
+				Next: &sip.Via{
+					Protocol:  "SIP",
+					Version:   "2.0",
+					Transport: "UDP",
+					Host:      "10.11.34.38",
+				},
+			},
+		},
+	},
+
+	msgTest{
+		name: "Via Multiple Lines",
+		s: "SIP/2.0 200 OK\r\n" +
+			"Via: SIP/2.0/UDP 10.11.34.37\r\n" +
+			"Via: SIP/2.0/UDP 10.11.34.38\r\n" +
+			"\r\n",
+		msg: sip.Msg{
+			VersionMajor: 2,
+			Status:       200,
+			Phrase:       "OK",
+			Via: &sip.Via{
+				Protocol:  "SIP",
+				Version:   "2.0",
+				Transport: "UDP",
+				Host:      "10.11.34.37",
+				Next: &sip.Via{
+					Protocol:  "SIP",
+					Version:   "2.0",
+					Transport: "UDP",
+					Host:      "10.11.34.38",
+				},
+			},
+		},
+	},
+
+	msgTest{
+		name: "Via Multiple Lines Continuation",
+		s: "SIP/2.0 200 OK\r\n" +
+			"Via: SIP/2.0/UDP 10.11.34.37\r\n" +
+			"v: SIP/2.0/UDP 10.11.34.38, SIP/2.0/UDP 10.11.34.39\r\n" +
+			"m: <sip:love.com>\r\n" +
+			"\r\n",
+		msg: sip.Msg{
+			VersionMajor: 2,
+			Status:       200,
+			Phrase:       "OK",
+			Via: &sip.Via{
+				Protocol:  "SIP",
+				Version:   "2.0",
+				Transport: "UDP",
+				Host:      "10.11.34.37",
+				Next: &sip.Via{
+					Protocol:  "SIP",
+					Version:   "2.0",
+					Transport: "UDP",
+					Host:      "10.11.34.38",
+					Next: &sip.Via{
+						Protocol:  "SIP",
+						Version:   "2.0",
+						Transport: "UDP",
+						Host:      "10.11.34.39",
+					},
+				},
+			},
+			Contact: &sip.Addr{
+				Uri: &sip.URI{
+					Scheme: "sip",
+					Host:   "love.com",
+				},
+			},
+		},
+	},
+
+	msgTest{
+		name: "Via Param",
+		s: "SIP/2.0 200 OK\r\n" +
+			"Via: SIP/ 2.0/TCP spindle.example.com ;branch=z9hG4bK9ikj8\r\n" +
+			"\r\n",
+		msg: sip.Msg{
+			VersionMajor: 2,
+			Status:       200,
+			Phrase:       "OK",
+			Via: &sip.Via{
+				Protocol:  "SIP",
+				Version:   "2.0",
+				Transport: "TCP",
+				Host:      "spindle.example.com",
+				Params:    sip.Params{"branch": "z9hG4bK9ikj8"},
+			},
+		},
+	},
+
+	msgTest{
+		name: "Via Param Torture",
+		s: "SIP/2.0 200 OK\r\n" +
+			"v:  SIP  / 2.0  / TCP     spindle.example.com   ;\r\n" +
+			"  branch  =   z9hG4bK9ikj8\r\n" +
+			"\r\n",
+		msg: sip.Msg{
+			VersionMajor: 2,
+			Status:       200,
+			Phrase:       "OK",
+			Via: &sip.Via{
+				Protocol:  "SIP",
+				Version:   "2.0",
+				Transport: "TCP",
+				Host:      "spindle.example.com",
+				Params:    sip.Params{"branch": "z9hG4bK9ikj8"},
+			},
+		},
+	},
+
+	msgTest{
+		name: "Via Torture",
+		s: "SIP/2.0 200 OK\r\n" +
+			"Via  : SIP  /   2.0\r\n" +
+			" /UDP\r\n" +
+			"    192.0.2.2;branch=390skdjuw\r\n" +
+			"v:  SIP  / 2.0  / TCP     spindle.example.com   ;\r\n" +
+			"  branch  =   z9hG4bK9ikj8  ,\r\n" +
+			" SIP  /    2.0   / UDP  192.168.255.111   ; branch=\r\n" +
+			" z9hG4bK30239\r\n" +
+			"\r\n",
+		msg: sip.Msg{
+			VersionMajor: 2,
+			Status:       200,
+			Phrase:       "OK",
+			Via: &sip.Via{
+				Protocol:  "SIP",
+				Version:   "2.0",
+				Transport: "UDP",
+				Host:      "192.0.2.2",
+				Params:    sip.Params{"branch": "390skdjuw"},
+				Next: &sip.Via{
+					Protocol:  "SIP",
+					Version:   "2.0",
+					Transport: "TCP",
+					Host:      "spindle.example.com",
+					Params:    sip.Params{"branch": "z9hG4bK9ikj8"},
+					Next: &sip.Via{
+						Protocol:  "SIP",
+						Version:   "2.0",
+						Transport: "UDP",
+						Host:      "192.168.255.111",
+						Params:    sip.Params{"branch": "z9hG4bK30239"},
+					},
+				},
+			},
+		},
+	},
+
 	msgTest{
 		name: "OPTIONS",
 		s: "OPTIONS sip:10.11.34.37:42367 SIP/2.0\r\n" +
@@ -323,11 +595,12 @@ var msgTests = []msgTest{
 				Port:   42367,
 			},
 			Via: &sip.Via{
-				Version: "2.0",
-				Proto:   "UDP",
-				Host:    "10.11.34.37",
-				Port:    42367,
-				Params:  sip.Params{"rport": "", "branch": "9dc39c3c3e84"},
+				Protocol:  "SIP",
+				Version:   "2.0",
+				Transport: "UDP",
+				Host:      "10.11.34.37",
+				Port:      42367,
+				Params:    sip.Params{"rport": "", "branch": "9dc39c3c3e84"},
 			},
 			To: &sip.Addr{
 				Uri: &sip.URI{
@@ -394,10 +667,11 @@ var msgTests = []msgTest{
 			Allow:        "INVITE, ACK, CANCEL, OPTIONS, BYE, REFER, SUBSCRIBE, NOTIFY, INFO, PUBLISH",
 			Supported:    "replaces, timer",
 			Via: &sip.Via{
-				Version: "2.0",
-				Proto:   "UDP",
-				Host:    "127.0.0.1",
-				Port:    52711,
+				Protocol:  "SIP",
+				Version:   "2.0",
+				Transport: "UDP",
+				Host:      "127.0.0.1",
+				Port:      52711,
 				Params: sip.Params{
 					"branch":   "z9hG4bK-03d1d81e94a0",
 					"received": "127.0.0.1",
@@ -478,11 +752,12 @@ var msgTests = []msgTest{
 			CSeq:         31109,
 			CSeqMethod:   "INVITE",
 			Via: &sip.Via{
-				Version: "2.0",
-				Proto:   "UDP",
-				Host:    "1.2.3.4",
-				Port:    55345,
-				Params:  sip.Params{"branch": "z9hG4bK-d1d81e94a099"},
+				Protocol:  "SIP",
+				Version:   "2.0",
+				Transport: "UDP",
+				Host:      "1.2.3.4",
+				Port:      55345,
+				Params:    sip.Params{"branch": "z9hG4bK-d1d81e94a099"},
 			},
 			From: &sip.Addr{
 				Uri: &sip.URI{
@@ -581,11 +856,12 @@ var msgTests = []msgTest{
 				Host:   "10.11.34.37",
 			},
 			Via: &sip.Via{
-				Version: "2.0",
-				Proto:   "UDP",
-				Host:    "10.11.34.37",
-				Port:    59516,
-				Params:  sip.Params{"rport": "", "branch": "z9hG4bKS308QB9UUpNyD"},
+				Protocol:  "SIP",
+				Version:   "2.0",
+				Transport: "UDP",
+				Host:      "10.11.34.37",
+				Port:      59516,
+				Params:    sip.Params{"rport": "", "branch": "z9hG4bKS308QB9UUpNyD"},
 			},
 			To: &sip.Addr{
 				Uri: &sip.URI{
@@ -635,6 +911,140 @@ var msgTests = []msgTest{
 			},
 		},
 	},
+
+	// msgTest{
+	// 	name: "RFC4475 Torture Message #1",
+	// 	s: "INVITE sip:vivekg@chair-dnrc.example.com;unknownparam SIP/2.0\r\n" +
+	// 		"TO :\r\n" +
+	// 		" sip:vivekg@chair-dnrc.example.com ;   tag    = 1918181833n\r\n" +
+	// 		"from   : \"J Rosenberg \\\\\\\"\"       <sip:jdrosen@example.com>\r\n" +
+	// 		"  ;\r\n" +
+	// 		"  tag = 98asjd8\r\n" +
+	// 		"MaX-fOrWaRdS: 0068\r\n" +
+	// 		"Call-ID: wsinv.ndaksdj@192.0.2.1\r\n" +
+	// 		"Content-Length   : 150\r\n" +
+	// 		"cseq: 0009\r\n" +
+	// 		"  INVITE\r\n" +
+	// 		"Via  : SIP  /   2.0\r\n" +
+	// 		" /UDP\r\n" +
+	// 		"    192.0.2.2;branch=390skdjuw\r\n" +
+	// 		"s :\r\n" +
+	// 		"NewFangledHeader:   newfangled value\r\n" +
+	// 		" continued newfangled value\r\n" +
+	// 		"UnknownHeaderWithUnusualValue: ;;,,;;,;\r\n" +
+	// 		"Content-Type: application/sdp-JART\r\n" +
+	// 		"Route:\r\n" +
+	// 		" <sip:services.example.com;lr;unknownwith=value;unknown-no-value>\r\n" +
+	// 		"v:  SIP  / 2.0  / TCP     spindle.example.com   ;\r\n" +
+	// 		"  branch  =   z9hG4bK9ikj8  ,\r\n" +
+	// 		" SIP  /    2.0   / UDP  192.168.255.111   ; branch=\r\n" +
+	// 		" z9hG4bK30239\r\n" +
+	// 		"m:\"Quoted string \\\"\\\"\" <sip:jdrosen@example.com> ; newparam =\r\n" +
+	// 		"      newvalue ;\r\n" +
+	// 		"  secondparam ; q = 0.33\r\n" +
+	// 		"\r\n" +
+	// 		"v=0\r\n" +
+	// 		"o=mhandley 29739 7272939 IN IP4 192.0.2.3\r\n" +
+	// 		"s=-\r\n" +
+	// 		"c=IN IP4 192.0.2.4\r\n" +
+	// 		"t=0 0\r\n" +
+	// 		"m=audio 49217 RTP/AVP 0 12\r\n" +
+	// 		"m=video 3227 RTP/AVP 31\r\n" +
+	// 		"a=rtpmap:31 LPC\r\n",
+	// 	msg: sip.Msg{
+	// 		Method:       "INVITE",
+	// 		VersionMajor: 2,
+	// 		Request: &sip.URI{
+	// 			Scheme: "sip",
+	// 			User:   "vivekg",
+	// 			Host:   "chair-dnrc.example.com",
+	// 			Params: sip.Params{"unknownparam": ""},
+	// 		},
+	// 		To: &sip.Addr{
+	// 			Uri: &sip.URI{
+	// 				Scheme: "sip",
+	// 				User:   "vivekg",
+	// 				Host:   "chair-dnrc.example.com",
+	// 			},
+	// 			Params: sip.Params{"tag": "1918181833n"},
+	// 		},
+	// 		From: &sip.Addr{
+	// 			Display: "J Rosenberg \\\"",
+	// 			Uri: &sip.URI{
+	// 				Scheme: "sip",
+	// 				User:   "vivekg",
+	// 				Host:   "chair-dnrc.example.com",
+	// 				Params: sip.Params{"tag": "98asjd8"},
+	// 			},
+	// 		},
+	// 		MaxForwards: 68,
+	// 		CallID:      "wsinv.ndaksdj@192.0.2.1",
+	// 		CSeq:        9,
+	// 		CSeqMethod:  "INVITE",
+	// 		Via: &sip.Via{
+	// 			Protocol:  "SIP",
+	// 			Version:   "2.0",
+	// 			Transport: "UDP",
+	// 			Host:      "192.0.2.2",
+	// 			Params:    sip.Params{"branch": "390skdjuw"},
+	// 			Next: &sip.Via{
+	// 				Protocol:  "SIP",
+	// 				Version:   "2.0",
+	// 				Transport: "TCP",
+	// 				Host:      "spindle.example.com",
+	// 				Params:    sip.Params{"branch": "z9hG4bK9ikj8"},
+	// 				Next: &sip.Via{
+	// 					Protocol:  "SIP",
+	// 					Version:   "2.0",
+	// 					Transport: "UDP",
+	// 					Host:      "192.168.255.111",
+	// 					Params:    sip.Params{"branch": "z9hG4bK30239"},
+	// 				},
+	// 			},
+	// 		},
+	// 		Subject: "",
+	// 		Headers: sip.Headers{
+	// 			"NewFangledHeader": "newfangled value\r\n" +
+	// 				" continued newfangled value",
+	// 			"UnknownHeaderWithUnusualValue": ";;,,;;,;",
+	// 		},
+	// 		Route: &sip.Addr{
+	// 			Uri: &sip.URI{
+	// 				Scheme: "sip",
+	// 				Host:   "services.example.com",
+	// 				Params: sip.Params{
+	// 					"lr":               "",
+	// 					"unknownwith":      "value",
+	// 					"unknown-no-value": "",
+	// 				},
+	// 			},
+	// 		},
+	// 		Contact: &sip.Addr{
+	// 			Display: "Quoted string \"\"",
+	// 			Uri: &sip.URI{
+	// 				Scheme: "sip",
+	// 				User:   "jdrosen",
+	// 				Host:   "example.com",
+	// 			},
+	// 			Params: sip.Params{
+	// 				"newparam":    "newvalue",
+	// 				"secondparam": "",
+	// 				"q":           "0.33",
+	// 			},
+	// 		},
+	// 		Payload: &sip.MiscPayload{
+	// 			T: "application/sdp-JART",
+	// 			D: []byte("v=0\r\n" +
+	// 				"o=mhandley 29739 7272939 IN IP4 192.0.2.3\r\n" +
+	// 				"s=-\r\n" +
+	// 				"c=IN IP4 192.0.2.4\r\n" +
+	// 				"t=0 0\r\n" +
+	// 				"m=audio 49217 RTP/AVP 0 12\r\n" +
+	// 				"m=video 3227 RTP/AVP 31\r\n" +
+	// 				"a=rtpmap:31 LPC\r\n"),
+	// 		},
+	// 	},
+	// },
 }
 
 func TestParseMsg(t *testing.T) {
@@ -658,6 +1068,9 @@ func TestParseMsg(t *testing.T) {
 			}
 			if !reflect.DeepEqual(test.msg.Via, msg.Via) {
 				t.Errorf("Via:\n%#v !=\n%#v", test.msg.Via, msg.Via)
+				t.Errorf("Via #2:\n%#v !=\n%#v", test.msg.Via.Next, msg.Via.Next)
+				t.Errorf("Via #3:\n%#v !=\n%#v", test.msg.Via.Next.Next, msg.Via.Next.Next)
+				t.Errorf("Via #4:\n%#v !=\n%#v", test.msg.Via.Next.Next.Next, msg.Via.Next.Next.Next)
 			}
 			if !reflect.DeepEqual(test.msg.Request, msg.Request) {
 				t.Errorf("Request:\n%#v !=\n%#v", test.msg.Request, msg.Request)
