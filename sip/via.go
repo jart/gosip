@@ -7,71 +7,46 @@ import (
 	"errors"
 	"github.com/jart/gosip/util"
 	"strconv"
-	"strings"
 )
 
 var (
 	ViaBadHeader  = errors.New("Bad Via header")
-	ViaProtoBlank = errors.New("Via Proto blank")
+	ViaProtoBlank = errors.New("Via Transport blank")
 )
 
 // Example: SIP/2.0/UDP 1.2.3.4:5060;branch=z9hG4bK556f77e6.
 type Via struct {
-	Version string // protocol version e.g. "2.0"
-	Proto   string // transport type "UDP"
-	Host    string // name or ip of egress interface
-	Port    uint16 // network port number
-	Params  Params // params like branch, received, rport, etc.
-	Next    *Via   // pointer to next via header if any
-}
-
-// Parses a single SIP Via header, provided the part that comes after "Via: ".
-//
-// Via headers are goofy; they're like a URI without a scheme, user, and pass.
-// They tell about the network interfaces a packet traversed to reach us.
-//
-// EBNF: http://sofia-sip.sourceforge.net/refdocs/sip/group__sip__via.html
-func ParseVia(s string) (via *Via, err error) {
-	if s[0:4] == "SIP/" {
-		s = s[4:]
-		if n1 := strings.Index(s, "/"); n1 > 0 {
-			if n2 := strings.Index(s, " "); n2 >= n1+3 {
-				via = new(Via)
-				via.Version = s[0:n1]
-				via.Proto = s[n1+1 : n2]
-				s, via.Host, via.Port, err = extractHostPort(s[n2+1:])
-				if err != nil {
-					return nil, err
-				}
-				if s != "" && s[0] == ';' {
-					via.Params = parseParams(s[1:])
-					s = ""
-				}
-				return via, nil
-			}
-		}
-	}
-	return nil, ViaBadHeader
+	Protocol  string // should be "SIP"
+	Version   string // protocol version e.g. "2.0"
+	Transport string // transport type "UDP"
+	Host      string // name or ip of egress interface
+	Port      uint16 // network port number
+	Params    Params // params like branch, received, rport, etc.
+	Next      *Via   // pointer to next via header if any
 }
 
 func (via *Via) Append(b *bytes.Buffer) error {
-	if via.Version == "" {
-		via.Version = "2.0"
-	}
-	if via.Proto == "" {
-		via.Proto = "UDP"
-	}
-	if via.Port == 0 {
-		via.Port = 5060
-	}
 	if via.Host == "" {
 		return ViaProtoBlank
 	}
-	b.WriteString("SIP/")
-	b.WriteString(via.Version)
-	b.WriteString("/")
-	b.WriteString(via.Proto)
-	b.WriteString(" ")
+	if via.Protocol == "" {
+		b.WriteString("SIP/")
+	} else {
+		b.WriteString(via.Protocol)
+		b.WriteString("/")
+	}
+	if via.Version == "" {
+		b.WriteString("2.0/")
+	} else {
+		b.WriteString(via.Version)
+		b.WriteString("/")
+	}
+	if via.Transport == "" {
+		b.WriteString("UDP ")
+	} else {
+		b.WriteString(via.Transport)
+		b.WriteString(" ")
+	}
 	b.WriteString(via.Host)
 	if via.Port != 5060 {
 		b.WriteString(":")
@@ -87,8 +62,9 @@ func (via *Via) Copy() *Via {
 		return nil
 	}
 	res := new(Via)
+	res.Protocol = via.Protocol
 	res.Version = via.Version
-	res.Proto = via.Proto
+	res.Transport = via.Transport
 	res.Host = via.Host
 	res.Port = via.Port
 	res.Params = via.Params.Copy()
