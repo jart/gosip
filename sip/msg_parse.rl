@@ -12,11 +12,12 @@
 // but are phenomenally more complicated.
 //
 // SIP messages are quite insane. Whitespace can be used liberally in a variety
-// of different ways. Header values can have line continuations or even
-// comments. Header names are case-insensitive and sometimes have shorthand
-// notation. Custom headers may be specified. Via and address headers can be
-// repeated, or contain repeating values. URIs can be specified with or without
-// address angle brackets. URI parameters can belong to either the URI or the
+// of different ways. Like they even let you put a colon between a via hostname
+// and port! Header values can have line continuations or even comments. Header
+// names are case-insensitive and sometimes have shorthand notation. Custom
+// headers may be specified. Via and address headers can be repeated, or
+// contain repeating values. URIs can be specified with or without address
+// angle brackets. URI parameters can belong to either the URI or the
 // address. Values can be escaped. String literals can be quoted. Oh the
 // humanity. See the torture messages in msg_test.go for examples.
 //
@@ -141,14 +142,10 @@ func ParseMsgBytes(data []byte) (msg *Msg, err error) {
 			msg.Phrase = string(buf[0:amt])
 		}
 
-		action NewVia {
-			via = new(Via)
-		}
-
 		action Via {
 			*viap = via
 			viap = &via.Next
-			via = nil
+			// via = nil
 		}
 
 		action ViaProtocol {
@@ -184,6 +181,24 @@ func ParseMsgBytes(data []byte) (msg *Msg, err error) {
 
 		action goto_value {
 			fgoto value;
+		}
+
+		action goto_via {
+			via = new(Via)
+			fgoto via;
+		}
+
+		action goto_via_port {
+			fgoto via_port;
+		}
+
+		action goto_via_pname {
+			amt = 0  // Needed so ViaParam action works when there's no value.
+			fgoto via_pname;
+		}
+
+		action goto_via_pvalue {
+			fgoto via_pvalue;
 		}
 
 		action gxh {
@@ -352,8 +367,10 @@ func ParseMsgBytes(data []byte) (msg *Msg, err error) {
 
 		# Via Parsing
 		#
-		# This header is defined in a relatively deterministic manner by the SIP
-		# RFC and as such can be defined rather eloquently in Ragel.
+		# Parsing these is kind of difficult because infinite whitespace is allowed
+		# between colons, semicolons, commas, and don't forget that lines can
+		# continue. So we're going to break things down into four separate machines
+		# that jump between each other.
 		ViaProtocol     = token >mark %ViaProtocol;
 		ViaVersion      = token >mark %ViaVersion;
 		ViaTransport    = token >mark %ViaTransport;
@@ -362,16 +379,28 @@ func ParseMsgBytes(data []byte) (msg *Msg, err error) {
 		ViaHostIPv6     = "[" ( xdigit | "." | ":" )+ >mark %ViaHost "]";
 		ViaHostName     = ( alnum | "." | "-" )+ >mark %ViaHost;
 		ViaHost         = ViaHostIPv4 | ViaHostIPv6 | ViaHostName;
-		ViaPort         = digit {1,5} @ViaPort;
+		ViaPort         = digit+ @ViaPort;
 		ViaParamName    = token >mark %name;
 		ViaParamContent = tokenhost >start @append;
 		ViaParamValue   = ViaParamContent | quoted_string;
-		ViaParamEntry   = ViaParamName ( EQUAL ViaParamValue )?;
-		ViaParam        = ViaParamEntry %ViaParam;
-		ViaSentBy       = ViaHost ( COLON ViaPort )?;
-		ViaEntry        = ViaSent LWS ViaSentBy ( SEMI ViaParam )* <: any @hold;
-		Via             = ViaEntry >NewVia %Via;
-		Vias            = Via ( COMMA Via )* <: any @hold;
+		via_pvalue_end  = ( CR when !lookAheadWSP ) LF @ViaParam @Via @goto_header
+		                | SEMI <: any @hold @ViaParam @goto_via_pname
+		                | COMMA <: any @hold @ViaParam @Via @goto_via;
+		via_pvalue     := ViaParamValue via_pvalue_end;
+		via_pname_end   = ( CR when !lookAheadWSP ) LF @ViaParam @Via @goto_header
+		                | EQUAL <: any @hold @goto_via_pvalue
+		                | SEMI <: any @hold @ViaParam @goto_via_pname
+		                | COMMA <: any @hold @ViaParam @Via @goto_via;
+		via_pname      := ViaParamName via_pname_end;
+		via_port_end    = ( CR when !lookAheadWSP ) LF @Via @goto_header
+		                | SEMI <: any @hold @goto_via_pname
+		                | COMMA <: any @hold @Via @goto_via;
+		via_port       := ViaPort via_port_end;
+		via_end         = ( CR when !lookAheadWSP ) LF @Via @goto_header
+		                | COLON <: any @hold @goto_via_port
+		                | SEMI <: any @hold @goto_via_pname
+		                | COMMA <: any @hold @Via @goto_via;
+		via            := ViaSent LWS ViaHost via_end;
 
 		# Address Header Name Definitions
 		#
@@ -439,7 +468,6 @@ func ParseMsgBytes(data []byte) (msg *Msg, err error) {
 		         | ("Expires"i | "l"i) $!gxh HCOLON digit+ >{msg.Expires=0} @Expires
 		         | ("Max-Forwards"i | "l"i) $!gxh HCOLON digit+ >{msg.MaxForwards=0} @MaxForwards
 		         | ("Min-Expires"i | "l"i) $!gxh HCOLON digit+ >{msg.MinExpires=0} @MinExpires
-		         | ("Via"i | "v"i) $!gxh HCOLON Vias
 		         ;
 
 		# Header Parsing
@@ -477,7 +505,8 @@ func ParseMsgBytes(data []byte) (msg *Msg, err error) {
 		xheader := token %name HCOLON <: any @{value=nil;addr=nil} @hold @goto_value;
 		sheader  = cheader <: CRLF @goto_header
 		         | aname $!gxh HCOLON <: any @{value=nil} @hold @goto_value
-		         | sname $!gxh HCOLON <: any @{addr=nil} @hold @goto_value;
+		         | sname $!gxh HCOLON <: any @{addr=nil} @hold @goto_value
+		         | ("Via"i | "v"i) $!gxh HCOLON <: any @hold @goto_via;
 		header  := CRLF @break
 		         | tokenc @mark @hold sheader;
 
