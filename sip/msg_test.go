@@ -1124,8 +1124,8 @@ func TestParseMsg(t *testing.T) {
 			}
 			if !reflect.DeepEqual(test.msg.Via, msg.Via) {
 				t.Errorf("Via:\n%#v !=\n%#v", test.msg.Via, msg.Via)
-				t.Errorf("Via #2:\n%#v !=\n%#v", test.msg.Via.Next, msg.Via.Next)
-				t.Errorf("Via #3:\n%#v !=\n%#v", test.msg.Via.Next.Next, msg.Via.Next.Next)
+				// t.Errorf("Via #2:\n%#v !=\n%#v", test.msg.Via.Next, msg.Via.Next)
+				// t.Errorf("Via #3:\n%#v !=\n%#v", test.msg.Via.Next.Next, msg.Via.Next.Next)
 				// t.Errorf("Via #4:\n%#v !=\n%#v", test.msg.Via.Next.Next.Next, msg.Via.Next.Next.Next)
 			}
 			if !reflect.DeepEqual(test.msg.Request, msg.Request) {
