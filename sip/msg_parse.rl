@@ -213,13 +213,9 @@ func ParseMsgBytes(data []byte) (msg *Msg, err error) {
 			fgoto via;
 		}
 
-		action goto_via_pname {
+		action goto_via_param {
 			amt = 0  // Needed so ViaParam action works when there's no value.
-			fgoto via_pname;
-		}
-
-		action goto_via_pvalue {
-			fgoto via_pvalue;
+			fgoto via_param;
 		}
 
 		action gxh {
@@ -404,17 +400,12 @@ func ParseMsgBytes(data []byte) (msg *Msg, err error) {
 		ViaParamName    = token >mark %name;
 		ViaParamContent = tokenhost >start @append;
 		ViaParamValue   = ViaParamContent | quoted_string;
-		via_pvalue_end  = ( CR when !lookAheadWSP ) LF @ViaParam @Via @goto_header
-		                | SEMI <: any @hold @ViaParam @goto_via_pname
+		via_param_end   = CRLF @ViaParam @Via @goto_header
+		                | SEMI <: any @hold @ViaParam @goto_via_param
 		                | COMMA <: any @hold @ViaParam @Via @goto_via;
-		via_pvalue     := ViaParamValue via_pvalue_end;
-		via_pname_end   = ( CR when !lookAheadWSP ) LF @ViaParam @Via @goto_header
-		                | EQUAL <: any @hold @goto_via_pvalue
-		                | SEMI <: any @hold @ViaParam @goto_via_pname
-		                | COMMA <: any @hold @ViaParam @Via @goto_via;
-		via_pname      := ViaParamName via_pname_end;
-		via_end         = ( CR when !lookAheadWSP ) LF @Via @goto_header
-		                | SEMI <: any @hold @goto_via_pname
+		via_param      := ViaParamName (EQUAL ViaParamValue)? via_param_end;
+		via_end         = CRLF @Via @goto_header
+		                | SEMI <: any @hold @goto_via_param
 		                | COMMA <: any @hold @Via @goto_via;
 		via            := ViaSent LWS ViaHost (COLON ViaPort)? via_end;
 
