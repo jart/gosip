@@ -213,10 +213,6 @@ func ParseMsgBytes(data []byte) (msg *Msg, err error) {
 			fgoto via;
 		}
 
-		action goto_via_port {
-			fgoto via_port;
-		}
-
 		action goto_via_pname {
 			amt = 0  // Needed so ViaParam action works when there's no value.
 			fgoto via_pname;
@@ -417,15 +413,10 @@ func ParseMsgBytes(data []byte) (msg *Msg, err error) {
 		                | SEMI <: any @hold @ViaParam @goto_via_pname
 		                | COMMA <: any @hold @ViaParam @Via @goto_via;
 		via_pname      := ViaParamName via_pname_end;
-		via_port_end    = ( CR when !lookAheadWSP ) LF @Via @goto_header
-		                | SEMI <: any @hold @goto_via_pname
-		                | COMMA <: any @hold @Via @goto_via;
-		via_port       := ViaPort via_port_end;
 		via_end         = ( CR when !lookAheadWSP ) LF @Via @goto_header
-		                | COLON <: any @hold @goto_via_port
 		                | SEMI <: any @hold @goto_via_pname
 		                | COMMA <: any @hold @Via @goto_via;
-		via            := ViaSent LWS ViaHost via_end;
+		via            := ViaSent LWS ViaHost (COLON ViaPort)? via_end;
 
 		# Address Header Name Definitions
 		#

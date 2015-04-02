@@ -401,6 +401,62 @@ var msgTests = []msgTest{
 	// },
 
 	msgTest{
+		name: "Via Host Only",
+		s: "SIP/2.0 200 OK\r\n" +
+			"Via: SIP/2.0/UDP 8.8.4.4\r\n" +
+			"\r\n",
+		msg: sip.Msg{
+			VersionMajor: 2,
+			Status:       200,
+			Phrase:       "OK",
+			Via: &sip.Via{
+				Protocol:  "SIP",
+				Version:   "2.0",
+				Transport: "UDP",
+				Host:      "8.8.4.4",
+			},
+		},
+	},
+
+	msgTest{
+		name: "Via Port",
+		s: "SIP/2.0 200 OK\r\n" +
+			"Via: SIP/2.0/UDP 8.8.4.4:666\r\n" +
+			"\r\n",
+		msg: sip.Msg{
+			VersionMajor: 2,
+			Status:       200,
+			Phrase:       "OK",
+			Via: &sip.Via{
+				Protocol:  "SIP",
+				Version:   "2.0",
+				Transport: "UDP",
+				Host:      "8.8.4.4",
+				Port:      666,
+			},
+		},
+	},
+
+	msgTest{
+		name: "Via Port Spacing",
+		s: "SIP/2.0 200 OK\r\n" +
+			"Via: SIP/2.0/UDP 8.8.4.4 \t : \t 666\r\n" +
+			"\r\n",
+		msg: sip.Msg{
+			VersionMajor: 2,
+			Status:       200,
+			Phrase:       "OK",
+			Via: &sip.Via{
+				Protocol:  "SIP",
+				Version:   "2.0",
+				Transport: "UDP",
+				Host:      "8.8.4.4",
+				Port:      666,
+			},
+		},
+	},
+
+	msgTest{
 		name: "Via Line Continuation",
 		s: "SIP/2.0 200 OK\r\n" +
 			"Via: SIP/2.0/UDP 10.11.34.37 ,\r\n" +

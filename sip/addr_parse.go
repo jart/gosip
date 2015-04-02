@@ -369,18 +369,18 @@ st_case_0:
 	st0:
 		cs = 0
 		goto _out
-tr51:
-//line addr_parse.rl:43
-
-			amt = 0
-		
+tr56:
 //line addr_parse.rl:47
 
 			buf[amt] = data[p]
 			amt++
 		
 	goto st36
-tr56:
+tr51:
+//line addr_parse.rl:43
+
+			amt = 0
+		
 //line addr_parse.rl:47
 
 			buf[amt] = data[p]
@@ -673,20 +673,20 @@ tr65:
 		case 32:
 			goto st74
 		case 269:
-			goto tr121
+			goto tr120
 		case 525:
 			goto st42
 		}
 		switch {
 		case _widec > 12:
 			if 14 <= _widec {
-				goto tr121
+				goto tr120
 			}
 		default:
-			goto tr121
+			goto tr120
 		}
 		goto st0
-tr121:
+tr120:
 //line addr_parse.rl:91
 
 			p--
@@ -733,7 +733,7 @@ tr121:
 		case 32:
 			goto st76
 		}
-		goto tr121
+		goto tr120
 tr57:
 //line addr_parse.rl:47
 
@@ -965,18 +965,18 @@ tr95:
 			goto tr79
 		}
 		goto st0
-tr75:
-//line addr_parse.rl:43
-
-			amt = 0
-		
+tr84:
 //line addr_parse.rl:47
 
 			buf[amt] = data[p]
 			amt++
 		
 	goto st51
-tr84:
+tr75:
+//line addr_parse.rl:43
+
+			amt = 0
+		
 //line addr_parse.rl:47
 
 			buf[amt] = data[p]
@@ -1118,18 +1118,18 @@ tr77:
 			goto tr84
 		}
 		goto st0
-tr78:
-//line addr_parse.rl:43
-
-			amt = 0
-		
+tr87:
 //line addr_parse.rl:47
 
 			buf[amt] = data[p]
 			amt++
 		
 	goto st55
-tr87:
+tr78:
+//line addr_parse.rl:43
+
+			amt = 0
+		
 //line addr_parse.rl:47
 
 			buf[amt] = data[p]
@@ -1146,18 +1146,18 @@ tr87:
 			goto tr84
 		}
 		goto st0
-tr79:
-//line addr_parse.rl:43
-
-			amt = 0
-		
+tr88:
 //line addr_parse.rl:47
 
 			buf[amt] = data[p]
 			amt++
 		
 	goto st56
-tr88:
+tr79:
+//line addr_parse.rl:43
+
+			amt = 0
+		
 //line addr_parse.rl:47
 
 			buf[amt] = data[p]
@@ -1174,18 +1174,18 @@ tr88:
 			goto tr87
 		}
 		goto st0
-tr80:
-//line addr_parse.rl:43
-
-			amt = 0
-		
+tr89:
 //line addr_parse.rl:47
 
 			buf[amt] = data[p]
 			amt++
 		
 	goto st57
-tr89:
+tr80:
+//line addr_parse.rl:43
+
+			amt = 0
+		
 //line addr_parse.rl:47
 
 			buf[amt] = data[p]
@@ -1202,18 +1202,18 @@ tr89:
 			goto tr88
 		}
 		goto st0
-tr81:
-//line addr_parse.rl:43
-
-			amt = 0
-		
+tr90:
 //line addr_parse.rl:47
 
 			buf[amt] = data[p]
 			amt++
 		
 	goto st58
-tr90:
+tr81:
+//line addr_parse.rl:43
+
+			amt = 0
+		
 //line addr_parse.rl:47
 
 			buf[amt] = data[p]
@@ -1230,18 +1230,18 @@ tr90:
 			goto tr89
 		}
 		goto st0
-tr82:
-//line addr_parse.rl:43
-
-			amt = 0
-		
+tr91:
 //line addr_parse.rl:47
 
 			buf[amt] = data[p]
 			amt++
 		
 	goto st59
-tr91:
+tr82:
+//line addr_parse.rl:43
+
+			amt = 0
+		
 //line addr_parse.rl:47
 
 			buf[amt] = data[p]
@@ -1258,18 +1258,18 @@ tr91:
 			goto tr90
 		}
 		goto st0
-tr83:
-//line addr_parse.rl:43
-
-			amt = 0
-		
+tr92:
 //line addr_parse.rl:47
 
 			buf[amt] = data[p]
 			amt++
 		
 	goto st60
-tr92:
+tr83:
+//line addr_parse.rl:43
+
+			amt = 0
+		
 //line addr_parse.rl:47
 
 			buf[amt] = data[p]
@@ -1515,8 +1515,8 @@ tr103:
 		default:
 			goto st77
 		}
-		goto tr124
-tr124:
+		goto tr123
+tr123:
 //line addr_parse.rl:65
 
 			addr.Uri, err = ParseURIBytes(data[mark:p])
@@ -1609,7 +1609,7 @@ tr112:
 			addr.Params[name] = string(buf[0:amt])
 		
 	goto st3
-tr118:
+tr117:
 //line addr_parse.rl:70
 
 			if addr.Params == nil {
@@ -1713,7 +1713,7 @@ tr113:
 			addr.Params[name] = string(buf[0:amt])
 		
 	goto st7
-tr119:
+tr118:
 //line addr_parse.rl:70
 
 			if addr.Params == nil {
@@ -1941,17 +1941,6 @@ tr114:
 		}
 		goto st0
 tr17:
-//line addr_parse.rl:43
-
-			amt = 0
-		
-//line addr_parse.rl:47
-
-			buf[amt] = data[p]
-			amt++
-		
-	goto st72
-tr117:
 //line addr_parse.rl:47
 
 			buf[amt] = data[p]
@@ -1963,7 +1952,7 @@ tr117:
 			goto _test_eof72
 		}
 	st_case_72:
-//line addr_parse.go:1967
+//line addr_parse.go:1956
 		_widec = int16(data[p])
 		if 13 <= data[p] && data[p] <= 13 {
 			_widec = 256 + (int16(data[p]) - 0)
@@ -1977,41 +1966,41 @@ tr117:
 		case 32:
 			goto tr116
 		case 33:
-			goto tr117
+			goto tr17
 		case 37:
-			goto tr117
+			goto tr17
 		case 39:
-			goto tr117
+			goto tr17
 		case 44:
-			goto tr118
+			goto tr117
 		case 59:
-			goto tr119
+			goto tr118
 		case 93:
-			goto tr117
+			goto tr17
 		case 126:
-			goto tr117
+			goto tr17
 		case 525:
-			goto tr120
+			goto tr119
 		}
 		switch {
 		case _widec < 48:
 			if 42 <= _widec && _widec <= 46 {
-				goto tr117
+				goto tr17
 			}
 		case _widec > 58:
 			switch {
 			case _widec > 91:
 				if 95 <= _widec && _widec <= 122 {
-					goto tr117
+					goto tr17
 				}
 			case _widec >= 65:
-				goto tr117
+				goto tr17
 			}
 		default:
-			goto tr117
+			goto tr17
 		}
 		goto st0
-tr120:
+tr119:
 //line addr_parse.rl:70
 
 			if addr.Params == nil {
@@ -2025,7 +2014,7 @@ tr120:
 			goto _test_eof10
 		}
 	st_case_10:
-//line addr_parse.go:2029
+//line addr_parse.go:2018
 		if data[p] == 10 {
 			goto st11
 		}
@@ -2107,6 +2096,13 @@ tr120:
 			goto tr26
 		}
 		goto st0
+tr31:
+//line addr_parse.rl:47
+
+			buf[amt] = data[p]
+			amt++
+		
+	goto st14
 tr22:
 //line addr_parse.rl:43
 
@@ -2118,19 +2114,12 @@ tr22:
 			amt++
 		
 	goto st14
-tr31:
-//line addr_parse.rl:47
-
-			buf[amt] = data[p]
-			amt++
-		
-	goto st14
 	st14:
 		if p++; p == pe {
 			goto _test_eof14
 		}
 	st_case_14:
-//line addr_parse.go:2134
+//line addr_parse.go:2123
 		_widec = int16(data[p])
 		if 13 <= data[p] && data[p] <= 13 {
 			_widec = 256 + (int16(data[p]) - 0)
@@ -2186,7 +2175,7 @@ tr23:
 			goto _test_eof73
 		}
 	st_case_73:
-//line addr_parse.go:2190
+//line addr_parse.go:2179
 		_widec = int16(data[p])
 		if 13 <= data[p] && data[p] <= 13 {
 			_widec = 256 + (int16(data[p]) - 0)
@@ -2200,11 +2189,11 @@ tr23:
 		case 32:
 			goto tr116
 		case 44:
-			goto tr118
+			goto tr117
 		case 59:
-			goto tr119
+			goto tr118
 		case 525:
-			goto tr120
+			goto tr119
 		}
 		goto st0
 tr24:
@@ -2218,7 +2207,7 @@ tr24:
 			goto _test_eof15
 		}
 	st_case_15:
-//line addr_parse.go:2222
+//line addr_parse.go:2211
 		switch {
 		case data[p] < 11:
 			if data[p] <= 9 {
@@ -2232,6 +2221,13 @@ tr24:
 			goto tr31
 		}
 		goto st0
+tr34:
+//line addr_parse.rl:47
+
+			buf[amt] = data[p]
+			amt++
+		
+	goto st16
 tr25:
 //line addr_parse.rl:43
 
@@ -2243,23 +2239,23 @@ tr25:
 			amt++
 		
 	goto st16
-tr34:
-//line addr_parse.rl:47
-
-			buf[amt] = data[p]
-			amt++
-		
-	goto st16
 	st16:
 		if p++; p == pe {
 			goto _test_eof16
 		}
 	st_case_16:
-//line addr_parse.go:2259
+//line addr_parse.go:2248
 		if 128 <= data[p] && data[p] <= 191 {
 			goto tr31
 		}
 		goto st0
+tr35:
+//line addr_parse.rl:47
+
+			buf[amt] = data[p]
+			amt++
+		
+	goto st17
 tr26:
 //line addr_parse.rl:43
 
@@ -2271,23 +2267,23 @@ tr26:
 			amt++
 		
 	goto st17
-tr35:
-//line addr_parse.rl:47
-
-			buf[amt] = data[p]
-			amt++
-		
-	goto st17
 	st17:
 		if p++; p == pe {
 			goto _test_eof17
 		}
 	st_case_17:
-//line addr_parse.go:2287
+//line addr_parse.go:2276
 		if 128 <= data[p] && data[p] <= 191 {
 			goto tr34
 		}
 		goto st0
+tr36:
+//line addr_parse.rl:47
+
+			buf[amt] = data[p]
+			amt++
+		
+	goto st18
 tr27:
 //line addr_parse.rl:43
 
@@ -2299,23 +2295,23 @@ tr27:
 			amt++
 		
 	goto st18
-tr36:
-//line addr_parse.rl:47
-
-			buf[amt] = data[p]
-			amt++
-		
-	goto st18
 	st18:
 		if p++; p == pe {
 			goto _test_eof18
 		}
 	st_case_18:
-//line addr_parse.go:2315
+//line addr_parse.go:2304
 		if 128 <= data[p] && data[p] <= 191 {
 			goto tr35
 		}
 		goto st0
+tr37:
+//line addr_parse.rl:47
+
+			buf[amt] = data[p]
+			amt++
+		
+	goto st19
 tr28:
 //line addr_parse.rl:43
 
@@ -2327,23 +2323,23 @@ tr28:
 			amt++
 		
 	goto st19
-tr37:
-//line addr_parse.rl:47
-
-			buf[amt] = data[p]
-			amt++
-		
-	goto st19
 	st19:
 		if p++; p == pe {
 			goto _test_eof19
 		}
 	st_case_19:
-//line addr_parse.go:2343
+//line addr_parse.go:2332
 		if 128 <= data[p] && data[p] <= 191 {
 			goto tr36
 		}
 		goto st0
+tr38:
+//line addr_parse.rl:47
+
+			buf[amt] = data[p]
+			amt++
+		
+	goto st20
 tr29:
 //line addr_parse.rl:43
 
@@ -2355,23 +2351,23 @@ tr29:
 			amt++
 		
 	goto st20
-tr38:
-//line addr_parse.rl:47
-
-			buf[amt] = data[p]
-			amt++
-		
-	goto st20
 	st20:
 		if p++; p == pe {
 			goto _test_eof20
 		}
 	st_case_20:
-//line addr_parse.go:2371
+//line addr_parse.go:2360
 		if 128 <= data[p] && data[p] <= 191 {
 			goto tr37
 		}
 		goto st0
+tr39:
+//line addr_parse.rl:47
+
+			buf[amt] = data[p]
+			amt++
+		
+	goto st21
 tr30:
 //line addr_parse.rl:43
 
@@ -2383,19 +2379,12 @@ tr30:
 			amt++
 		
 	goto st21
-tr39:
-//line addr_parse.rl:47
-
-			buf[amt] = data[p]
-			amt++
-		
-	goto st21
 	st21:
 		if p++; p == pe {
 			goto _test_eof21
 		}
 	st_case_21:
-//line addr_parse.go:2399
+//line addr_parse.go:2388
 		if data[p] == 10 {
 			goto tr40
 		}
@@ -2412,7 +2401,7 @@ tr40:
 			goto _test_eof22
 		}
 	st_case_22:
-//line addr_parse.go:2416
+//line addr_parse.go:2405
 		switch data[p] {
 		case 9:
 			goto tr31
@@ -2549,7 +2538,7 @@ tr115:
 			goto _test_eof29
 		}
 	st_case_29:
-//line addr_parse.go:2553
+//line addr_parse.go:2542
 		if data[p] == 10 {
 			goto st30
 		}
@@ -2764,7 +2753,7 @@ tr115:
 			}
 			addr.Params[name] = string(buf[0:amt])
 		
-//line addr_parse.go:2768
+//line addr_parse.go:2757
 		}
 	}
 
