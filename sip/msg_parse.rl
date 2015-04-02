@@ -11,15 +11,40 @@
 // chose to create a plaintext protocol that looks similar to HTTP requests,
 // but are phenomenally more complicated.
 //
-// SIP messages are quite insane. Whitespace can be used liberally in a variety
-// of different ways. Like they even let you put a colon between a via hostname
-// and port! Header values can have line continuations or even comments. Header
-// names are case-insensitive and sometimes have shorthand notation. Custom
-// headers may be specified. Via and address headers can be repeated, or
-// contain repeating values. URIs can be specified with or without address
-// angle brackets. URI parameters can belong to either the URI or the
-// address. Values can be escaped. String literals can be quoted. Oh the
-// humanity. See the torture messages in msg_test.go for examples.
+// SIP messages are quite insane.
+//
+//   o Whitespace can be used liberally in a variety of different ways.
+//
+//     - Via host:port can have whitespace, e.g. "host \t:  port"
+//
+//   o UTF-8 is supported in some places but not others.
+//
+//   o Headers can span multiple lines.
+//
+//   o Header values can contain comments, e.g. Message: lol (i'm (hidden))
+//
+//   o Header names are case-insensitive and have shorthand notation.
+//
+//   o There's ~50 standard headers, many of which have custom parsing rules.
+//
+//   o URIs can have ;params;like=this
+//
+//     - Params can belong either to a URI or Addr object, e.g. <sip:uri;param>
+//       cf. <sip:uri>;param
+//
+//     - Addresses may omit angle brackets, in which case params belong to the
+//       Addr object.
+//
+//     - URI params ;are=escaped%20like%22this but params belonging to Addr
+//       ;are="escaped like\"this"
+//
+//     - Backslash escaping is not like C, e.g. \t\n -> tn
+//
+//     - Address display name can have whitespace without quotes, which is
+//       collapsed. Quoted form is not collapsed.
+//
+//   o Via and address headers can be repeated in two ways: repeating the
+//     header, using commas within a single header, or both.
 //
 // See: http://www.colm.net/files/ragel/ragel-guide-6.9.pdf
 // See: http://zedshaw.com/archive/ragel-state-charts/

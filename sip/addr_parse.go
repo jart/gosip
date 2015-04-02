@@ -236,7 +236,7 @@ func ParseAddrBytes(data []byte, next *Addr) (addr *Addr, err error) {
 		}
 		goto tr0
 tr109:
-//line addr_parse.rl:78
+//line addr_parse.rl:79
 
 			p = mark
 			p--
@@ -255,7 +255,7 @@ tr1:
 
 			mark = p
 		
-//line addr_parse.rl:84
+//line addr_parse.rl:85
 
 			p = mark
 			p--
@@ -268,7 +268,7 @@ tr2:
 
 			mark = p
 		
-//line addr_parse.rl:78
+//line addr_parse.rl:79
 
 			p = mark
 			p--
@@ -277,7 +277,7 @@ tr2:
 		
 	goto st68
 tr108:
-//line addr_parse.rl:84
+//line addr_parse.rl:85
 
 			p = mark
 			p--
@@ -305,6 +305,7 @@ tr50:
 		
 //line addr_parse.rl:56
 
+			// TODO: Collapse this string.
 			addr.Display = strings.TrimRight(string(buf[0:amt]), " \t\r\n")
 		
 	goto st35
@@ -313,7 +314,7 @@ tr50:
 			goto _test_eof35
 		}
 	st_case_35:
-//line addr_parse.go:317
+//line addr_parse.go:318
 		_widec = int16(data[p])
 		if 13 <= data[p] && data[p] <= 13 {
 			_widec = 256 + (int16(data[p]) - 0)
@@ -391,7 +392,7 @@ tr56:
 			goto _test_eof36
 		}
 	st_case_36:
-//line addr_parse.go:395
+//line addr_parse.go:396
 		_widec = int16(data[p])
 		if 13 <= data[p] && data[p] <= 13 {
 			_widec = 256 + (int16(data[p]) - 0)
@@ -453,6 +454,7 @@ tr58:
 		
 //line addr_parse.rl:56
 
+			// TODO: Collapse this string.
 			addr.Display = strings.TrimRight(string(buf[0:amt]), " \t\r\n")
 		
 	goto st37
@@ -461,7 +463,7 @@ tr58:
 			goto _test_eof37
 		}
 	st_case_37:
-//line addr_parse.go:465
+//line addr_parse.go:467
 		_widec = int16(data[p])
 		if 13 <= data[p] && data[p] <= 13 {
 			_widec = 256 + (int16(data[p]) - 0)
@@ -517,17 +519,19 @@ tr53:
 		
 //line addr_parse.rl:56
 
+			// TODO: Collapse this string.
 			addr.Display = strings.TrimRight(string(buf[0:amt]), " \t\r\n")
 		
 	goto st38
 tr59:
 //line addr_parse.rl:56
 
+			// TODO: Collapse this string.
 			addr.Display = strings.TrimRight(string(buf[0:amt]), " \t\r\n")
 		
 	goto st38
 tr94:
-//line addr_parse.rl:60
+//line addr_parse.rl:61
 
 			addr.Display = string(buf[0:amt])
 		
@@ -537,7 +541,7 @@ tr94:
 			goto _test_eof38
 		}
 	st_case_38:
-//line addr_parse.go:541
+//line addr_parse.go:545
 		switch {
 		case data[p] > 90:
 			if 97 <= data[p] && data[p] <= 122 {
@@ -558,7 +562,7 @@ tr61:
 			goto _test_eof39
 		}
 	st_case_39:
-//line addr_parse.go:562
+//line addr_parse.go:566
 		switch data[p] {
 		case 43:
 			goto st39
@@ -644,7 +648,7 @@ tr61:
 		}
 		goto st0
 tr65:
-//line addr_parse.rl:64
+//line addr_parse.rl:65
 
 			addr.Uri, err = ParseURIBytes(data[mark:p])
 			if err != nil { return nil, err }
@@ -655,7 +659,7 @@ tr65:
 			goto _test_eof74
 		}
 	st_case_74:
-//line addr_parse.go:659
+//line addr_parse.go:663
 		_widec = int16(data[p])
 		if 13 <= data[p] && data[p] <= 13 {
 			_widec = 256 + (int16(data[p]) - 0)
@@ -683,7 +687,7 @@ tr65:
 		}
 		goto st0
 tr121:
-//line addr_parse.rl:90
+//line addr_parse.rl:91
 
 			p--
 
@@ -695,7 +699,7 @@ tr121:
 			goto _test_eof75
 		}
 	st_case_75:
-//line addr_parse.go:699
+//line addr_parse.go:703
 		goto st0
 	st42:
 		if p++; p == pe {
@@ -745,6 +749,7 @@ tr60:
 		
 //line addr_parse.rl:56
 
+			// TODO: Collapse this string.
 			addr.Display = strings.TrimRight(string(buf[0:amt]), " \t\r\n")
 		
 	goto st44
@@ -753,7 +758,7 @@ tr60:
 			goto _test_eof44
 		}
 	st_case_44:
-//line addr_parse.go:757
+//line addr_parse.go:762
 		if data[p] == 10 {
 			goto tr68
 		}
@@ -770,7 +775,7 @@ tr68:
 			goto _test_eof45
 		}
 	st_case_45:
-//line addr_parse.go:774
+//line addr_parse.go:779
 		switch data[p] {
 		case 9:
 			goto tr69
@@ -793,6 +798,7 @@ tr70:
 		
 //line addr_parse.rl:56
 
+			// TODO: Collapse this string.
 			addr.Display = strings.TrimRight(string(buf[0:amt]), " \t\r\n")
 		
 	goto st46
@@ -801,7 +807,7 @@ tr70:
 			goto _test_eof46
 		}
 	st_case_46:
-//line addr_parse.go:805
+//line addr_parse.go:811
 		_widec = int16(data[p])
 		if 13 <= data[p] && data[p] <= 13 {
 			_widec = 256 + (int16(data[p]) - 0)
@@ -857,17 +863,19 @@ tr102:
 		
 //line addr_parse.rl:56
 
+			// TODO: Collapse this string.
 			addr.Display = strings.TrimRight(string(buf[0:amt]), " \t\r\n")
 		
 	goto st47
 tr71:
 //line addr_parse.rl:56
 
+			// TODO: Collapse this string.
 			addr.Display = strings.TrimRight(string(buf[0:amt]), " \t\r\n")
 		
 	goto st47
 tr95:
-//line addr_parse.rl:60
+//line addr_parse.rl:61
 
 			addr.Display = string(buf[0:amt])
 		
@@ -877,7 +885,7 @@ tr95:
 			goto _test_eof47
 		}
 	st_case_47:
-//line addr_parse.go:881
+//line addr_parse.go:889
 		if data[p] == 10 {
 			goto st48
 		}
@@ -980,7 +988,7 @@ tr84:
 			goto _test_eof51
 		}
 	st_case_51:
-//line addr_parse.go:984
+//line addr_parse.go:992
 		_widec = int16(data[p])
 		if 13 <= data[p] && data[p] <= 13 {
 			_widec = 256 + (int16(data[p]) - 0)
@@ -1036,7 +1044,7 @@ tr76:
 			goto _test_eof52
 		}
 	st_case_52:
-//line addr_parse.go:1040
+//line addr_parse.go:1048
 		_widec = int16(data[p])
 		if 13 <= data[p] && data[p] <= 13 {
 			_widec = 256 + (int16(data[p]) - 0)
@@ -1056,7 +1064,7 @@ tr76:
 		}
 		goto st0
 tr93:
-//line addr_parse.rl:60
+//line addr_parse.rl:61
 
 			addr.Display = string(buf[0:amt])
 		
@@ -1066,7 +1074,7 @@ tr93:
 			goto _test_eof53
 		}
 	st_case_53:
-//line addr_parse.go:1070
+//line addr_parse.go:1078
 		_widec = int16(data[p])
 		if 13 <= data[p] && data[p] <= 13 {
 			_widec = 256 + (int16(data[p]) - 0)
@@ -1096,7 +1104,7 @@ tr77:
 			goto _test_eof54
 		}
 	st_case_54:
-//line addr_parse.go:1100
+//line addr_parse.go:1108
 		switch {
 		case data[p] < 11:
 			if data[p] <= 9 {
@@ -1133,7 +1141,7 @@ tr87:
 			goto _test_eof55
 		}
 	st_case_55:
-//line addr_parse.go:1137
+//line addr_parse.go:1145
 		if 128 <= data[p] && data[p] <= 191 {
 			goto tr84
 		}
@@ -1161,7 +1169,7 @@ tr88:
 			goto _test_eof56
 		}
 	st_case_56:
-//line addr_parse.go:1165
+//line addr_parse.go:1173
 		if 128 <= data[p] && data[p] <= 191 {
 			goto tr87
 		}
@@ -1189,7 +1197,7 @@ tr89:
 			goto _test_eof57
 		}
 	st_case_57:
-//line addr_parse.go:1193
+//line addr_parse.go:1201
 		if 128 <= data[p] && data[p] <= 191 {
 			goto tr88
 		}
@@ -1217,7 +1225,7 @@ tr90:
 			goto _test_eof58
 		}
 	st_case_58:
-//line addr_parse.go:1221
+//line addr_parse.go:1229
 		if 128 <= data[p] && data[p] <= 191 {
 			goto tr89
 		}
@@ -1245,7 +1253,7 @@ tr91:
 			goto _test_eof59
 		}
 	st_case_59:
-//line addr_parse.go:1249
+//line addr_parse.go:1257
 		if 128 <= data[p] && data[p] <= 191 {
 			goto tr90
 		}
@@ -1273,7 +1281,7 @@ tr92:
 			goto _test_eof60
 		}
 	st_case_60:
-//line addr_parse.go:1277
+//line addr_parse.go:1285
 		if data[p] == 10 {
 			goto tr98
 		}
@@ -1290,7 +1298,7 @@ tr98:
 			goto _test_eof61
 		}
 	st_case_61:
-//line addr_parse.go:1294
+//line addr_parse.go:1302
 		switch data[p] {
 		case 9:
 			goto tr84
@@ -1305,6 +1313,7 @@ tr54:
 		
 //line addr_parse.rl:56
 
+			// TODO: Collapse this string.
 			addr.Display = strings.TrimRight(string(buf[0:amt]), " \t\r\n")
 		
 	goto st62
@@ -1313,7 +1322,7 @@ tr54:
 			goto _test_eof62
 		}
 	st_case_62:
-//line addr_parse.go:1317
+//line addr_parse.go:1326
 		if data[p] == 10 {
 			goto st63
 		}
@@ -1337,6 +1346,7 @@ tr101:
 		
 //line addr_parse.rl:56
 
+			// TODO: Collapse this string.
 			addr.Display = strings.TrimRight(string(buf[0:amt]), " \t\r\n")
 		
 	goto st64
@@ -1345,7 +1355,7 @@ tr101:
 			goto _test_eof64
 		}
 	st_case_64:
-//line addr_parse.go:1349
+//line addr_parse.go:1359
 		_widec = int16(data[p])
 		if 13 <= data[p] && data[p] <= 13 {
 			_widec = 256 + (int16(data[p]) - 0)
@@ -1421,7 +1431,7 @@ tr103:
 			goto _test_eof66
 		}
 	st_case_66:
-//line addr_parse.go:1425
+//line addr_parse.go:1435
 		switch data[p] {
 		case 43:
 			goto st66
@@ -1507,12 +1517,12 @@ tr103:
 		}
 		goto tr124
 tr124:
-//line addr_parse.rl:64
+//line addr_parse.rl:65
 
 			addr.Uri, err = ParseURIBytes(data[mark:p])
 			if err != nil { return nil, err }
 		
-//line addr_parse.rl:90
+//line addr_parse.rl:91
 
 			p--
 
@@ -1524,7 +1534,7 @@ tr124:
 			goto _test_eof78
 		}
 	st_case_78:
-//line addr_parse.go:1528
+//line addr_parse.go:1538
 		goto st0
 	st69:
 		if p++; p == pe {
@@ -1552,7 +1562,7 @@ tr124:
 		}
 		goto st0
 tr116:
-//line addr_parse.rl:69
+//line addr_parse.rl:70
 
 			if addr.Params == nil {
 				addr.Params = Params{}
@@ -1565,7 +1575,7 @@ tr116:
 			goto _test_eof2
 		}
 	st_case_2:
-//line addr_parse.go:1569
+//line addr_parse.go:1579
 		_widec = int16(data[p])
 		if 13 <= data[p] && data[p] <= 13 {
 			_widec = 256 + (int16(data[p]) - 0)
@@ -1591,7 +1601,7 @@ tr112:
 
 			name = string(data[mark:p])
 		
-//line addr_parse.rl:69
+//line addr_parse.rl:70
 
 			if addr.Params == nil {
 				addr.Params = Params{}
@@ -1600,7 +1610,7 @@ tr112:
 		
 	goto st3
 tr118:
-//line addr_parse.rl:69
+//line addr_parse.rl:70
 
 			if addr.Params == nil {
 				addr.Params = Params{}
@@ -1613,7 +1623,7 @@ tr118:
 			goto _test_eof3
 		}
 	st_case_3:
-//line addr_parse.go:1617
+//line addr_parse.go:1627
 		_widec = int16(data[p])
 		if 13 <= data[p] && data[p] <= 13 {
 			_widec = 256 + (int16(data[p]) - 0)
@@ -1641,7 +1651,7 @@ tr118:
 		}
 		goto st0
 tr8:
-//line addr_parse.rl:95
+//line addr_parse.rl:96
 
 			addr.Next = new(Addr)
 			addr = addr.Next
@@ -1655,7 +1665,7 @@ tr8:
 			goto _test_eof70
 		}
 	st_case_70:
-//line addr_parse.go:1659
+//line addr_parse.go:1669
 		goto st0
 	st4:
 		if p++; p == pe {
@@ -1695,7 +1705,7 @@ tr113:
 
 			name = string(data[mark:p])
 		
-//line addr_parse.rl:69
+//line addr_parse.rl:70
 
 			if addr.Params == nil {
 				addr.Params = Params{}
@@ -1704,7 +1714,7 @@ tr113:
 		
 	goto st7
 tr119:
-//line addr_parse.rl:69
+//line addr_parse.rl:70
 
 			if addr.Params == nil {
 				addr.Params = Params{}
@@ -1717,7 +1727,7 @@ tr119:
 			goto _test_eof7
 		}
 	st_case_7:
-//line addr_parse.go:1721
+//line addr_parse.go:1731
 		_widec = int16(data[p])
 		if 13 <= data[p] && data[p] <= 13 {
 			_widec = 256 + (int16(data[p]) - 0)
@@ -1769,13 +1779,17 @@ tr12:
 
 			mark = p
 		
+//line addr_parse.rl:43
+
+			amt = 0
+		
 	goto st71
 	st71:
 		if p++; p == pe {
 			goto _test_eof71
 		}
 	st_case_71:
-//line addr_parse.go:1779
+//line addr_parse.go:1793
 		_widec = int16(data[p])
 		if 13 <= data[p] && data[p] <= 13 {
 			_widec = 256 + (int16(data[p]) - 0)
@@ -1828,7 +1842,7 @@ tr110:
 
 			name = string(data[mark:p])
 		
-//line addr_parse.rl:69
+//line addr_parse.rl:70
 
 			if addr.Params == nil {
 				addr.Params = Params{}
@@ -1841,7 +1855,7 @@ tr110:
 			goto _test_eof8
 		}
 	st_case_8:
-//line addr_parse.go:1845
+//line addr_parse.go:1859
 		_widec = int16(data[p])
 		if 13 <= data[p] && data[p] <= 13 {
 			_widec = 256 + (int16(data[p]) - 0)
@@ -1875,7 +1889,7 @@ tr114:
 			goto _test_eof9
 		}
 	st_case_9:
-//line addr_parse.go:1879
+//line addr_parse.go:1893
 		_widec = int16(data[p])
 		if 13 <= data[p] && data[p] <= 13 {
 			_widec = 256 + (int16(data[p]) - 0)
@@ -1949,7 +1963,7 @@ tr117:
 			goto _test_eof72
 		}
 	st_case_72:
-//line addr_parse.go:1953
+//line addr_parse.go:1967
 		_widec = int16(data[p])
 		if 13 <= data[p] && data[p] <= 13 {
 			_widec = 256 + (int16(data[p]) - 0)
@@ -1998,7 +2012,7 @@ tr117:
 		}
 		goto st0
 tr120:
-//line addr_parse.rl:69
+//line addr_parse.rl:70
 
 			if addr.Params == nil {
 				addr.Params = Params{}
@@ -2011,7 +2025,7 @@ tr120:
 			goto _test_eof10
 		}
 	st_case_10:
-//line addr_parse.go:2015
+//line addr_parse.go:2029
 		if data[p] == 10 {
 			goto st11
 		}
@@ -2116,7 +2130,7 @@ tr31:
 			goto _test_eof14
 		}
 	st_case_14:
-//line addr_parse.go:2120
+//line addr_parse.go:2134
 		_widec = int16(data[p])
 		if 13 <= data[p] && data[p] <= 13 {
 			_widec = 256 + (int16(data[p]) - 0)
@@ -2172,7 +2186,7 @@ tr23:
 			goto _test_eof73
 		}
 	st_case_73:
-//line addr_parse.go:2176
+//line addr_parse.go:2190
 		_widec = int16(data[p])
 		if 13 <= data[p] && data[p] <= 13 {
 			_widec = 256 + (int16(data[p]) - 0)
@@ -2204,7 +2218,7 @@ tr24:
 			goto _test_eof15
 		}
 	st_case_15:
-//line addr_parse.go:2208
+//line addr_parse.go:2222
 		switch {
 		case data[p] < 11:
 			if data[p] <= 9 {
@@ -2241,7 +2255,7 @@ tr34:
 			goto _test_eof16
 		}
 	st_case_16:
-//line addr_parse.go:2245
+//line addr_parse.go:2259
 		if 128 <= data[p] && data[p] <= 191 {
 			goto tr31
 		}
@@ -2269,7 +2283,7 @@ tr35:
 			goto _test_eof17
 		}
 	st_case_17:
-//line addr_parse.go:2273
+//line addr_parse.go:2287
 		if 128 <= data[p] && data[p] <= 191 {
 			goto tr34
 		}
@@ -2297,7 +2311,7 @@ tr36:
 			goto _test_eof18
 		}
 	st_case_18:
-//line addr_parse.go:2301
+//line addr_parse.go:2315
 		if 128 <= data[p] && data[p] <= 191 {
 			goto tr35
 		}
@@ -2325,7 +2339,7 @@ tr37:
 			goto _test_eof19
 		}
 	st_case_19:
-//line addr_parse.go:2329
+//line addr_parse.go:2343
 		if 128 <= data[p] && data[p] <= 191 {
 			goto tr36
 		}
@@ -2353,7 +2367,7 @@ tr38:
 			goto _test_eof20
 		}
 	st_case_20:
-//line addr_parse.go:2357
+//line addr_parse.go:2371
 		if 128 <= data[p] && data[p] <= 191 {
 			goto tr37
 		}
@@ -2381,7 +2395,7 @@ tr39:
 			goto _test_eof21
 		}
 	st_case_21:
-//line addr_parse.go:2385
+//line addr_parse.go:2399
 		if data[p] == 10 {
 			goto tr40
 		}
@@ -2398,7 +2412,7 @@ tr40:
 			goto _test_eof22
 		}
 	st_case_22:
-//line addr_parse.go:2402
+//line addr_parse.go:2416
 		switch data[p] {
 		case 9:
 			goto tr31
@@ -2522,7 +2536,7 @@ tr115:
 
 			name = string(data[mark:p])
 		
-//line addr_parse.rl:69
+//line addr_parse.rl:70
 
 			if addr.Params == nil {
 				addr.Params = Params{}
@@ -2535,7 +2549,7 @@ tr115:
 			goto _test_eof29
 		}
 	st_case_29:
-//line addr_parse.go:2539
+//line addr_parse.go:2553
 		if data[p] == 10 {
 			goto st30
 		}
@@ -2717,13 +2731,13 @@ tr115:
 	if p == eof {
 		switch cs {
 		case 77:
-//line addr_parse.rl:64
+//line addr_parse.rl:65
 
 			addr.Uri, err = ParseURIBytes(data[mark:p])
 			if err != nil { return nil, err }
 		
 		case 72, 73:
-//line addr_parse.rl:69
+//line addr_parse.rl:70
 
 			if addr.Params == nil {
 				addr.Params = Params{}
@@ -2731,7 +2745,7 @@ tr115:
 			addr.Params[name] = string(buf[0:amt])
 		
 		case 1, 68:
-//line addr_parse.rl:78
+//line addr_parse.rl:79
 
 			p = mark
 			p--
@@ -2743,21 +2757,21 @@ tr115:
 
 			name = string(data[mark:p])
 		
-//line addr_parse.rl:69
+//line addr_parse.rl:70
 
 			if addr.Params == nil {
 				addr.Params = Params{}
 			}
 			addr.Params[name] = string(buf[0:amt])
 		
-//line addr_parse.go:2754
+//line addr_parse.go:2768
 		}
 	}
 
 	_out: {}
 	}
 
-//line addr_parse.rl:198
+//line addr_parse.rl:199
 
 
 	if cs < addr_first_final {

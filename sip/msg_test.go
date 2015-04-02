@@ -972,10 +972,10 @@ var msgTests = []msgTest{
 				Display: "J Rosenberg \\\"",
 				Uri: &sip.URI{
 					Scheme: "sip",
-					User:   "vivekg",
-					Host:   "chair-dnrc.example.com",
-					Params: sip.Params{"tag": "98asjd8"},
+					User:   "jdrosen",
+					Host:   "example.com",
 				},
+				Params: sip.Params{"tag": "98asjd8"},
 			},
 			MaxForwards: 68,
 			CallID:      "wsinv.ndaksdj@192.0.2.1",

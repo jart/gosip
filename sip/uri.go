@@ -142,12 +142,33 @@ func (params Params) Append(b *bytes.Buffer) {
 		}
 		sort.Strings(keys)
 		for _, k := range keys {
-			b.WriteString(";")
+			b.WriteByte(';')
 			b.WriteString(util.URLEscape(k, false))
 			v := params[k]
 			if v != "" {
-				b.WriteString("=")
+				b.WriteByte('=')
 				b.WriteString(util.URLEscape(v, false))
+			}
+		}
+	}
+}
+
+func (params Params) AppendQuoted(b *bytes.Buffer) {
+	if params != nil && len(params) > 0 {
+		keys := make([]string, len(params))
+		i := 0
+		for k, _ := range params {
+			keys[i] = k
+			i++
+		}
+		sort.Strings(keys)
+		for _, k := range keys {
+			b.WriteByte(';')
+			b.Write(tokencify([]byte(k)))
+			v := params[k]
+			if v != "" {
+				b.WriteByte('=')
+				b.Write(quote([]byte(v)))
 			}
 		}
 	}

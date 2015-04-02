@@ -54,6 +54,7 @@ func ParseAddrBytes(data []byte, next *Addr) (addr *Addr, err error) {
 		}
 
 		action display {
+			// TODO: Collapse this string.
 			addr.Display = strings.TrimRight(string(buf[0:amt]), " \t\r\n")
 		}
 
@@ -174,8 +175,8 @@ func ParseAddrBytes(data []byte, next *Addr) (addr *Addr, err error) {
 		# doesn't appear in angle brackets, the parameters need to be owned by the
 		# Addr object, not the URI. This has been placed in its own machine so it
 		# doesn't have to be duplicated in the two machines below.
-		param_name      = token >mark %name;
-		param_content   = tokenhost >start @append;
+		param_name      = token >mark >start %name;
+		param_content   = tokenhost @append;
 		param_value     = param_content | quoted_string;
 		param           = ( param_name ( EQUAL param_value )? ) %param;
 		params         := ( SEMI param )* ( COMMA <: any @goto_addr )?;

@@ -7,15 +7,18 @@ import (
 )
 
 type addrTest struct {
-	s    string
-	addr sip.Addr
-	err  error
+	name        string
+	s           string
+	s_canonical string
+	addr        sip.Addr
+	err         error
 }
 
 var addrTests = []addrTest{
 
 	addrTest{
-		s: "<sip:pokemon.net>",
+		name: "Basic address",
+		s:    "<sip:pokemon.net>",
 		addr: sip.Addr{
 			Uri: &sip.URI{
 				Scheme: "sip",
@@ -25,7 +28,96 @@ var addrTests = []addrTest{
 	},
 
 	addrTest{
-		s: "<sip:brave@toaster.net;isup-oli=29>;tag=deadbeef",
+		name: "Address parameter",
+		s:    "<sip:pokemon.net>;tag=deadbeef",
+		addr: sip.Addr{
+			Uri: &sip.URI{
+				Scheme: "sip",
+				Host:   "pokemon.net",
+			},
+			Params: sip.Params{
+				"tag": "deadbeef",
+			},
+		},
+	},
+
+	addrTest{
+		name:        "Address parameter spacing",
+		s:           "<sip:pokemon.net>\t ;\t tag\t = \tdeadbeef",
+		s_canonical: "<sip:pokemon.net>;tag=deadbeef",
+		addr: sip.Addr{
+			Uri: &sip.URI{
+				Scheme: "sip",
+				Host:   "pokemon.net",
+			},
+			Params: sip.Params{
+				"tag": "deadbeef",
+			},
+		},
+	},
+
+	addrTest{
+		name:        "Address parameter quoted",
+		s:           "<sip:pokemon.net>;tag=\"deadbeef\"",
+		s_canonical: "<sip:pokemon.net>;tag=deadbeef",
+		addr: sip.Addr{
+			Uri: &sip.URI{
+				Scheme: "sip",
+				Host:   "pokemon.net",
+			},
+			Params: sip.Params{
+				"tag": "deadbeef",
+			},
+		},
+	},
+
+	addrTest{
+		name:        "Address parameter quoted spacing",
+		s:           "<sip:pokemon.net>\t ;\t tag\t = \t\"deadbeef\"",
+		s_canonical: "<sip:pokemon.net>;tag=deadbeef",
+		addr: sip.Addr{
+			Uri: &sip.URI{
+				Scheme: "sip",
+				Host:   "pokemon.net",
+			},
+			Params: sip.Params{
+				"tag": "deadbeef",
+			},
+		},
+	},
+
+	addrTest{
+		name: "Address parameter quoted escaped",
+		s:    "<sip:pokemon.net>;tag=\"\\\"deadbeef\\\"\"",
+		addr: sip.Addr{
+			Uri: &sip.URI{
+				Scheme: "sip",
+				Host:   "pokemon.net",
+			},
+			Params: sip.Params{
+				"tag": "\"deadbeef\"",
+			},
+		},
+	},
+
+	addrTest{
+		name: "URI parameter",
+		s:    "<sip:brave@toaster.net;isup-oli=29>",
+		addr: sip.Addr{
+			Uri: &sip.URI{
+				Scheme: "sip",
+				User:   "brave",
+				Host:   "toaster.net",
+				Params: sip.Params{
+					"isup-oli": "29",
+				},
+			},
+		},
+	},
+
+	addrTest{
+		name: "Address + URI parameter",
+		s:    "<sip:brave@toaster.net;isup-oli=29>;tag=deadbeef",
 		addr: sip.Addr{
 			Uri: &sip.URI{
 				Scheme: "sip",
@@ -113,7 +205,7 @@ func TestParseAddr(t *testing.T) {
 			}
 		}
 		if !reflect.DeepEqual(&test.addr, addr) {
-			t.Errorf("%#v != %#v\n%#v != %#v", &test.addr, addr, test.addr.Uri, addr.Uri)
+			t.Errorf("%s:\n%#v !=\n%#v\n%#v !=\n%#v", test.name, &test.addr, addr, test.addr.Uri, addr.Uri)
 		}
 	}
 }
@@ -121,8 +213,14 @@ func TestParseAddr(t *testing.T) {
 func TestAddrString(t *testing.T) {
 	for _, test := range addrTests {
 		addr := test.addr.String()
-		if test.s != addr {
-			t.Error(test.s, "!=", addr)
+		if test.s_canonical != "" {
+			if test.s_canonical != addr {
+				t.Errorf("%s (Canonicalization)\nWant: %s\nGot:  %s", test.name, test.s_canonical, addr)
+			}
+		} else {
+			if test.s != addr {
+				t.Errorf("%s\nWant: %s\nGot:  %s", test.name, test.s, addr)
+			}
 		}
 	}
 }

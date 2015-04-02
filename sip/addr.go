@@ -66,7 +66,7 @@ func (addr *Addr) Append(b *bytes.Buffer) error {
 	b.WriteString("<")
 	addr.Uri.Append(b)
 	b.WriteString(">")
-	addr.Params.Append(b)
+	addr.Params.AppendQuoted(b)
 	if addr.Next != nil {
 		b.WriteString(",")
 		addr.Next.Append(b)
