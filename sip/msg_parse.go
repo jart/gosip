@@ -2442,7 +2442,7 @@ tr58:
 
 			*viap = via
 			viap = &via.Next
-			// via = nil
+			via = nil
 		
 //line msg_parse.rl:211
 
@@ -2486,7 +2486,7 @@ tr76:
 
 			*viap = via
 			viap = &via.Next
-			// via = nil
+			via = nil
 		
 //line msg_parse.rl:203
 
@@ -2867,7 +2867,7 @@ tr77:
 
 			*viap = via
 			viap = &via.Next
-			// via = nil
+			via = nil
 		
 //line msg_parse.rl:203
 
@@ -3463,7 +3463,7 @@ tr104:
 
 			*viap = via
 			viap = &via.Next
-			// via = nil
+			via = nil
 		
 //line msg_parse.rl:203
 
@@ -4047,7 +4047,7 @@ tr143:
 
 			*viap = via
 			viap = &via.Next
-			// via = nil
+			via = nil
 		
 //line msg_parse.rl:211
 
@@ -4077,7 +4077,7 @@ tr159:
 
 			*viap = via
 			viap = &via.Next
-			// via = nil
+			via = nil
 		
 //line msg_parse.rl:203
 
@@ -4384,7 +4384,7 @@ tr160:
 
 			*viap = via
 			viap = &via.Next
-			// via = nil
+			via = nil
 		
 //line msg_parse.rl:203
 
@@ -4521,7 +4521,7 @@ tr165:
 
 			*viap = via
 			viap = &via.Next
-			// via = nil
+			via = nil
 		
 //line msg_parse.rl:203
 

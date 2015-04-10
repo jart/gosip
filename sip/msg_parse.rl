@@ -170,7 +170,7 @@ func ParseMsgBytes(data []byte) (msg *Msg, err error) {
 		action Via {
 			*viap = via
 			viap = &via.Next
-			// via = nil
+			via = nil
 		}
 
 		action ViaProtocol {
