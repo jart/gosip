@@ -779,6 +779,7 @@ var msgTests = []msgTest{
 	},
 
 	msgTest{
+		name: "Flowroute Fun",
 		s: "SIP/2.0 200 OK\r\n" +
 			"Via: SIP/2.0/UDP 1.2.3.4:55345;branch=z9hG4bK-d1d81e94a099\r\n" +
 			"From: <sip:+12126660420@fl.gg>;tag=68e274dbd83b\r\n" +
@@ -1098,6 +1099,64 @@ var msgTests = []msgTest{
 					"m=audio 49217 RTP/AVP 0 12\r\n" +
 					"m=video 3227 RTP/AVP 31\r\n" +
 					"a=rtpmap:31 LPC\r\n"),
+			},
+		},
+	},
+
+	msgTest{
+		name: "RFC4475 Torture Message #2",
+		s: "!interesting-Method0123456789_*+`.%indeed'~ sip:1_unusual.URI~(to-be!sure)&isn't+it$/crazy?,/;;*:&it+has=1,weird!*pas$wo~d_too.(doesn't-it)@example.com SIP/2.0\r\n" +
+			"Via: SIP/2.0/TCP host1.example.com;branch=z9hG4bK-.!%66*_+`'~\r\n" +
+			"To: \"BEL:\\\x07 NUL:\\\x00 DEL:\\\x7F\" <sip:1_unusual.URI~(to-be!sure)&isn't+it$/crazy?,/;;*@example.com>\r\n" +
+			"From: token1~` token2'+_ token3*%!.- <sip:mundane@example.com>;fromParam''~+*_!.-%=\"\xD1\x80\xD0\xB0\xD0\xB1\xD0\xBE\xD1\x82\xD0\xB0\xD1\x8E\xD1\x89\xD0\xB8\xD0\xB9\";tag=_token~1'+`*%!-.\r\n" +
+			"Call-ID: intmeth.word%ZK-!.*_+'@word`~)(><:\\/\"][?}{\r\n" +
+			"CSeq: 139122385 !interesting-Method0123456789_*+`.%indeed'~\r\n" +
+			"Max-Forwards: 255\r\n" +
+			"extensionHeader-!.%*+_`'~:\xEF\xBB\xBF\xE5\xA4\xA7\xE5\x81\x9C\xE9\x9B\xBB\r\n" +
+			"Content-Length: 0\r\n" +
+			"\r\n",
+		msg: sip.Msg{
+			VersionMajor: 2,
+			Method:       "!interesting-Method0123456789_*+`.%indeed'~",
+			CallID:       "intmeth.word%ZK-!.*_+'@word`~)(><:\\/\"][?}{",
+			CSeq:         139122385,
+			CSeqMethod:   "!interesting-Method0123456789_*+`.%indeed'~",
+			MaxForwards:  255,
+			Request: &sip.URI{
+				Scheme: "sip",
+				User:   "1_unusual.URI~(to-be!sure)&isn't+it$/crazy?,/;;*",
+				Pass:   "&it+has=1,weird!*pas$wo~d_too.(doesn't-it)",
+				Host:   "example.com",
+			},
+			Via: &sip.Via{
+				Protocol:  "SIP",
+				Version:   "2.0",
+				Transport: "TCP",
+				Host:      "host1.example.com",
+				Params:    sip.Params{"branch": "z9hG4bK-.!%66*_+`'~"},
+			},
+			To: &sip.Addr{
+				Display: "BEL:\x07 NUL:\x00 DEL:\x7F",
+				Uri: &sip.URI{
+					Scheme: "sip",
+					User:   "1_unusual.URI~(to-be!sure)&isn't+it$/crazy?,/;;*",
+					Host:   "example.com",
+				},
+			},
+			From: &sip.Addr{
+				Display: "token1~` token2'+_ token3*%!.-",
+				Uri: &sip.URI{
+					Scheme: "sip",
+					User:   "mundane",
+					Host:   "example.com",
+				},
+				Params: sip.Params{
+					"fromParam''~+*_!.-%": "\xD1\x80\xD0\xB0\xD0\xB1\xD0\xBE\xD1\x82\xD0\xB0\xD1\x8E\xD1\x89\xD0\xB8\xD0\xB9",
+					"tag": "_token~1'+`*%!-.",
+				},
+			},
+			Headers: sip.Headers{
+				"extensionHeader-!.%*+_`'~": "\xEF\xBB\xBF\xE5\xA4\xA7\xE5\x81\x9C\xE9\x9B\xBB",
 			},
 		},
 	},

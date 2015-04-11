@@ -79,8 +79,6 @@ func ParseMsgBytes(data []byte) (msg *Msg, err error) {
 	p := 0
 	pe := len(data)
 	eof := len(data)
-	line := 1
-	linep := 0
 	buf := make([]byte, len(data))
 	amt := 0
 	mark := 0
@@ -89,8 +87,9 @@ func ParseMsgBytes(data []byte) (msg *Msg, err error) {
 	var name string
 	var hex byte
 	var value *string
-	var addr **Addr
 	var via *Via
+	var addrp **Addr
+	var addr *Addr
 
 	%%{
 		action hold {
@@ -101,13 +100,12 @@ func ParseMsgBytes(data []byte) (msg *Msg, err error) {
 			fbreak;
 		}
 
-		action line {
-			line++
-			linep = p + 1
-		}
-
 		action mark {
 			mark = p
+		}
+
+		action backtrack {
+			fexec mark;
 		}
 
 		action start {
@@ -231,9 +229,6 @@ func ParseMsgBytes(data []byte) (msg *Msg, err error) {
 			b := data[mark:p - 1]
 			if value != nil {
 				*value = string(b)
-			} else if addr != nil {
-				*addr, err = ParseAddrBytes(b, *addr)
-				if err != nil { return nil, err }
 			} else {
 				if msg.Headers == nil {
 					msg.Headers = Headers{}
@@ -242,24 +237,54 @@ func ParseMsgBytes(data []byte) (msg *Msg, err error) {
 			}
 		}}
 
-		action new_addr {
+		action goto_addr {
+			fgoto addr;
+		}
+
+		action goto_addr_uri {
+			fgoto addr_uri;
+		}
+
+		action goto_addr_angled {
+			fgoto addr_angled;
+		}
+
+		action goto_addr_param {
+			fgoto addr_param;
+		}
+
+		action AddrNew {
 			addr = new(Addr)
 		}
 
-		action addr_display {
-			addr.Display = strings.TrimRight(string(buf[0:amt]), " \t\r\n")
+		action AddrQuotedDisplay {
+			addr.Display = string(buf[0:amt])
 		}
 
-		action addr_uri {
+		action AddrUnquotedDisplay {{
+			end := p
+			for end > mark && whitespacec(data[end - 1]) {
+				end--
+			}
+			addr.Display = string(data[mark:end])
+		}}
+
+		action AddrUri {
 			addr.Uri, err = ParseURIBytes(data[mark:p])
 			if err != nil { return nil, err }
 		}
 
-		action addr_param {
+		action AddrParam {
 			if addr.Params == nil {
 				addr.Params = Params{}
 			}
 			addr.Params[name] = string(buf[0:amt])
+		}
+
+		action Addr {
+			*addrp = addr
+			addrp = &addr.Next
+			addr = nil
 		}
 
 		action CallID {
@@ -300,9 +325,9 @@ func ParseMsgBytes(data []byte) (msg *Msg, err error) {
 		SP              = " ";
 		HTAB            = "\t";
 		CR              = "\r";
-		LF              = "\n" @line;
+		LF              = "\n";
 		DQUOTE          = "\"";
-		CRLF            = CR LF;
+		CRLF            = ( CR when !lookAheadWSP ) LF;
 		WSP             = SP | HTAB;
 		LWS             = ( WSP* ( CR when lookAheadWSP ) LF )? WSP+;
 		SWS             = LWS?;
@@ -357,10 +382,6 @@ func ParseMsgBytes(data []byte) (msg *Msg, err error) {
 		ipv4            = digit | "." ;
 		ipv6            = xdigit | "." | ":" ;
 		hostname        = alpha | digit | "-" | "." ;
-		uric            = reserved | unreserved | "%" | "[" | "]";
-		uric_no_slash   = unreserved | escaped | ";" | "?" | ":" | "@" | "&" | "="
-		                | "+" | "$" | "," ;
-		uri             = alpha schmchars* ":" uric+;
 		token           = tokenc+;
 		tokenhost       = ( tokenc | "[" | "]" | ":" )+;
 		reasonc         = UTF8_NONASCII | ( reserved | unreserved | SP | HTAB ) @append;
@@ -374,13 +395,25 @@ func ParseMsgBytes(data []byte) (msg *Msg, err error) {
 		ReasonPhrase    = reasonmc+ >start %ReasonPhrase;
 		hval            = ( mUTF8 | LWS )* >mark;
 
+		schemec         = alnum | "+" | "-" | ".";
+		scheme          = alpha schemec*;
+		uric            = reserved | unreserved | "%" | "[" | "]";
+		uri             = scheme ":" uric+;
+
 		# Quoted strings can have just about anything, including backslash escapes,
 		# which aren't quite as fancy as the ones you'd see in programming.
 		qdtextc         = 0x21 | 0x23..0x5B | 0x5D..0x7E;
 		qdtext          = UTF8_NONASCII | LWS_append | qdtextc @append;
 		quoted_pair     = "\\" ( 0x00..0x09 | 0x0B..0x0C | 0x0E..0x7F ) @append;
 		quoted_content  = ( qdtext | quoted_pair )* >start;
-		quoted_string   = SWS DQUOTE quoted_content DQUOTE;
+		quoted_string   = DQUOTE quoted_content DQUOTE;
+		unquoted_string = ( token LWS )+;
+
+		# Parameters can be used by vias and addresses.
+		param_name      = token >mark %name;
+		param_content   = tokenhost @append;
+		param_value     = param_content | quoted_string;
+		param           = param_name >start (EQUAL param_value)?;
 
 		# Via Parsing
 		#
@@ -397,29 +430,57 @@ func ParseMsgBytes(data []byte) (msg *Msg, err error) {
 		ViaHostName     = ( alnum | "." | "-" )+ >mark %ViaHost;
 		ViaHost         = ViaHostIPv4 | ViaHostIPv6 | ViaHostName;
 		ViaPort         = digit+ @ViaPort;
-		ViaParamName    = token >mark %name;
-		ViaParamContent = tokenhost >start @append;
-		ViaParamValue   = ViaParamContent | quoted_string;
 		via_param_end   = CRLF @ViaParam @Via @goto_header
 		                | SEMI <: any @hold @ViaParam @goto_via_param
 		                | COMMA <: any @hold @ViaParam @Via @goto_via;
-		via_param      := ViaParamName (EQUAL ViaParamValue)? via_param_end;
+		via_param      := param via_param_end;
 		via_end         = CRLF @Via @goto_header
 		                | SEMI <: any @hold @goto_via_param
 		                | COMMA <: any @hold @Via @goto_via;
 		via            := ViaSent LWS ViaHost (COLON ViaPort)? via_end;
 
+		# Address Parsing
+		#
+		# These can come in the following forms, which can be comma-delimited:
+		#
+		#   - Unangled:        sip:example.lol
+		#   - Angled:          <sip:example.lol>
+		#   - Unquoted Angled: oh my goth <sip:example.lol>
+		#   - Quoted Angled:   "oh my \"goth\"" <sip:example.lol>
+		#
+		# We start off by setting thte mark and performing lookahead for a ':',
+		# '<', token, or '"' character. Then we backtrack to the mark and jump to
+		# the appropriate machine.
+		addr_spec          = LAQUOT uri >mark %AddrUri RAQUOT;
+		addr_display       = quoted_string >start %AddrQuotedDisplay
+		                   | unquoted_string >mark %AddrUnquotedDisplay;
+		addr_param_end     = CRLF @AddrParam @Addr @goto_header
+		                   | SEMI <: any @AddrParam @hold @goto_addr_param
+		                   | COMMA <: any @AddrParam @Addr @hold @goto_addr;
+		addr_param        := param addr_param_end;
+		addr_angled_end    = CRLF @Addr @goto_header
+		                   | SEMI <: any @hold @goto_addr_param
+		                   | COMMA <: any @Addr @hold @goto_addr;
+		addr_angled       := addr_display? addr_spec addr_angled_end;
+		addr_uri_end       = CRLF %Addr @goto_header
+		                   | SEMI <: any @hold @goto_addr_param
+		                   | COMMA <: any @Addr @hold @goto_addr;
+		addr_uri          := ( uri - ";" ) %AddrUri addr_uri_end;
+		addr              := [<\"] @AddrNew @hold @goto_addr_angled
+		                   | unquoted_string >mark "<" @AddrNew @backtrack @goto_addr_angled
+		                   | scheme >mark ":" @AddrNew @backtrack @goto_addr_uri;
+
 		# Address Header Name Definitions
 		#
 		# These headers set the addr pointer to tell the 'value' machine where to
 		# store the value after using ParseAddrBytes().
-		aname    = ("Contact"i | "m"i) %{addr=&msg.Contact}
-		         | ("From"i | "f"i) %{addr=&msg.From}
-		         | "P-Asserted-Identity"i %{addr=&msg.PAssertedIdentity}
-		         | "Record-Route"i %{addr=&msg.RecordRoute}
-		         | "Remote-Party-ID"i %{addr=&msg.RemotePartyID}
-		         | "Route"i %{addr=&msg.Route}
-		         | ("To"i | "t"i) %{addr=&msg.To}
+		aname    = ("Contact"i | "m"i) %{addrp=lastAddr(&msg.Contact)}
+		         | ("From"i | "f"i) %{addrp=lastAddr(&msg.From)}
+		         | "P-Asserted-Identity"i %{addrp=lastAddr(&msg.PAssertedIdentity)}
+		         | "Record-Route"i %{addrp=lastAddr(&msg.RecordRoute)}
+		         | "Remote-Party-ID"i %{addrp=lastAddr(&msg.RemotePartyID)}
+		         | "Route"i %{addrp=lastAddr(&msg.Route)}
+		         | ("To"i | "t"i) %{addrp=lastAddr(&msg.To)}
 		         ;
 
 		# String Header Name Definitions
@@ -509,10 +570,10 @@ func ParseMsgBytes(data []byte) (msg *Msg, err error) {
 		# responsibility of the person using Msg.Headers to do case-insensitive
 		# string comparisons.
 		value   := hval <: CRLF @value @goto_header;
-		xheader := token %name HCOLON <: any @{value=nil;addr=nil} @hold @goto_value;
+		xheader := token %name HCOLON <: any @{value=nil} @hold @goto_value;
 		sheader  = cheader <: CRLF @goto_header
-		         | aname $!gxh HCOLON <: any @{value=nil} @hold @goto_value
-		         | sname $!gxh HCOLON <: any @{addr=nil} @hold @goto_value
+		         | aname $!gxh HCOLON <: any @{value=nil} @hold @goto_addr
+		         | sname $!gxh HCOLON <: any @hold @goto_value
 		         | ("Via"i | "v"i) $!gxh HCOLON <: any @hold @goto_via;
 		header  := CRLF @break
 		         | tokenc @mark @hold sheader;
@@ -528,14 +589,17 @@ func ParseMsgBytes(data []byte) (msg *Msg, err error) {
 		main         := Request | Response;
 
 		write init;
-		write exec;
+		write exec noend;
 	}%%
 
 	if cs < msg_first_final {
 		if p == pe {
-			return nil, errors.New(fmt.Sprintf("Incomplete SIP message: %s", data))
+			return nil, MsgIncompleteError{data}
 		} else {
-			return nil, errors.New(fmt.Sprintf("Error in SIP message at line %d offset %d:\n%s", line, p - linep, data))
+			return nil, MsgParseError{
+				Msg: data,
+				Offset: p,
+			}
 		}
 	}
 
@@ -557,4 +621,12 @@ func ParseMsgBytes(data []byte) (msg *Msg, err error) {
 
 func lookAheadWSP(data []byte, p, pe int) bool {
 	return p + 2 < pe && (data[p+2] == ' ' || data[p+2] == '\t')
+}
+
+func lastAddr(addrp **Addr) **Addr {
+	if *addrp == nil {
+		return addrp
+	} else {
+		return lastAddr(&(*addrp).Next)
+	}
 }

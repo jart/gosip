@@ -45,6 +45,10 @@ func qdtextesc(c byte) bool {
 		0x0E <= c && c <= 0x7F
 }
 
+func whitespacec(c byte) bool {
+	return c == ' ' || c == '\t' || c == '\r' || c == '\n'
+}
+
 func charsetContains(mask *[4]uint64, i byte) bool {
 	return mask[i/64]&(1<<(i%64)) != 0
 }
