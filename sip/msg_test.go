@@ -48,9 +48,7 @@ var msgTests = []msgTest{
 			VersionMajor: 2,
 			Status:       200,
 			Phrase:       "OK",
-			Headers: sip.Headers{
-				"X-LOL": "omfg",
-			},
+			XHeader:      &sip.XHeader{"X-LOL", []byte("omfg"), nil},
 		},
 	},
 
@@ -122,9 +120,7 @@ var msgTests = []msgTest{
 				" Come buy, come buy:\r\n" +
 				" Apples and quinces,\r\n" +
 				" Lemons and oranges"),
-			Headers: sip.Headers{
-				"X-LOL": "omfg",
-			},
+			XHeader: &sip.XHeader{"X-LOL", []byte("omfg"), nil},
 		},
 	},
 
@@ -139,10 +135,14 @@ var msgTests = []msgTest{
 			VersionMajor: 2,
 			Status:       200,
 			Phrase:       "OK",
-			Headers: sip.Headers{
-				"X-Warning": "Come buy our orchard fruits,\r\n" +
-					" Come buy, come buy",
-				"X-LOL": "omfg",
+			XHeader: &sip.XHeader{
+				Name:  "X-LOL",
+				Value: []byte("omfg"),
+				Next: &sip.XHeader{
+					Name: "X-Warning",
+					Value: []byte("Come buy our orchard fruits,\r\n" +
+						" Come buy, come buy"),
+				},
 			},
 		},
 	},
@@ -158,10 +158,14 @@ var msgTests = []msgTest{
 			VersionMajor: 2,
 			Status:       200,
 			Phrase:       "OK",
-			Headers: sip.Headers{
-				"NewFangledHeader": "newfangled value\r\n" +
-					" continued newfangled value",
-				"UnknownHeaderWithUnusualValue": ";;,,;;,;",
+			XHeader: &sip.XHeader{
+				Name:  "UnknownHeaderWithUnusualValue",
+				Value: []byte(";;,,;;,;"),
+				Next: &sip.XHeader{
+					Name: "NewFangledHeader",
+					Value: []byte("newfangled value\r\n" +
+						" continued newfangled value"),
+				},
 			},
 		},
 	},
@@ -195,22 +199,35 @@ var msgTests = []msgTest{
 	msgTest{
 		name: "Extended header looks like standard headers",
 		s: "SIP/2.0 200 OK\r\n" +
-			"Proxy-LOL: take\r\n" +
-			"CSeq2: back\r\n" +
-			"Contazt: the\r\n" +
-			"P-Asserted-LOL: dance\r\n" +
 			"viaz: floor\r\n" +
+			"P-Asserted-LOL: dance\r\n" +
+			"Contazt: the\r\n" +
+			"CSeq2: back\r\n" +
+			"Proxy-LOL: take\r\n" +
 			"\r\n",
 		msg: sip.Msg{
 			VersionMajor: 2,
 			Status:       200,
 			Phrase:       "OK",
-			Headers: sip.Headers{
-				"Proxy-LOL":      "take",
-				"CSeq2":          "back",
-				"Contazt":        "the",
-				"P-Asserted-LOL": "dance",
-				"viaz":           "floor",
+			XHeader: &sip.XHeader{
+				Name:  "Proxy-LOL",
+				Value: []byte("take"),
+				Next: &sip.XHeader{
+					Name:  "CSeq2",
+					Value: []byte("back"),
+					Next: &sip.XHeader{
+						Name:  "Contazt",
+						Value: []byte("the"),
+						Next: &sip.XHeader{
+							Name:  "P-Asserted-LOL",
+							Value: []byte("dance"),
+							Next: &sip.XHeader{
+								Name:  "viaz",
+								Value: []byte("floor"),
+							},
+						},
+					},
+				},
 			},
 		},
 	},
@@ -1059,10 +1076,14 @@ var msgTests = []msgTest{
 					},
 				},
 			},
-			Headers: sip.Headers{
-				"NewFangledHeader": "newfangled value\r\n" +
-					" continued newfangled value",
-				"UnknownHeaderWithUnusualValue": ";;,,;;,;",
+			XHeader: &sip.XHeader{
+				Name:  "UnknownHeaderWithUnusualValue",
+				Value: []byte(";;,,;;,;"),
+				Next: &sip.XHeader{
+					Name: "NewFangledHeader",
+					Value: []byte("newfangled value\r\n" +
+						" continued newfangled value"),
+				},
 			},
 			Route: &sip.Addr{
 				Uri: &sip.URI{
@@ -1172,8 +1193,9 @@ var msgTests = []msgTest{
 					},
 				},
 			},
-			Headers: sip.Headers{
-				"extensionHeader-!.%*+_`'~": "\xEF\xBB\xBF\xE5\xA4\xA7\xE5\x81\x9C\xE9\x9B\xBB",
+			XHeader: &sip.XHeader{
+				Name:  "extensionHeader-!.%*+_`'~",
+				Value: []byte("\xEF\xBB\xBF\xE5\xA4\xA7\xE5\x81\x9C\xE9\x9B\xBB"),
 			},
 		},
 	},
@@ -1195,8 +1217,8 @@ func TestParseMsg(t *testing.T) {
 			if !reflect.DeepEqual(test.msg.Payload, msg.Payload) {
 				t.Errorf("Payload:\n%#v !=\n%#v", test.msg.Payload, msg.Payload)
 			}
-			if !reflect.DeepEqual(test.msg.Headers, msg.Headers) {
-				t.Errorf("Headers:\n%#v !=\n%#v", test.msg.Headers, msg.Headers)
+			if test.msg.XHeader.String() != msg.XHeader.String() {
+				t.Errorf("Headers:\n%s !=\n%s", test.msg.XHeader, msg.XHeader)
 			}
 			if !reflect.DeepEqual(test.msg.Via, msg.Via) {
 				t.Errorf("Via:\n%#v !=\n%#v", test.msg.Via, msg.Via)

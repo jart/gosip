@@ -164,10 +164,7 @@ action value {{
 	if value != nil {
 		*value = b
 	} else {
-		if msg.Headers == nil {
-			msg.Headers = Headers{}
-		}
-		msg.Headers[name] = string(b)
+		msg.XHeader = &XHeader{name, b, msg.XHeader}
 	}
 }}
 

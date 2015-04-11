@@ -8,8 +8,6 @@ import (
 	"strconv"
 )
 
-type Headers map[string]string
-
 // Msg represents a SIP message. This can either be a request or a response.
 // These fields are never nil unless otherwise specified.
 type Msg struct {
@@ -84,7 +82,7 @@ type Msg struct {
 	Warning            []byte
 
 	// Extension headers.
-	Headers Headers
+	XHeader *XHeader
 }
 
 //go:generate ragel -Z -G2 -o msg_parse.go msg_parse.rl
@@ -114,10 +112,7 @@ func (msg *Msg) Copy() *Msg {
 	res.Route = msg.Route.Copy()
 	res.Contact = msg.Contact.Copy()
 	res.RecordRoute = msg.RecordRoute.Copy()
-	res.Headers = make(Headers, len(msg.Headers))
-	for k, v := range msg.Headers {
-		res.Headers[k] = v
-	}
+	res.XHeader = msg.XHeader
 	return res
 }
 
@@ -442,14 +437,7 @@ func (msg *Msg) Append(b *bytes.Buffer) {
 		b.WriteString("\r\n")
 	}
 
-	if msg.Headers != nil {
-		for k, v := range msg.Headers {
-			b.WriteString(k)
-			b.WriteString(": ")
-			b.WriteString(v)
-			b.WriteString("\r\n")
-		}
-	}
+	msg.XHeader.Append(b)
 
 	if msg.Payload != nil {
 		b.WriteString("Content-Type: ")
