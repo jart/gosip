@@ -188,6 +188,10 @@ action value {{
 	}
 }}
 
+action goto_ctype {
+	fgoto ctype;
+}
+
 action goto_addr {
 	fgoto addr;
 }
@@ -337,12 +341,6 @@ tokenhost       = ( tokenc | "[" | "]" | ":" )+;
 reasonc         = UTF8_NONASCII | ( reserved | unreserved | SP | HTAB ) @append;
 reasonmc        = escaped | reasonc;
 cid             = word ( "@" word )?;
-
-Method          = token >mark %Method;
-SIPVersionNo    = digit+ @VersionMajor "." digit+ @VersionMinor;
-RequestURI      = ^SP+ >mark %RequestURI;
-StatusCode      = ( digit @StatusCode ) {3};
-ReasonPhrase    = reasonmc+ >start %ReasonPhrase;
 hval            = ( mUTF8 | LWS )* >mark;
 
 schemec         = alnum | "+" | "-" | ".";
@@ -359,7 +357,20 @@ quoted_content  = ( qdtext | quoted_pair )* >start;
 quoted_string   = DQUOTE quoted_content DQUOTE;
 unquoted_string = ( token LWS )+;
 
-# Parameters can be used by vias and addresses, but not URIs.
+# Content Type Parsing
+#
+# This is easy-peasy. It almost always contains the value "application/sdp".
+# We're going to ignore the parameters, because this information is actually
+# stored in Msg by way of type interface and we don't support any types that
+# take parameters.
+ctype_param     = SEMI token EQUAL ( token | quoted_string );
+ctype_mime      = ( token "/" token ) >mark %ContentType;
+ctype          := ctype_mime ctype_param* CRLF @goto_header;
+
+# Parameter Parsing
+#
+# Parameters can be used by vias and addresses, but not URIs. They can look
+# like=this or like="this". The =value part is optional.
 param_name      = token >mark %name;
 param_content   = tokenhost @append;
 param_value     = param_content | quoted_string;
@@ -495,7 +506,6 @@ sname    = "Accept"i %{value=&msg.Accept}
 # their own special type of parsing.
 cheader  = ("Call-ID"i | "i"i) $!gxh HCOLON cid >mark %CallID
          | ("Content-Length"i | "l"i) $!gxh HCOLON digit+ >{clen=0} @ContentLength
-         | ("Content-Type"i | "c"i) $!gxh HCOLON <: hval %ContentType
          | "CSeq"i $!gxh HCOLON (digit+ @CSeq) LWS token >mark %CSeqMethod
          | ("Expires"i | "l"i) $!gxh HCOLON digit+ >{msg.Expires=0} @Expires
          | ("Max-Forwards"i | "l"i) $!gxh HCOLON digit+ >{msg.MaxForwards=0} @MaxForwards
@@ -538,7 +548,8 @@ xheader := token %name HCOLON <: any @{value=nil} @hold @goto_value;
 sheader  = cheader <: CRLF @goto_header
          | aname $!gxh HCOLON <: any @{value=nil} @hold @goto_addr
          | sname $!gxh HCOLON <: any @hold @goto_value
-         | ("Via"i | "v"i) $!gxh HCOLON <: any @hold @goto_via;
+         | ("Via"i | "v"i) $!gxh HCOLON <: any @hold @goto_via
+         | ("Content-Type"i | "c"i) $!gxh HCOLON <: any @hold @goto_ctype;
 header  := CRLF @break
          | tokenc @mark @hold sheader;
 
@@ -547,9 +558,15 @@ header  := CRLF @break
 # The Request and Response definitions are very straightforward, and the
 # main machine is the union of the two. Once the line feed character has
 # been observed, we then jump to the header machine.
-SIPVersion    = "SIP/" SIPVersionNo;
-Request       = Method SP RequestURI SP SIPVersion CRLF @goto_header;
-Response      = SIPVersion SP StatusCode SP ReasonPhrase CRLF @goto_header;
-Message       = Request | Response;
+# SIP Message Parsing
+Method          = token >mark %Method;
+SIPVersionNo    = digit+ @VersionMajor "." digit+ @VersionMinor;
+RequestURI      = ^SP+ >mark %RequestURI;
+StatusCode      = ( digit @StatusCode ) {3};
+ReasonPhrase    = reasonmc+ >start %ReasonPhrase;
+SIPVersion      = "SIP/" SIPVersionNo;
+Request         = Method SP RequestURI SP SIPVersion CRLF @goto_header;
+Response        = SIPVersion SP StatusCode SP ReasonPhrase CRLF @goto_header;
+Message         = Request | Response;
 
 }%%
