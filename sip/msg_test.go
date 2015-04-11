@@ -1249,14 +1249,14 @@ func TestParseMsg(t *testing.T) {
 	}
 }
 
-func BenchmarkParseMsgFlowroute(b *testing.B) { // 27256 ns/op
+func BenchmarkParseMsgFlowroute(b *testing.B) { // 26653 ns/op
 	msg := []byte(flowroute)
 	for i := 0; i < b.N; i++ {
 		sip.ParseMsgBytes(msg)
 	}
 }
 
-func BenchmarkParseMsgTorture2(b *testing.B) { // 32296 ns/op
+func BenchmarkParseMsgTorture2(b *testing.B) { // 31397 ns/op
 	msg := []byte(torture2)
 	for i := 0; i < b.N; i++ {
 		sip.ParseMsgBytes(msg)

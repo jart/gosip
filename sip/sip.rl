@@ -6,10 +6,15 @@
 # the purpose of converting SIP messages into a Msg data structure. This
 # machine works in tandem with the Ragel machine defined in uri_parse.rl.
 #
-# Perhaps it would have been better if the authors of this protocol had chosen
-# to use a binary serialization format like protocol buffers. But instead they
-# chose to create a plaintext protocol that looks similar to HTTP requests,
-# but are phenomenally more complicated.
+# The parser is deterministicly effectively O(k). It's able to parse an
+# ordinary INVITE message in less than 30μs, which means 30k messages can be
+# parsed per second. Best of all, messages are parsed into a very easy to use
+# and transparent data structure.
+#
+# Perhaps it would have been better if the SIP protocol designers had chosen to
+# use a binary serialization format like protocol buffers. But instead they
+# chose to create a plaintext protocol that looks similar to HTTP requests, but
+# are phenomenally more complicated.
 #
 # SIP messages are quite insane.
 #
