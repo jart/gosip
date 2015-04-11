@@ -407,16 +407,22 @@ via            := ViaSent LWS ViaHost (COLON ViaPort)? via_end;
 #
 # These can come in the following forms, which can be comma-delimited:
 #
-#   - Unangled: sip:example.lol
-#   - Angled: <sip:example.lol>
+#   - Unangled: sip:example.lol;param
+#   - Angled: <sip:example.lol;param>;param
 #   - Unquoted: oh my goth <sip:boo@lol[feed:a::bee]:5060>
 #   - Quoted: "oh my \"goth\"" <sip:example.lol>
 #
 # In order to tell the unangled and unquoted angled forms apart, we need to
 # look for ':' or '<' character and then backtrack to the appropriate machine.
 #
-# URIs are parsed by a separate routine. Because Addr and URI can both have
-# parameters, they must be owned by the Addr object when in unangled form.
+# Because Addr and URI can both have parameters, one might wonder what happens
+# to them in the unmangled form. Are they owned by URI? Or are they owned by
+# Addr? The answer is the latter.
+#
+# The URIs themselves are parsed by a separate routine. All we do here is
+# extract the bytes and pass them along. It would be nice if we could put the
+# URI parsing in this file, where the URI parsing is invoked by fcall. But
+# that's not possible, because it appears Ragel Go is broken in that regard.
 addr_spec          = LAQUOT uri >mark %AddrUri RAQUOT;
 addr_display       = quoted_string >start %AddrQuotedDisplay
                    | unquoted_string >mark %AddrUnquotedDisplay;
