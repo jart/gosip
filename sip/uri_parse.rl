@@ -31,10 +31,19 @@ func ParseURIBytes(data []byte) (uri *URI, err error) {
 	eof := len(data)
 	buf := make([]byte, len(data))
 	amt := 0
+	// mark := 0
 	var b1, b2 string
 	var hex byte
 
 	%%{
+		action mark {
+			mark = p
+		}
+
+		action backtrack {
+			fexec mark;
+		}
+
 		action start {
 			amt = 0
 		}
@@ -52,6 +61,14 @@ func ParseURIBytes(data []byte) (uri *URI, err error) {
 			hex += unhex(fc)
 			buf[amt] = hex
 			amt++
+		}
+
+		action goto_uriSansUser {
+			fgoto uriSansUser;
+		}
+
+		action goto_uriWithUser {
+			fgoto uriWithUser;
 		}
 
 		action scheme {
@@ -93,7 +110,7 @@ func ParseURIBytes(data []byte) (uri *URI, err error) {
 			amt++
 		}
 
-		action param {
+		action uparam {
 			if uri.Params == nil {
 				uri.Params = Params{}
 			}
@@ -108,44 +125,49 @@ func ParseURIBytes(data []byte) (uri *URI, err error) {
 		}
 
 		# Byte character definitions.
-		mark            = "-" | "_" | "." | "!" | "~" | "*" | "'" | "(" | ")" ;
-		reserved        = ";" | "/" | "?" | ":" | "@" | "&" | "=" | "+" | "$" | "," ;
-		unreserved      = alpha | digit | mark ;
-		ipv4            = digit | "." ;
-		ipv6            = xdigit | "." | ":" ;
-		hostname        = alpha | digit | "-" | "." ;
-		tel             = digit | "+" | "-" ;
-		schmchars       = alpha | digit | "+" | "-" | "." ;
-		userchars       = unreserved | "&" | "=" | "+" | "$" | "," | ";" | "?" | "/" ;
-		passchars       = unreserved | "&" | "=" | "+" | "$" | "," ;
-		paramchars      = unreserved | "[" | "]" | "/" | ":" | "&" | "+" | "$" ;
-		headerchars     = unreserved | "[" | "]" | "/" | "?" | ":" | "+" | "$" ;
+		mark            = "-" | "_" | "." | "!" | "~" | "*" | "'" | "(" | ")";
+		reserved        = ";" | "/" | "?" | ":" | "@" | "&" | "=" | "+" | "$" | ",";
+		unreserved      = alnum | mark;
+		ipv4c           = digit | ".";
+		ipv6c           = xdigit | "." | ":";
+		hostc           = alnum | "-" | ".";
+		telc            = digit | "+" | "-";
+		schemec         = alnum | "+" | "-" | ".";
+		uric            = reserved | unreserved | "%" | "[" | "]";
+		userc           = unreserved | "&" | "=" | "+" | "$" | "," | ";" | "?" | "/";
+		passc           = unreserved | "&" | "=" | "+" | "$" | ",";
+		uparamc         = unreserved | "[" | "]" | "/" | ":" | "&" | "+" | "$";
+		headerc         = unreserved | "[" | "]" | "/" | "?" | ":" | "+" | "$";
 
 		# Multibyte character definitions.
-		escaped         = "%" ( xdigit @hexHi ) ( xdigit @hexLo ) ;
-		userchar        = escaped | ( userchars @append ) ;
-		passchar        = escaped | ( passchars @append ) ;
-		paramchar       = escaped | ( paramchars @lower ) ;
-		headerchar      = escaped | ( headerchars @append ) ;
+		escaped         = "%" ( xdigit @hexHi ) ( xdigit @hexLo );
+		userchar        = escaped | ( userc @append );
+		passchar        = escaped | ( passc @append );
+		uparamchar      = escaped | ( uparamc @lower );
+		headerchar      = escaped | ( headerc @append );
 
 		# URI component definitions.
-		scheme          = ( alpha schmchars* ) >start @lower %scheme ;
-		user            = userchar+ >start %user ;
-		pass            = passchar+ >start %pass ;
-		host6           = "[" ( ipv6+ >start @lower %host ) "]" ;
-		host            = host6 | ( ( ipv4 | hostname | tel )+ >start @lower %host ) ;
-		port            = digit+ @port ;
-		paramkey        = paramchar+ >start >b2 %b1 ;
-		paramval        = paramchar+ >start %b2 ;
-		param           = space* ";" paramkey ( "=" paramval )? %param ;
-		headerkey       = headerchar+ >start >b2 %b1 ;
-		headerval       = headerchar+ >start %b2 ;
-		header          = headerkey ( "=" headerval )? %header ;
-		headers         = "?" header ( "&" header )* ;
-		userpass        = user ( ":" pass )? ;
-		hostport        = host ( ":" port )? ;
-		uriSansUser    := space* scheme ":" hostport param* space* headers? space* ;
-		uriWithUser    := space* scheme ":" userpass "@" hostport param* space* headers? space* ;
+		scheme          = ( alpha schemec* ) >start @lower %scheme;
+		user            = userchar+ >start %user;
+		pass            = passchar+ >start %pass;
+		host6           = "[" ( ipv6c+ >start @lower %host ) "]";
+		host            = host6 | ( ( ipv4c | hostc | telc )+ >start @lower %host );
+		port            = digit+ @port;
+		uparamkey       = uparamchar+ >start >b2 %b1;
+		uparamval       = uparamchar+ >start %b2;
+		uparam          = ";" uparamkey ( "=" uparamval )? %uparam;
+		headerkey       = headerchar+ >start >b2 %b1;
+		headerval       = headerchar+ >start %b2;
+		header          = headerkey ( "=" headerval )? %header;
+		headers         = "?" header ( "&" header )*;
+		userpass        = user ( ":" pass )?;
+		hostport        = host ( ":" port )?;
+		uriSansUser    := scheme ":" hostport uparam* headers?;
+		uriWithUser    := scheme ":" userpass "@" hostport uparam* headers?;
+
+		# XXX: This backtracking solution causes a weird Ragel bug.
+		# uri            := any+ >mark %backtrack %goto_uriSansUser
+		#                |  any+ >mark :> "@" @backtrack @goto_uriWithUser;
 	}%%
 
 	%% write init;

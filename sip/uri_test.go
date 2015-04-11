@@ -135,15 +135,7 @@ var uriTests = []uriTest{
 
 	uriTest{
 		s: "sips:google.com ;lol ;h=omg",
-		uri: &sip.URI{
-			Scheme: "sips",
-			Host:   "google.com",
-			Params: sip.Params{
-				"lol": "",
-				"h":   "omg",
-			},
-		},
-		skipFormat: true,
+		e: errors.New("Error in URI at pos 15: sips:google.com ;lol ;h=omg"),
 	},
 
 	uriTest{

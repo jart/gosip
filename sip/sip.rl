@@ -367,7 +367,7 @@ quoted_content  = ( qdtext | quoted_pair )* >start;
 quoted_string   = DQUOTE quoted_content DQUOTE;
 unquoted_string = ( token LWS )+;
 
-# Parameters can be used by vias and addresses.
+# Parameters can be used by vias and addresses, but not URIs.
 param_name      = token >mark %name;
 param_content   = tokenhost @append;
 param_value     = param_content | quoted_string;
