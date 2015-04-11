@@ -2,16 +2,16 @@
 //
 // For example:
 //
-//   "J.A. Roberts Tunney" <sip:jtunney@bsdtelecom.net;isup-oli=29>;tag=deadbeef
+//   "Justine Tunney" <sip:jart@example.test;isup-oli=29>;tag=feedabee
 //
 // Roughly equates to:
 //
-//   {Display: "J.A. Roberts Tunney",
-//    Params: {"tag": "deadbeef"},
+//   {Display: "Justine Tunney",
+//    Params: {"tag": "feedabee"},
 //    Uri: {Scheme: "sip",
-//          User: "jtunney",
+//          User: "jart",
 //          Pass: "",
-//          Host: "bsdtelecom.net",
+//          Host: "example.test",
 //          Port: "",
 //          Params: {"isup-oli": "29"}}}
 //
@@ -31,7 +31,21 @@ type Addr struct {
 	Next    *Addr  // for comma separated lists of addresses
 }
 
-//go:generate ragel -Z -G2 -o addr_parse.go addr_parse.rl
+func ParseAddr(s string) (addr *Addr, err error) {
+	return ParseAddrBytes([]byte(s))
+}
+
+func ParseAddrBytes(s []byte) (addr *Addr, err error) {
+	var b bytes.Buffer
+	b.WriteString("SIP/2.0 900 ParseAddr()\r\nContact:")
+	b.Write(s)
+	b.WriteString("\r\n\r\n")
+	msg, err := ParseMsgBytes(b.Bytes())
+	if err != nil {
+		return nil, err
+	}
+	return msg.Contact, nil
+}
 
 func (addr *Addr) String() string {
 	if addr == nil {

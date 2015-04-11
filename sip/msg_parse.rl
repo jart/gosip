@@ -45,7 +45,7 @@ func ParseMsgBytes(data []byte) (msg *Msg, err error) {
 
 	%% main := Message;
 	%% write init;
-	%% write exec noend;
+	%% write exec;
 
 	if cs < msg_first_final {
 		if p == pe {

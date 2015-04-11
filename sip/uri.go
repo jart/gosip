@@ -6,14 +6,14 @@
 //
 // For example:
 //
-//   jtunney@bsdtelecom.net;isup-oli=29
+//   jart@example.test;isup-oli=29
 //
 // Roughly equates to:
 //
 //   {Scheme: "sip",
-//    User: "jtunney",
+//    User: "jart",
 //    Pass: "",
-//    Host: "bsdtelecom.net",
+//    Host: "example.test",
 //    Port: "",
 //    Params: {"isup-oli": "29"}}
 //
