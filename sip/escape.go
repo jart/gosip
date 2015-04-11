@@ -1,49 +1,23 @@
 package sip
 
-// escapeUser escapes a URI user, which can't use quoting.
-func escapeUser(s []byte) []byte {
-	return escape(s, userc)
-}
+import (
+	"bytes"
+)
 
-// escapePass escapes a URI password, which can't use quoting.
-func escapePass(s []byte) []byte {
-	return escape(s, passc)
-}
+const (
+	hexChars = "0123456789abcdef"
+)
 
-// escapeParam escapes a URI parameter, which can't use quoting.
-func escapeParam(s []byte) []byte {
-	return escape(s, paramc)
-}
-
-// escapeHeader escapes a URI header, which can't use quoting.
-func escapeHeader(s []byte) []byte {
-	return escape(s, headerc)
-}
-
-// escape provides arbitrary URI escaping.
-func escape(s []byte, p func(byte) bool) []byte {
-	hc := 0
-	for i := 0; i < len(s); i++ {
-		if !p(s[i]) {
-			hc++
-		}
-	}
-	if hc == 0 {
-		return s
-	}
-	res := make([]byte, len(s)+2*hc)
-	j := 0
+// appendEscaped appends while URL encoding bytes that don't match the predicate..
+func appendEscaped(b *bytes.Buffer, s []byte, p func(byte) bool) {
 	for i := 0; i < len(s); i++ {
 		c := s[i]
 		if p(c) {
-			res[j] = c
-			j++
+			b.WriteByte(c)
 		} else {
-			res[j] = '%'
-			res[j+1] = hexChars[c>>4]
-			res[j+2] = hexChars[c%16]
-			j += 3
+			b.WriteByte('%')
+			b.WriteByte(hexChars[c>>4])
+			b.WriteByte(hexChars[c%16])
 		}
 	}
-	return res
 }

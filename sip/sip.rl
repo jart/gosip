@@ -47,6 +47,7 @@
 #     header, using commas within a single header, or both.
 #
 # See: http://www.colm.net/files/ragel/ragel-guide-6.9.pdf
+# See: https://tools.ietf.org/html/rfc2234
 
 machine sip;
 
@@ -271,7 +272,6 @@ action MinExpires {
 
 action lookAheadWSP { lookAheadWSP(data, p, pe) }
 
-# https://tools.ietf.org/html/rfc2234
 SP              = " ";
 HTAB            = "\t";
 CR              = "\r";

@@ -1,6 +1,7 @@
 package sip
 
 import (
+	"bytes"
 	"testing"
 )
 
@@ -57,7 +58,9 @@ var quoteTests = []quoteTest{
 
 func TestQuote(t *testing.T) {
 	for _, test := range quoteTests {
-		out := string(quote([]byte(test.in)))
+		var b bytes.Buffer
+		appendQuoted(&b, []byte(test.in))
+		out := b.String()
 		if test.out != out {
 			t.Errorf("%s: %s != %s", test.name, test.out, out)
 		}

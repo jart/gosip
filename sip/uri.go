@@ -83,11 +83,11 @@ func (uri *URI) Append(b *bytes.Buffer) {
 	}
 	if uri.User != "" {
 		if uri.Pass != "" {
-			b.Write(escapeUser([]byte(uri.User)))
+			appendEscaped(b, []byte(uri.User), userc)
 			b.WriteByte(':')
-			b.Write(escapePass([]byte(uri.Pass)))
+			appendEscaped(b, []byte(uri.Pass), passc)
 		} else {
-			b.Write(escapeUser([]byte(uri.User)))
+			appendEscaped(b, []byte(uri.User), userc)
 		}
 		b.WriteByte('@')
 	}
@@ -152,11 +152,11 @@ func (headers URIHeaders) Append(b *bytes.Buffer) {
 			} else {
 				b.WriteByte('&')
 			}
-			b.Write(escapeHeader([]byte(k)))
+			appendEscaped(b, []byte(k), headerc)
 			v := headers[k]
 			if v != "" {
 				b.WriteByte('=')
-				b.Write(escapeHeader([]byte(v)))
+				appendEscaped(b, []byte(v), headerc)
 			}
 		}
 	}

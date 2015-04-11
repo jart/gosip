@@ -1,6 +1,7 @@
 package sip
 
 import (
+	"bytes"
 	"testing"
 )
 
@@ -8,7 +9,7 @@ type escapeTest struct {
 	name string
 	in   string
 	out  string
-	p    func([]byte) []byte
+	p    func(byte) bool
 }
 
 var escapeTests = []escapeTest{
@@ -17,42 +18,38 @@ var escapeTests = []escapeTest{
 		name: "Param Normal",
 		in:   "hello",
 		out:  "hello",
-		p:    escapeParam,
+		p:    paramc,
 	},
 
 	escapeTest{
 		name: "User Normal",
 		in:   "hello",
 		out:  "hello",
-		p:    escapeUser,
+		p:    userc,
 	},
 
 	escapeTest{
 		name: "Param Spacing",
 		in:   "hello there",
 		out:  "hello%20there",
-		p:    escapeParam,
+		p:    paramc,
 	},
 
 	escapeTest{
 		name: "User Spacing",
 		in:   "hello there",
 		out:  "hello%20there",
-		p:    escapeUser,
+		p:    userc,
 	},
 }
 
 func TestEscape(t *testing.T) {
 	for _, test := range escapeTests {
-		out := string(test.p([]byte(test.in)))
+		var b bytes.Buffer
+		appendEscaped(&b, []byte(test.in), test.p)
+		out := b.String()
 		if test.out != out {
 			t.Errorf("%s: %s != %s", test.name, test.out, out)
 		}
-	}
-}
-
-func BenchmarkEscapeParam(b *testing.B) {
-	for i := 0; i < b.N; i++ {
-		escapeParam([]byte("hello there"))
 	}
 }

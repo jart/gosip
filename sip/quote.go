@@ -4,43 +4,33 @@ import (
 	"bytes"
 )
 
-const (
-	hexChars = "0123456789abcdef"
-)
-
-// tokencify removes all characters that aren't tokenc.
-func tokencify(s []byte) []byte {
-	t := make([]byte, len(s))
-	j := 0
-	l := 0
+// appendSanitized appends stripping all characters that don't match the predicate.
+func appendSanitized(b *bytes.Buffer, s []byte, p func(byte) bool) {
 	for i := 0; i < len(s); i++ {
-		if tokenc(s[i]) {
-			t[j] = s[i]
-			j++
-			l++
+		if p(s[i]) {
+			b.WriteByte(s[i])
 		}
 	}
-	return t[:l]
 }
 
 // quote formats an address parameter value or display name.
 //
 // Quotation marks are only added if necessary. This implementation will
 // truncate on input error.
-func quote(s []byte) []byte {
+func appendQuoted(b *bytes.Buffer, s []byte) {
 	for i := 0; i < len(s); i++ {
 		if !tokenc(s[i]) && s[i] != ' ' {
-			return quoteQuoted(s)
+			appendQuoteQuoted(b, s)
+			return
 		}
 	}
-	return s
+	b.Write(s)
 }
 
 // quoteQuoted formats an address parameter value or display name with quotes.
 //
 // This implementation will truncate on input error.
-func quoteQuoted(s []byte) []byte {
-	var b bytes.Buffer
+func appendQuoteQuoted(b *bytes.Buffer, s []byte) {
 	b.WriteByte('"')
 	for i := 0; i < len(s); i++ {
 		if qdtextc(s[i]) {
@@ -59,5 +49,4 @@ func quoteQuoted(s []byte) []byte {
 		b.WriteByte(s[i])
 	}
 	b.WriteByte('"')
-	return b.Bytes()
 }

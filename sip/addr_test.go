@@ -134,7 +134,7 @@ var addrTests = []addrTest{
 	},
 
 	addrTest{
-		s: `<sip:pokemon.com>,"Ditto" <sip:ditto@pokemon.com>`,
+		s: `<sip:pokemon.com>, Ditto <sip:ditto@pokemon.com>`,
 		addr: sip.Addr{
 			Uri: &sip.URI{
 				Scheme: "sip",
@@ -152,7 +152,7 @@ var addrTests = []addrTest{
 	},
 
 	addrTest{
-		s: `<sip:1.2.3.4>,<sip:1.2.3.5>,<sip:[666::dead:beef]>`,
+		s: `<sip:1.2.3.4>, <sip:1.2.3.5>, <sip:[666::dead:beef]>`,
 		addr: sip.Addr{
 			Uri: &sip.URI{
 				Scheme: "sip",

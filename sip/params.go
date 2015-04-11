@@ -26,11 +26,11 @@ func (params Params) Append(b *bytes.Buffer) {
 		sort.Strings(keys)
 		for _, k := range keys {
 			b.WriteByte(';')
-			b.Write(escapeParam([]byte(k)))
+			appendEscaped(b, []byte(k), paramc)
 			v := params[k]
 			if v != "" {
 				b.WriteByte('=')
-				b.Write(escapeParam([]byte(v)))
+				appendEscaped(b, []byte(v), paramc)
 			}
 		}
 	}
@@ -47,11 +47,11 @@ func (params Params) AppendQuoted(b *bytes.Buffer) {
 		sort.Strings(keys)
 		for _, k := range keys {
 			b.WriteByte(';')
-			b.Write(tokencify([]byte(k)))
+			appendSanitized(b, []byte(k), tokenc)
 			v := params[k]
 			if v != "" {
 				b.WriteByte('=')
-				b.Write(quote([]byte(v)))
+				appendQuoted(b, []byte(v))
 			}
 		}
 	}

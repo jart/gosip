@@ -59,16 +59,16 @@ func (addr *Addr) Tag() *Addr {
 // Reassembles a SIP address into a buffer.
 func (addr *Addr) Append(b *bytes.Buffer) error {
 	if addr.Display != "" {
-		b.WriteString("\"")
-		b.WriteString(util.EscapeDisplay(addr.Display))
-		b.WriteString("\" ")
+		appendQuoted(b, []byte(addr.Display))
+		b.WriteByte(' ')
 	}
-	b.WriteString("<")
+	b.WriteByte('<')
 	addr.Uri.Append(b)
-	b.WriteString(">")
+	b.WriteByte('>')
 	addr.Params.AppendQuoted(b)
 	if addr.Next != nil {
-		b.WriteString(",")
+		b.WriteByte(',')
+		b.WriteByte(' ')
 		addr.Next.Append(b)
 	}
 	return nil
