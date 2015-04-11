@@ -27,7 +27,7 @@ import (
 type Addr struct {
 	Uri     *URI   // never nil
 	Display string // blank if not specified
-	Params  Params // these look like ;key=lol;rport;key=wut
+	Param   *Param // these look like ;key=lol;rport;key=wut
 	Next    *Addr  // for comma separated lists of addresses
 }
 
@@ -49,7 +49,7 @@ func ParseAddrBytes(s []byte) (addr *Addr, err error) {
 
 func (addr *Addr) String() string {
 	if addr == nil {
-		return "<nil>"
+		return ""
 	}
 	var b bytes.Buffer
 	addr.Append(&b)
@@ -66,7 +66,7 @@ func (addr *Addr) Or(other *Addr) *Addr {
 
 // Sets newly generated tag ID and returns self.
 func (addr *Addr) Tag() *Addr {
-	addr.Params["tag"] = util.GenerateTag()
+	addr.Param = &Param{"tag", util.GenerateTag(), addr.Param}
 	return addr
 }
 
@@ -79,7 +79,7 @@ func (addr *Addr) Append(b *bytes.Buffer) error {
 	b.WriteByte('<')
 	addr.Uri.Append(b)
 	b.WriteByte('>')
-	addr.Params.AppendQuoted(b)
+	addr.Param.Append(b)
 	if addr.Next != nil {
 		b.WriteByte(',')
 		b.WriteByte(' ')
@@ -95,7 +95,7 @@ func (addr *Addr) Copy() *Addr {
 	}
 	res := new(Addr)
 	res.Uri = addr.Uri.Copy()
-	res.Params = addr.Params.Copy()
+	res.Param = addr.Param
 	res.Next = addr.Next.Copy()
 	return res
 }

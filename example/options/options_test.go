@@ -7,7 +7,6 @@ import (
 	"github.com/jart/gosip/sip"
 	"github.com/jart/gosip/util"
 	"net"
-	"reflect"
 	"testing"
 	"time"
 )
@@ -27,6 +26,8 @@ func TestOptions(t *testing.T) {
 		CallID:     util.GenerateCallID(),
 		Method:     "OPTIONS",
 		CSeqMethod: "OPTIONS",
+		Accept:     "application/sdp",
+		UserAgent:  "pokémon/1.o",
 		Request: &sip.URI{
 			Scheme: "sip",
 			User:   "echo",
@@ -34,11 +35,11 @@ func TestOptions(t *testing.T) {
 			Port:   uint16(raddr.Port),
 		},
 		Via: &sip.Via{
-			Version: "2.0",
-			Proto:   "UDP",
-			Host:    laddr.IP.String(),
-			Port:    uint16(laddr.Port),
-			Params:  sip.Params{"branch": util.GenerateBranch()},
+			Version:  "2.0",
+			Protocol: "UDP",
+			Host:     laddr.IP.String(),
+			Port:     uint16(laddr.Port),
+			Param:    &sip.Param{"branch", util.GenerateBranch(), nil},
 		},
 		Contact: &sip.Addr{
 			Uri: &sip.URI{
@@ -52,17 +53,13 @@ func TestOptions(t *testing.T) {
 				Host: "justinetunney.com",
 				Port: 5060,
 			},
-			Params: sip.Params{"tag": util.GenerateTag()},
+			Param: &sip.Param{"tag", util.GenerateTag(), nil},
 		},
 		To: &sip.Addr{
 			Uri: &sip.URI{
 				Host: raddr.IP.String(),
 				Port: uint16(raddr.Port),
 			},
-		},
-		Headers: map[string]string{
-			"Accept":     "application/sdp",
-			"User-Agent": "pokémon/1.o",
 		},
 	}
 
@@ -95,14 +92,14 @@ func TestOptions(t *testing.T) {
 	if options.CSeq != msg.CSeq || options.CSeqMethod != msg.CSeqMethod {
 		t.Error("CSeq didnt match")
 	}
-	if !reflect.DeepEqual(options.From, msg.From) {
-		t.Error("From headers didn't match:\n%#v\n%#v", options.From, msg.From)
+	if options.From.String() != msg.From.String() {
+		t.Errorf("From headers didn't match:\n%s\n%s\n\n%s", options.From, msg.From, memory[0:amt])
 	}
-	if _, ok := msg.To.Params["tag"]; !ok {
-		t.Error("Remote UA didnt tag To header")
+	if msg.To.Param.Get("tag") == nil {
+		t.Errorf("Remote UA didnt tag To header:\n%s\n\n%s", msg.To, memory[0:amt])
 	}
-	msg.To.Params = nil
-	if !reflect.DeepEqual(options.To, msg.To) {
-		t.Error("To mismatch:\n%#v\n%#v", options.To, msg.To)
+	msg.To.Param = nil
+	if options.To.String() != msg.To.String() {
+		t.Errorf("To headers didn't match:\n%s\n%s\n\n%s", options.To, msg.To, memory[0:amt])
 	}
 }

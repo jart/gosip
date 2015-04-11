@@ -35,9 +35,7 @@ var addrTests = []addrTest{
 				Scheme: "sip",
 				Host:   "pokemon.net",
 			},
-			Params: sip.Params{
-				"tag": "deadbeef",
-			},
+			Param: &sip.Param{"tag", "deadbeef", nil},
 		},
 	},
 
@@ -50,9 +48,7 @@ var addrTests = []addrTest{
 				Scheme: "sip",
 				Host:   "pokemon.net",
 			},
-			Params: sip.Params{
-				"tag": "deadbeef",
-			},
+			Param: &sip.Param{"tag", "deadbeef", nil},
 		},
 	},
 
@@ -65,9 +61,7 @@ var addrTests = []addrTest{
 				Scheme: "sip",
 				Host:   "pokemon.net",
 			},
-			Params: sip.Params{
-				"tag": "deadbeef",
-			},
+			Param: &sip.Param{"tag", "deadbeef", nil},
 		},
 	},
 
@@ -80,9 +74,7 @@ var addrTests = []addrTest{
 				Scheme: "sip",
 				Host:   "pokemon.net",
 			},
-			Params: sip.Params{
-				"tag": "deadbeef",
-			},
+			Param: &sip.Param{"tag", "deadbeef", nil},
 		},
 	},
 
@@ -94,9 +86,7 @@ var addrTests = []addrTest{
 				Scheme: "sip",
 				Host:   "pokemon.net",
 			},
-			Params: sip.Params{
-				"tag": "\"deadbeef\"",
-			},
+			Param: &sip.Param{"tag", "\"deadbeef\"", nil},
 		},
 	},
 
@@ -108,9 +98,7 @@ var addrTests = []addrTest{
 				Scheme: "sip",
 				User:   "brave",
 				Host:   "toaster.net",
-				Params: sip.Params{
-					"isup-oli": "29",
-				},
+				Param:  &sip.URIParam{"isup-oli", "29", nil},
 			},
 		},
 	},
@@ -123,13 +111,9 @@ var addrTests = []addrTest{
 				Scheme: "sip",
 				User:   "brave",
 				Host:   "toaster.net",
-				Params: sip.Params{
-					"isup-oli": "29",
-				},
+				Param:  &sip.URIParam{"isup-oli", "29", nil},
 			},
-			Params: sip.Params{
-				"tag": "deadbeef",
-			},
+			Param: &sip.Param{"tag", "deadbeef", nil},
 		},
 	},
 
@@ -182,13 +166,9 @@ var addrTests = []addrTest{
 				Scheme: "sip",
 				User:   "jart",
 				Host:   "google.com",
-				Params: sip.Params{
-					"isup-oli": "29",
-				},
+				Param:  &sip.URIParam{"isup-oli", "29", nil},
 			},
-			Params: sip.Params{
-				"tag": "deadbeef",
-			},
+			Param: &sip.Param{"tag", "deadbeef", nil},
 		},
 	},
 }

@@ -111,17 +111,11 @@ func ParseURIBytes(data []byte) (uri *URI, err error) {
 		}
 
 		action param {
-			if uri.Params == nil {
-				uri.Params = Params{}
-			}
-			uri.Params[b1] = b2
+			uri.Param = &URIParam{b1, b2, uri.Param}
 		}
 
 		action header {
-			if uri.Headers == nil {
-				uri.Headers = URIHeaders{}
-			}
-			uri.Headers[b1] = b2
+			uri.Header = &URIHeader{b1, b2, uri.Header}
 		}
 
 		# Byte character definitions.

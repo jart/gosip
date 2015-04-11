@@ -24,7 +24,6 @@ import (
 	"bytes"
 	"errors"
 	"github.com/jart/gosip/util"
-	"sort"
 )
 
 const (
@@ -37,16 +36,14 @@ var (
 	URIBadPort        = errors.New("invalid port number")
 )
 
-type URIHeaders map[string]string
-
 type URI struct {
-	Scheme  string     // e.g. sip, sips, tel, etc.
-	User    string     // e.g. sip:USER@host
-	Pass    string     // e.g. sip:user:PASS@host
-	Host    string     // e.g. example.com, 1.2.3.4, etc.
-	Port    uint16     // e.g. 5060, 80, etc.
-	Params  Params     // e.g. ;isup-oli=00;day=tuesday
-	Headers URIHeaders // e.g. ?subject=project%20x&lol=cat
+	Scheme string     // e.g. sip, sips, tel, etc.
+	User   string     // e.g. sip:USER@host
+	Pass   string     // e.g. sip:user:PASS@host
+	Host   string     // e.g. example.com, 1.2.3.4, etc.
+	Port   uint16     // e.g. 5060, 80, etc.
+	Param  *URIParam  // e.g. ;isup-oli=00;day=tuesday
+	Header *URIHeader // e.g. ?subject=project%20x&lol=cat
 }
 
 //go:generate ragel -Z -G2 -o uri_parse.go uri_parse.rl
@@ -58,8 +55,8 @@ func (uri *URI) Copy() *URI {
 	}
 	res := new(URI)
 	*res = *uri
-	res.Params = uri.Params.Copy()
-	res.Headers = uri.Headers.Copy()
+	res.Param = uri.Param
+	res.Header = uri.Header
 	return res
 }
 
@@ -102,8 +99,8 @@ func (uri *URI) Append(b *bytes.Buffer) {
 		b.WriteByte(':')
 		b.WriteString(portstr(uri.Port))
 	}
-	uri.Params.Append(b)
-	uri.Headers.Append(b)
+	uri.Param.Append(b)
+	uri.Header.Append(b)
 }
 
 func (uri *URI) CompareHostPort(other *URI) bool {
@@ -124,40 +121,5 @@ func (uri *URI) GetPort() uint16 {
 		}
 	} else {
 		return uri.Port
-	}
-}
-
-func (headers URIHeaders) Copy() URIHeaders {
-	res := make(URIHeaders, len(headers))
-	for k, v := range headers {
-		res[k] = v
-	}
-	return res
-}
-
-func (headers URIHeaders) Append(b *bytes.Buffer) {
-	if headers != nil && len(headers) > 0 {
-		keys := make([]string, len(headers))
-		i := 0
-		for k, _ := range headers {
-			keys[i] = k
-			i++
-		}
-		sort.Strings(keys)
-		first := true
-		for _, k := range keys {
-			if first {
-				b.WriteByte('?')
-				first = false
-			} else {
-				b.WriteByte('&')
-			}
-			appendEscaped(b, []byte(k), headerc)
-			v := headers[k]
-			if v != "" {
-				b.WriteByte('=')
-				appendEscaped(b, []byte(v), headerc)
-			}
-		}
 	}
 }

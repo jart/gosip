@@ -42,13 +42,13 @@ func ReceiveMessages(sock *net.UDPConn, c chan<- *Msg, e chan<- error) {
 
 func addReceived(msg *Msg, addr *net.UDPAddr) {
 	if msg.Via.Host != addr.IP.String() || int(msg.Via.Port) != addr.Port {
-		msg.Via.Params["received"] = addr.String()
+		msg.Via.Param = &Param{"received", addr.String(), msg.Via.Param}
 	}
 }
 
 func addTimestamp(msg *Msg, ts time.Time) {
 	if *timestampTagging {
-		msg.Via.Params["µsi"] = strconv.FormatInt(ts.UnixNano()/int64(time.Microsecond), 10)
+		msg.Via.Param = &Param{"usi", strconv.FormatInt(ts.UnixNano()/int64(time.Microsecond), 10), msg.Via.Param}
 	}
 }
 
@@ -56,7 +56,7 @@ func addTimestamp(msg *Msg, ts time.Time) {
 // RFC3261 16.12.1.2: Traversing a Strict-Routing Proxy
 func fixMessagesFromStrictRouters(lhost string, lport uint16, msg *Msg) {
 	if msg.Request != nil &&
-		msg.Request.Params.Has("lr") &&
+		msg.Request.Param.Get("lr") != nil &&
 		msg.Route != nil &&
 		msg.Request.Host == lhost &&
 		or5060(msg.Request.Port) == lport {

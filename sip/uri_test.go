@@ -127,9 +127,7 @@ var uriTests = []uriTest{
 			Pass:   "priceisright",
 			Host:   "dead:beef::666",
 			Port:   5060,
-			Params: sip.Params{
-				"isup-oli": "00",
-			},
+			Param:  &sip.URIParam{"isup-oli", "00", nil},
 		},
 	},
 
@@ -153,10 +151,7 @@ var uriTests = []uriTest{
 			Scheme: "sips",
 			User:   "alice",
 			Host:   "atlanta.com",
-			Headers: sip.URIHeaders{
-				"subject":  "project x",
-				"priority": "urgent",
-			},
+			Header: &sip.URIHeader{"subject", "project x", &sip.URIHeader{"priority", "urgent", nil}},
 		},
 	},
 
@@ -167,9 +162,7 @@ var uriTests = []uriTest{
 			User:   "+1-212-555-1212",
 			Pass:   "1234",
 			Host:   "gateway.com",
-			Params: sip.Params{
-				"user": "phone",
-			},
+			Param:  &sip.URIParam{"user", "phone", nil},
 		},
 	},
 
@@ -178,12 +171,8 @@ var uriTests = []uriTest{
 		uri: &sip.URI{
 			Scheme: "sip",
 			Host:   "atlanta.com",
-			Params: sip.Params{
-				"method": "register",
-			},
-			Headers: sip.URIHeaders{
-				"to": "alice@atlanta.com",
-			},
+			Param:  &sip.URIParam{"method", "register", nil},
+			Header: &sip.URIHeader{"to", "alice@atlanta.com", nil},
 		},
 	},
 
@@ -220,7 +209,7 @@ func TestFormatURI(t *testing.T) {
 		}
 		uri := test.uri.String()
 		if test.s != uri {
-			t.Error(test.s, "!=", uri)
+			t.Errorf("\n%s !=\n%s", test.s, uri)
 		}
 	}
 }

@@ -21,7 +21,7 @@ type Via struct {
 	Transport string // transport type "UDP"
 	Host      string // name or ip of egress interface
 	Port      uint16 // network port number
-	Params    Params // params like branch, received, rport, etc.
+	Param     *Param // param like branch, received, rport, etc.
 	Next      *Via   // pointer to next via header if any
 }
 
@@ -52,7 +52,7 @@ func (via *Via) Append(b *bytes.Buffer) error {
 		b.WriteString(":")
 		b.WriteString(strconv.Itoa(int(via.Port)))
 	}
-	via.Params.Append(b)
+	via.Param.Append(b)
 	return nil
 }
 
@@ -67,14 +67,14 @@ func (via *Via) Copy() *Via {
 	res.Transport = via.Transport
 	res.Host = via.Host
 	res.Port = via.Port
-	res.Params = via.Params.Copy()
+	res.Param = via.Param
 	res.Next = via.Next.Copy()
 	return res
 }
 
-// Branch mutates via with a newly generated branch ID.
+// Branch adds a randomly generated branch ID.
 func (via *Via) Branch() *Via {
-	via.Params["branch"] = util.GenerateBranch()
+	via.Param = &Param{"branch", util.GenerateBranch(), via.Param}
 	return via
 }
 
@@ -107,9 +107,9 @@ func (via *Via) CompareHostPort(other *Via) bool {
 
 func (via *Via) CompareBranch(other *Via) bool {
 	if via != nil && other != nil {
-		if b1, ok := via.Params["branch"]; ok {
-			if b2, ok := other.Params["branch"]; ok {
-				if b1 == b2 {
+		if b1 := via.Param.Get("branch"); b1 != nil {
+			if b2 := other.Param.Get("branch"); b2 != nil {
+				if b1.Value == b2.Value {
 					return true
 				}
 			}

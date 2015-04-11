@@ -177,9 +177,9 @@ func TestCallToEchoApp(t *testing.T) {
 			Port:   uint16(raddr.Port),
 		},
 		Via: &sip.Via{
-			Host:   laddr.IP.String(),
-			Port:   uint16(laddr.Port),
-			Params: sip.Params{"branch": util.GenerateBranch()},
+			Host:  laddr.IP.String(),
+			Port:  uint16(laddr.Port),
+			Param: &sip.Param{"branch", util.GenerateBranch(), nil},
 		},
 		From: &sip.Addr{
 			Display: "Echo Test",
@@ -188,7 +188,7 @@ func TestCallToEchoApp(t *testing.T) {
 				Host:   laddr.IP.String(),
 				Port:   uint16(laddr.Port),
 			},
-			Params: sip.Params{"tag": util.GenerateTag()},
+			Param: &sip.Param{"tag", util.GenerateTag(), nil},
 		},
 		To: &sip.Addr{
 			Uri: &sip.URI{

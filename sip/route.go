@@ -25,7 +25,7 @@ func PopulateMessage(via *Via, contact *Addr, msg *Msg) {
 		}
 		if msg.From == nil {
 			msg.From = msg.Contact.Copy()
-			msg.From.Uri.Params = nil
+			msg.From.Uri.Param = nil
 		}
 		if msg.CallID == "" {
 			msg.CallID = util.GenerateCallID()
@@ -42,13 +42,11 @@ func PopulateMessage(via *Via, contact *Addr, msg *Msg) {
 		if msg.UserAgent == "" {
 			msg.UserAgent = GosipUA
 		}
-		if _, ok := msg.Via.Params["branch"]; !ok {
-			msg.Via = msg.Via.Copy()
-			msg.Via.Params["branch"] = util.GenerateBranch()
+		if msg.Via.Param.Get("branch") == nil {
+			msg.Via.Param = &Param{"branch", util.GenerateBranch(), msg.Via.Param}
 		}
-		if _, ok := msg.From.Params["tag"]; !ok {
-			msg.From = msg.From.Copy()
-			msg.From.Params["tag"] = util.GenerateTag()
+		if msg.From.Param.Get("tag") == nil {
+			msg.From.Param = &Param{"tag", util.GenerateTag(), msg.From.Param}
 		}
 	}
 }
@@ -59,8 +57,8 @@ func RouteMessage(via *Via, contact *Addr, msg *Msg) (host string, port uint16, 
 			msg.Via = msg.Via.Next
 		}
 		host, port = msg.Via.Host, msg.Via.Port
-		if received, ok := msg.Via.Params["received"]; ok {
-			host = received
+		if received := msg.Via.Param.Get("received"); received != nil {
+			host = received.Value
 		}
 	} else {
 		if contact.CompareHostPort(msg.Route) {
@@ -70,7 +68,7 @@ func RouteMessage(via *Via, contact *Addr, msg *Msg) (host string, port uint16, 
 			if msg.Method == "REGISTER" {
 				return "", 0, errors.New("Don't route REGISTER requests")
 			}
-			if msg.Route.Uri.Params.Has("lr") {
+			if msg.Route.Uri.Param.Get("lr") != nil {
 				// RFC3261 16.12.1.1 Basic SIP Trapezoid
 				host, port = msg.Route.Uri.Host, msg.Route.Uri.Port
 			} else {

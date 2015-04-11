@@ -37,7 +37,7 @@ func NewTransport(contact *Addr) (tp *Transport, err error) {
 	contact = contact.Copy()
 	contact.Next = nil
 	contact.Uri.Port = uint16(addr.Port)
-	contact.Uri.Params["transport"] = "udp"
+	contact.Uri.Param = &URIParam{"transport", "udp", contact.Uri.Param}
 	c := make(chan *Msg)
 	e := make(chan error)
 	tp = &Transport{

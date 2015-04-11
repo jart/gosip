@@ -49,7 +49,7 @@ func ParseURIBytes(data []byte) (uri *URI, err error) {
 	var hex byte
 
 	
-//line uri_parse.rl:171
+//line uri_parse.rl:165
 
 
 	
@@ -58,7 +58,7 @@ func ParseURIBytes(data []byte) (uri *URI, err error) {
 	cs = uri_start
 	}
 
-//line uri_parse.rl:174
+//line uri_parse.rl:168
 	if bytes.IndexByte(data, '@') == -1 {
 		cs = uri_en_uriSansUser;
 	} else {
@@ -723,10 +723,7 @@ tr74:
 		
 //line uri_parse.rl:113
 
-			if uri.Params == nil {
-				uri.Params = Params{}
-			}
-			uri.Params[b1] = b2
+			uri.Param = &URIParam{b1, b2, uri.Param}
 		
 	goto st13
 tr79:
@@ -737,10 +734,7 @@ tr79:
 		
 //line uri_parse.rl:113
 
-			if uri.Params == nil {
-				uri.Params = Params{}
-			}
-			uri.Params[b1] = b2
+			uri.Param = &URIParam{b1, b2, uri.Param}
 		
 	goto st13
 	st13:
@@ -748,7 +742,7 @@ tr79:
 			goto _test_eof13
 		}
 	st_case_13:
-//line uri_parse.go:752
+//line uri_parse.go:746
 		switch data[p] {
 		case 33:
 			goto tr22
@@ -780,13 +774,9 @@ tr79:
 		}
 		goto st0
 tr72:
-//line uri_parse.rl:104
+//line uri_parse.rl:51
 
-			if 'A' <= data[p] && data[p] <= 'Z' {
-				buf[amt] = data[p] + 0x20
-			} else {
-				buf[amt] = data[p]
-			}
+			buf[amt] = data[p]
 			amt++
 		
 	goto st47
@@ -808,13 +798,9 @@ tr22:
 			b2 = string(buf[0:amt])
 			amt = 0
 		
-//line uri_parse.rl:104
+//line uri_parse.rl:51
 
-			if 'A' <= data[p] && data[p] <= 'Z' {
-				buf[amt] = data[p] + 0x20
-			} else {
-				buf[amt] = data[p]
-			}
+			buf[amt] = data[p]
 			amt++
 		
 	goto st47
@@ -823,7 +809,7 @@ tr22:
 			goto _test_eof47
 		}
 	st_case_47:
-//line uri_parse.go:827
+//line uri_parse.go:813
 		switch data[p] {
 		case 33:
 			goto tr72
@@ -876,7 +862,7 @@ tr23:
 			goto _test_eof14
 		}
 	st_case_14:
-//line uri_parse.go:880
+//line uri_parse.go:866
 		switch {
 		case data[p] < 65:
 			if 48 <= data[p] && data[p] <= 57 {
@@ -901,7 +887,7 @@ tr24:
 			goto _test_eof15
 		}
 	st_case_15:
-//line uri_parse.go:905
+//line uri_parse.go:891
 		switch {
 		case data[p] < 65:
 			if 48 <= data[p] && data[p] <= 57 {
@@ -927,7 +913,7 @@ tr75:
 			goto _test_eof16
 		}
 	st_case_16:
-//line uri_parse.go:931
+//line uri_parse.go:917
 		switch data[p] {
 		case 33:
 			goto tr26
@@ -963,24 +949,16 @@ tr26:
 
 			amt = 0
 		
-//line uri_parse.rl:104
+//line uri_parse.rl:51
 
-			if 'A' <= data[p] && data[p] <= 'Z' {
-				buf[amt] = data[p] + 0x20
-			} else {
-				buf[amt] = data[p]
-			}
+			buf[amt] = data[p]
 			amt++
 		
 	goto st48
 tr77:
-//line uri_parse.rl:104
+//line uri_parse.rl:51
 
-			if 'A' <= data[p] && data[p] <= 'Z' {
-				buf[amt] = data[p] + 0x20
-			} else {
-				buf[amt] = data[p]
-			}
+			buf[amt] = data[p]
 			amt++
 		
 	goto st48
@@ -997,7 +975,7 @@ tr29:
 			goto _test_eof48
 		}
 	st_case_48:
-//line uri_parse.go:1001
+//line uri_parse.go:979
 		switch data[p] {
 		case 33:
 			goto tr77
@@ -1043,7 +1021,7 @@ tr27:
 			goto _test_eof17
 		}
 	st_case_17:
-//line uri_parse.go:1047
+//line uri_parse.go:1025
 		switch {
 		case data[p] < 65:
 			if 48 <= data[p] && data[p] <= 57 {
@@ -1068,7 +1046,7 @@ tr28:
 			goto _test_eof18
 		}
 	st_case_18:
-//line uri_parse.go:1072
+//line uri_parse.go:1050
 		switch {
 		case data[p] < 65:
 			if 48 <= data[p] && data[p] <= 57 {
@@ -1096,10 +1074,7 @@ tr76:
 		
 //line uri_parse.rl:113
 
-			if uri.Params == nil {
-				uri.Params = Params{}
-			}
-			uri.Params[b1] = b2
+			uri.Param = &URIParam{b1, b2, uri.Param}
 		
 	goto st19
 tr80:
@@ -1110,10 +1085,7 @@ tr80:
 		
 //line uri_parse.rl:113
 
-			if uri.Params == nil {
-				uri.Params = Params{}
-			}
-			uri.Params[b1] = b2
+			uri.Param = &URIParam{b1, b2, uri.Param}
 		
 	goto st19
 tr83:
@@ -1122,12 +1094,9 @@ tr83:
 			b1 = string(buf[0:amt])
 			amt = 0
 		
-//line uri_parse.rl:120
+//line uri_parse.rl:117
 
-			if uri.Headers == nil {
-				uri.Headers = URIHeaders{}
-			}
-			uri.Headers[b1] = b2
+			uri.Header = &URIHeader{b1, b2, uri.Header}
 		
 	goto st19
 tr87:
@@ -1136,12 +1105,9 @@ tr87:
 			b2 = string(buf[0:amt])
 			amt = 0
 		
-//line uri_parse.rl:120
+//line uri_parse.rl:117
 
-			if uri.Headers == nil {
-				uri.Headers = URIHeaders{}
-			}
-			uri.Headers[b1] = b2
+			uri.Header = &URIHeader{b1, b2, uri.Header}
 		
 	goto st19
 	st19:
@@ -1149,7 +1115,7 @@ tr87:
 			goto _test_eof19
 		}
 	st_case_19:
-//line uri_parse.go:1153
+//line uri_parse.go:1119
 		switch data[p] {
 		case 33:
 			goto tr30
@@ -1220,7 +1186,7 @@ tr30:
 			goto _test_eof49
 		}
 	st_case_49:
-//line uri_parse.go:1224
+//line uri_parse.go:1190
 		switch data[p] {
 		case 33:
 			goto tr81
@@ -1273,7 +1239,7 @@ tr31:
 			goto _test_eof20
 		}
 	st_case_20:
-//line uri_parse.go:1277
+//line uri_parse.go:1243
 		switch {
 		case data[p] < 65:
 			if 48 <= data[p] && data[p] <= 57 {
@@ -1298,7 +1264,7 @@ tr32:
 			goto _test_eof21
 		}
 	st_case_21:
-//line uri_parse.go:1302
+//line uri_parse.go:1268
 		switch {
 		case data[p] < 65:
 			if 48 <= data[p] && data[p] <= 57 {
@@ -1324,7 +1290,7 @@ tr84:
 			goto _test_eof22
 		}
 	st_case_22:
-//line uri_parse.go:1328
+//line uri_parse.go:1294
 		switch data[p] {
 		case 33:
 			goto tr34
@@ -1390,7 +1356,7 @@ tr37:
 			goto _test_eof50
 		}
 	st_case_50:
-//line uri_parse.go:1394
+//line uri_parse.go:1360
 		switch data[p] {
 		case 33:
 			goto tr85
@@ -1436,7 +1402,7 @@ tr35:
 			goto _test_eof23
 		}
 	st_case_23:
-//line uri_parse.go:1440
+//line uri_parse.go:1406
 		switch {
 		case data[p] < 65:
 			if 48 <= data[p] && data[p] <= 57 {
@@ -1461,7 +1427,7 @@ tr36:
 			goto _test_eof24
 		}
 	st_case_24:
-//line uri_parse.go:1465
+//line uri_parse.go:1431
 		switch {
 		case data[p] < 65:
 			if 48 <= data[p] && data[p] <= 57 {
@@ -1527,7 +1493,7 @@ tr39:
 			goto _test_eof26
 		}
 	st_case_26:
-//line uri_parse.go:1531
+//line uri_parse.go:1497
 		switch data[p] {
 		case 46:
 			goto tr39
@@ -1558,7 +1524,7 @@ tr40:
 			goto _test_eof51
 		}
 	st_case_51:
-//line uri_parse.go:1562
+//line uri_parse.go:1528
 		switch data[p] {
 		case 58:
 			goto st12
@@ -1609,7 +1575,7 @@ tr42:
 			goto _test_eof28
 		}
 	st_case_28:
-//line uri_parse.go:1613
+//line uri_parse.go:1579
 		switch data[p] {
 		case 43:
 			goto tr42
@@ -1645,7 +1611,7 @@ tr43:
 			goto _test_eof29
 		}
 	st_case_29:
-//line uri_parse.go:1649
+//line uri_parse.go:1615
 		switch data[p] {
 		case 43:
 			goto tr44
@@ -1701,7 +1667,7 @@ tr89:
 			goto _test_eof52
 		}
 	st_case_52:
-//line uri_parse.go:1705
+//line uri_parse.go:1671
 		switch data[p] {
 		case 43:
 			goto tr89
@@ -1741,7 +1707,7 @@ tr90:
 			goto _test_eof30
 		}
 	st_case_30:
-//line uri_parse.go:1745
+//line uri_parse.go:1711
 		if 48 <= data[p] && data[p] <= 57 {
 			goto tr46
 		}
@@ -1757,7 +1723,7 @@ tr46:
 			goto _test_eof53
 		}
 	st_case_53:
-//line uri_parse.go:1761
+//line uri_parse.go:1727
 		switch data[p] {
 		case 59:
 			goto st31
@@ -1782,10 +1748,7 @@ tr97:
 		
 //line uri_parse.rl:113
 
-			if uri.Params == nil {
-				uri.Params = Params{}
-			}
-			uri.Params[b1] = b2
+			uri.Param = &URIParam{b1, b2, uri.Param}
 		
 	goto st31
 tr102:
@@ -1796,10 +1759,7 @@ tr102:
 		
 //line uri_parse.rl:113
 
-			if uri.Params == nil {
-				uri.Params = Params{}
-			}
-			uri.Params[b1] = b2
+			uri.Param = &URIParam{b1, b2, uri.Param}
 		
 	goto st31
 	st31:
@@ -1807,7 +1767,7 @@ tr102:
 			goto _test_eof31
 		}
 	st_case_31:
-//line uri_parse.go:1811
+//line uri_parse.go:1771
 		switch data[p] {
 		case 33:
 			goto tr47
@@ -1839,13 +1799,9 @@ tr102:
 		}
 		goto st0
 tr95:
-//line uri_parse.rl:104
+//line uri_parse.rl:51
 
-			if 'A' <= data[p] && data[p] <= 'Z' {
-				buf[amt] = data[p] + 0x20
-			} else {
-				buf[amt] = data[p]
-			}
+			buf[amt] = data[p]
 			amt++
 		
 	goto st54
@@ -1867,13 +1823,9 @@ tr47:
 			b2 = string(buf[0:amt])
 			amt = 0
 		
-//line uri_parse.rl:104
+//line uri_parse.rl:51
 
-			if 'A' <= data[p] && data[p] <= 'Z' {
-				buf[amt] = data[p] + 0x20
-			} else {
-				buf[amt] = data[p]
-			}
+			buf[amt] = data[p]
 			amt++
 		
 	goto st54
@@ -1882,7 +1834,7 @@ tr47:
 			goto _test_eof54
 		}
 	st_case_54:
-//line uri_parse.go:1886
+//line uri_parse.go:1838
 		switch data[p] {
 		case 33:
 			goto tr95
@@ -1935,7 +1887,7 @@ tr48:
 			goto _test_eof32
 		}
 	st_case_32:
-//line uri_parse.go:1939
+//line uri_parse.go:1891
 		switch {
 		case data[p] < 65:
 			if 48 <= data[p] && data[p] <= 57 {
@@ -1960,7 +1912,7 @@ tr49:
 			goto _test_eof33
 		}
 	st_case_33:
-//line uri_parse.go:1964
+//line uri_parse.go:1916
 		switch {
 		case data[p] < 65:
 			if 48 <= data[p] && data[p] <= 57 {
@@ -1986,7 +1938,7 @@ tr98:
 			goto _test_eof34
 		}
 	st_case_34:
-//line uri_parse.go:1990
+//line uri_parse.go:1942
 		switch data[p] {
 		case 33:
 			goto tr51
@@ -2022,24 +1974,16 @@ tr51:
 
 			amt = 0
 		
-//line uri_parse.rl:104
+//line uri_parse.rl:51
 
-			if 'A' <= data[p] && data[p] <= 'Z' {
-				buf[amt] = data[p] + 0x20
-			} else {
-				buf[amt] = data[p]
-			}
+			buf[amt] = data[p]
 			amt++
 		
 	goto st55
 tr100:
-//line uri_parse.rl:104
+//line uri_parse.rl:51
 
-			if 'A' <= data[p] && data[p] <= 'Z' {
-				buf[amt] = data[p] + 0x20
-			} else {
-				buf[amt] = data[p]
-			}
+			buf[amt] = data[p]
 			amt++
 		
 	goto st55
@@ -2056,7 +2000,7 @@ tr54:
 			goto _test_eof55
 		}
 	st_case_55:
-//line uri_parse.go:2060
+//line uri_parse.go:2004
 		switch data[p] {
 		case 33:
 			goto tr100
@@ -2102,7 +2046,7 @@ tr52:
 			goto _test_eof35
 		}
 	st_case_35:
-//line uri_parse.go:2106
+//line uri_parse.go:2050
 		switch {
 		case data[p] < 65:
 			if 48 <= data[p] && data[p] <= 57 {
@@ -2127,7 +2071,7 @@ tr53:
 			goto _test_eof36
 		}
 	st_case_36:
-//line uri_parse.go:2131
+//line uri_parse.go:2075
 		switch {
 		case data[p] < 65:
 			if 48 <= data[p] && data[p] <= 57 {
@@ -2155,10 +2099,7 @@ tr99:
 		
 //line uri_parse.rl:113
 
-			if uri.Params == nil {
-				uri.Params = Params{}
-			}
-			uri.Params[b1] = b2
+			uri.Param = &URIParam{b1, b2, uri.Param}
 		
 	goto st37
 tr103:
@@ -2169,10 +2110,7 @@ tr103:
 		
 //line uri_parse.rl:113
 
-			if uri.Params == nil {
-				uri.Params = Params{}
-			}
-			uri.Params[b1] = b2
+			uri.Param = &URIParam{b1, b2, uri.Param}
 		
 	goto st37
 tr106:
@@ -2181,12 +2119,9 @@ tr106:
 			b1 = string(buf[0:amt])
 			amt = 0
 		
-//line uri_parse.rl:120
+//line uri_parse.rl:117
 
-			if uri.Headers == nil {
-				uri.Headers = URIHeaders{}
-			}
-			uri.Headers[b1] = b2
+			uri.Header = &URIHeader{b1, b2, uri.Header}
 		
 	goto st37
 tr110:
@@ -2195,12 +2130,9 @@ tr110:
 			b2 = string(buf[0:amt])
 			amt = 0
 		
-//line uri_parse.rl:120
+//line uri_parse.rl:117
 
-			if uri.Headers == nil {
-				uri.Headers = URIHeaders{}
-			}
-			uri.Headers[b1] = b2
+			uri.Header = &URIHeader{b1, b2, uri.Header}
 		
 	goto st37
 	st37:
@@ -2208,7 +2140,7 @@ tr110:
 			goto _test_eof37
 		}
 	st_case_37:
-//line uri_parse.go:2212
+//line uri_parse.go:2144
 		switch data[p] {
 		case 33:
 			goto tr55
@@ -2279,7 +2211,7 @@ tr55:
 			goto _test_eof56
 		}
 	st_case_56:
-//line uri_parse.go:2283
+//line uri_parse.go:2215
 		switch data[p] {
 		case 33:
 			goto tr104
@@ -2332,7 +2264,7 @@ tr56:
 			goto _test_eof38
 		}
 	st_case_38:
-//line uri_parse.go:2336
+//line uri_parse.go:2268
 		switch {
 		case data[p] < 65:
 			if 48 <= data[p] && data[p] <= 57 {
@@ -2357,7 +2289,7 @@ tr57:
 			goto _test_eof39
 		}
 	st_case_39:
-//line uri_parse.go:2361
+//line uri_parse.go:2293
 		switch {
 		case data[p] < 65:
 			if 48 <= data[p] && data[p] <= 57 {
@@ -2383,7 +2315,7 @@ tr107:
 			goto _test_eof40
 		}
 	st_case_40:
-//line uri_parse.go:2387
+//line uri_parse.go:2319
 		switch data[p] {
 		case 33:
 			goto tr59
@@ -2449,7 +2381,7 @@ tr62:
 			goto _test_eof57
 		}
 	st_case_57:
-//line uri_parse.go:2453
+//line uri_parse.go:2385
 		switch data[p] {
 		case 33:
 			goto tr108
@@ -2495,7 +2427,7 @@ tr60:
 			goto _test_eof41
 		}
 	st_case_41:
-//line uri_parse.go:2499
+//line uri_parse.go:2431
 		switch {
 		case data[p] < 65:
 			if 48 <= data[p] && data[p] <= 57 {
@@ -2520,7 +2452,7 @@ tr61:
 			goto _test_eof42
 		}
 	st_case_42:
-//line uri_parse.go:2524
+//line uri_parse.go:2456
 		switch {
 		case data[p] < 65:
 			if 48 <= data[p] && data[p] <= 57 {
@@ -2586,7 +2518,7 @@ tr64:
 			goto _test_eof44
 		}
 	st_case_44:
-//line uri_parse.go:2590
+//line uri_parse.go:2522
 		switch data[p] {
 		case 46:
 			goto tr64
@@ -2617,7 +2549,7 @@ tr65:
 			goto _test_eof58
 		}
 	st_case_58:
-//line uri_parse.go:2621
+//line uri_parse.go:2553
 		switch data[p] {
 		case 58:
 			goto st30
@@ -2701,10 +2633,7 @@ tr65:
 		
 //line uri_parse.rl:113
 
-			if uri.Params == nil {
-				uri.Params = Params{}
-			}
-			uri.Params[b1] = b2
+			uri.Param = &URIParam{b1, b2, uri.Param}
 		
 		case 49, 56:
 //line uri_parse.rl:94
@@ -2712,12 +2641,9 @@ tr65:
 			b1 = string(buf[0:amt])
 			amt = 0
 		
-//line uri_parse.rl:120
+//line uri_parse.rl:117
 
-			if uri.Headers == nil {
-				uri.Headers = URIHeaders{}
-			}
-			uri.Headers[b1] = b2
+			uri.Header = &URIHeader{b1, b2, uri.Header}
 		
 		case 48, 55:
 //line uri_parse.rl:99
@@ -2727,10 +2653,7 @@ tr65:
 		
 //line uri_parse.rl:113
 
-			if uri.Params == nil {
-				uri.Params = Params{}
-			}
-			uri.Params[b1] = b2
+			uri.Param = &URIParam{b1, b2, uri.Param}
 		
 		case 50, 57:
 //line uri_parse.rl:99
@@ -2738,21 +2661,18 @@ tr65:
 			b2 = string(buf[0:amt])
 			amt = 0
 		
-//line uri_parse.rl:120
+//line uri_parse.rl:117
 
-			if uri.Headers == nil {
-				uri.Headers = URIHeaders{}
-			}
-			uri.Headers[b1] = b2
+			uri.Header = &URIHeader{b1, b2, uri.Header}
 		
-//line uri_parse.go:2749
+//line uri_parse.go:2669
 		}
 	}
 
 	_out: {}
 	}
 
-//line uri_parse.rl:180
+//line uri_parse.rl:174
 
 	if cs < uri_first_final {
 		if p == pe {

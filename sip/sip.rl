@@ -147,10 +147,7 @@ action ViaPort {
 }
 
 action ViaParam {
-	if via.Params == nil {
-		via.Params = Params{}
-	}
-	via.Params[name] = string(buf[0:amt])
+	via.Param = &Param{name, string(buf[0:amt]), via.Param}
 }
 
 action gxh {
@@ -196,10 +193,7 @@ action AddrUri {
 }
 
 action AddrParam {
-	if addr.Params == nil {
-		addr.Params = Params{}
-	}
-	addr.Params[name] = string(buf[0:amt])
+	addr.Param = &Param{name, string(buf[0:amt]), addr.Param}
 }
 
 action Addr {

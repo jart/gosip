@@ -214,9 +214,9 @@ func (dls *dialogState) populate(msg *Msg) {
 	lhost := laddr.IP.String()
 	lport := uint16(laddr.Port)
 	msg.Via = &Via{
-		Host:   lhost,
-		Port:   lport,
-		Params: Params{"branch": util.GenerateBranch()},
+		Host:  lhost,
+		Port:  lport,
+		Param: &Param{"branch", util.GenerateBranch(), nil},
 	}
 	if msg.Contact == nil {
 		if dls.csock != nil {
@@ -227,7 +227,7 @@ func (dls *dialogState) populate(msg *Msg) {
 				Scheme: "sip",
 				Host:   lhost,
 				Port:   lport,
-				Params: Params{"transport": "udp"},
+				Param:  &URIParam{"transport", "udp", nil},
 			},
 		}
 	}

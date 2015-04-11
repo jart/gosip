@@ -461,7 +461,7 @@ func (msg *Msg) Append(b *bytes.Buffer) error {
 		payload := msg.Payload.Data()
 		b.WriteString("Content-Length: ")
 		b.WriteString(strconv.Itoa(len(payload)))
-		b.WriteString("\r\n\n\n")
+		b.WriteString("\r\n\r\n")
 		b.Write(payload)
 	} else {
 		b.WriteString("Content-Length: 0\r\n\r\n")
