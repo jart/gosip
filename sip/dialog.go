@@ -248,7 +248,7 @@ func (dls *dialogState) handleMessage(msg *Msg) bool {
 		dls.errChan <- errors.New("Remote UA is using a strange SIP version")
 		return false
 	}
-	if msg.CallID != dls.request.CallID {
+	if !bytes.Equal(msg.CallID, dls.request.CallID) {
 		log.Printf("Received message doesn't match dialog")
 		return dls.send(NewResponse(msg, StatusCallTransactionDoesNotExist))
 	}

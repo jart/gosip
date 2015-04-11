@@ -204,7 +204,7 @@ func TestCallToEchoApp(t *testing.T) {
 				Port:   uint16(laddr.Port),
 			},
 		},
-		UserAgent: "gosip/1.o",
+		UserAgent: []byte("gosip/1.o"),
 		Payload:   sdp.New(rtpaddr, sdp.ULAWCodec, sdp.DTMFCodec),
 	}
 

@@ -162,7 +162,7 @@ action name {
 action value {{
 	b := data[mark:p - 1]
 	if value != nil {
-		*value = string(b)
+		*value = b
 	} else {
 		if msg.Headers == nil {
 			msg.Headers = Headers{}
@@ -203,7 +203,7 @@ action Addr {
 }
 
 action CallID {
-	msg.CallID = string(data[mark:p])
+	msg.CallID = data[mark:p]
 }
 
 action ContentLength {

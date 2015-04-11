@@ -41,7 +41,7 @@ func TestRawSIPOptions(t *testing.T) {
 		"Max-Forwards: 70\r\n" +
 		"To: <sip:" + raddr + ">\r\n" +
 		"From: <sip:" + laddr + ">;tag=" + fromtag + "\r\n" +
-		"Call-ID: " + callid + "\r\n" +
+		"Call-ID: " + string(callid) + "\r\n" +
 		"CSeq: " + strconv.Itoa(cseq) + " OPTIONS\r\n" +
 		"Contact: <sip:" + laddr + ">\r\n" +
 		"User-Agent: pokémon/1.o\r\n" +

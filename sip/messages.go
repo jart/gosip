@@ -20,7 +20,7 @@ func NewRequest(tp *Transport, method string, to, from *Addr) *Msg {
 		CallID:     util.GenerateCallID(),
 		CSeq:       util.GenerateCSeq(),
 		CSeqMethod: method,
-		UserAgent:  GosipUA,
+		UserAgent:  []byte(GosipUA),
 	}
 }
 
@@ -35,8 +35,8 @@ func NewResponse(msg *Msg, status int) *Msg {
 		CSeq:        msg.CSeq,
 		CSeqMethod:  msg.CSeqMethod,
 		RecordRoute: msg.RecordRoute,
-		UserAgent:   GosipUA,
-		Allow:       GosipAllow,
+		UserAgent:   []byte(GosipUA),
+		Allow:       []byte(GosipAllow),
 	}
 }
 
@@ -54,7 +54,7 @@ func NewAck(msg, invite *Msg) *Msg {
 		Route:              msg.RecordRoute.Reversed(),
 		Authorization:      invite.Authorization,
 		ProxyAuthorization: invite.ProxyAuthorization,
-		UserAgent:          GosipUA,
+		UserAgent:          []byte(GosipUA),
 	}
 }
 

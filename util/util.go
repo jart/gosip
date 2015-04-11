@@ -1,6 +1,7 @@
 package util
 
 import (
+	"bytes"
 	"encoding/hex"
 	"math/rand"
 	"net"
@@ -70,13 +71,21 @@ func GenerateBranch() string {
 	return "z9hG4bK-" + GenerateTag()
 }
 
-// Generates a secure UUID4, e.g.f47ac10b-58cc-4372-a567-0e02b2c3d479
-func GenerateCallID() string {
+// Generates a secure UUID4, e.g. f47ac10b-58cc-4372-a567-0e02b2c3d479
+func GenerateCallID() []byte {
 	lol := randomBytes(15)
 	digs := hex.EncodeToString(lol)
-	uuid4 := digs[0:8] + "-" + digs[8:12] + "-4" + digs[12:15] +
-		"-a" + digs[15:18] + "-" + digs[18:]
-	return uuid4
+	var b bytes.Buffer
+	b.WriteString(digs[0:8])
+	b.WriteByte('-')
+	b.WriteString(digs[8:12])
+	b.WriteString("-4")
+	b.WriteString(digs[12:15])
+	b.WriteString("-a")
+	b.WriteString(digs[15:18])
+	b.WriteByte('-')
+	b.WriteString(digs[18:])
+	return b.Bytes()
 }
 
 // Generates a random ID for an SDP.

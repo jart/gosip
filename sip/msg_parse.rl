@@ -38,7 +38,7 @@ func ParseMsgBytes(data []byte) (msg *Msg, err error) {
 	ctype := ""
 	var name string
 	var hex byte
-	var value *string
+	var value *[]byte
 	var via *Via
 	var addrp **Addr
 	var addr *Addr
