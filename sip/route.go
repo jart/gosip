@@ -27,7 +27,7 @@ func PopulateMessage(via *Via, contact *Addr, msg *Msg) {
 			msg.From = msg.Contact.Copy()
 			msg.From.Uri.Param = nil
 		}
-		if msg.CallID == nil {
+		if msg.CallID == "" {
 			msg.CallID = util.GenerateCallID()
 		}
 		if msg.CSeq == 0 {
@@ -39,8 +39,8 @@ func PopulateMessage(via *Via, contact *Addr, msg *Msg) {
 		if msg.MaxForwards == 0 {
 			msg.MaxForwards = 70
 		}
-		if msg.UserAgent == nil {
-			msg.UserAgent = []byte(GosipUA)
+		if msg.UserAgent == "" {
+			msg.UserAgent = GosipUA
 		}
 		if msg.Via.Param.Get("branch") == nil {
 			msg.Via.Param = &Param{"branch", util.GenerateBranch(), msg.Via.Param}

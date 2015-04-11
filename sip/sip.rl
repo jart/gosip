@@ -162,7 +162,7 @@ action name {
 action value {{
 	b := data[mark:p - 1]
 	if value != nil {
-		*value = b
+		*value = string(b)
 	} else {
 		msg.XHeader = &XHeader{name, b, msg.XHeader}
 	}
@@ -200,7 +200,7 @@ action Addr {
 }
 
 action CallID {
-	msg.CallID = data[mark:p]
+	msg.CallID = string(data[mark:p])
 }
 
 action ContentLength {

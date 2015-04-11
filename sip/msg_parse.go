@@ -61,7 +61,7 @@ func ParseMsgBytes(data []byte) (msg *Msg, err error) {
 	ctype := ""
 	var name string
 	var hex byte
-	var value *[]byte
+	var value *string
 	var via *Via
 	var addrp **Addr
 	var addr *Addr
@@ -9591,7 +9591,7 @@ tr403:
 {
 	b := data[mark:p - 1]
 	if value != nil {
-		*value = b
+		*value = string(b)
 	} else {
 		msg.XHeader = &XHeader{name, b, msg.XHeader}
 	}
@@ -11776,7 +11776,7 @@ tr553:
 tr557:
 //line sip.rl:202
 
-	msg.CallID = data[mark:p]
+	msg.CallID = string(data[mark:p])
 
 	goto st381
 tr643:

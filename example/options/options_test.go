@@ -26,8 +26,8 @@ func TestOptions(t *testing.T) {
 		CallID:     util.GenerateCallID(),
 		Method:     "OPTIONS",
 		CSeqMethod: "OPTIONS",
-		Accept:     []byte("application/sdp"),
-		UserAgent:  []byte("pokémon/1.o"),
+		Accept:     "application/sdp",
+		UserAgent:  "pokémon/1.o",
 		Request: &sip.URI{
 			Scheme: "sip",
 			User:   "echo",
@@ -84,7 +84,7 @@ func TestOptions(t *testing.T) {
 	if !msg.IsResponse() || msg.Status != 200 || msg.Phrase != "OK" {
 		t.Error("Not OK :[")
 	}
-	if !bytes.Equal(options.CallID, msg.CallID) {
+	if options.CallID != msg.CallID {
 		t.Error("CallID didnt match")
 	}
 	if options.CSeq != msg.CSeq || options.CSeqMethod != msg.CSeqMethod {

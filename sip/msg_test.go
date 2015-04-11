@@ -124,12 +124,12 @@ var msgTests = []msgTest{
 			VersionMajor: 2,
 			Status:       200,
 			Phrase:       "OK",
-			Warning: []byte("Morning and evening\r\n" +
+			Warning: "Morning and evening\r\n" +
 				" Maids heard the goblins cry:\r\n" +
 				" “Come buy our orchard fruits,\r\n" +
 				" Come buy, come buy:\r\n" +
 				" Apples and quinces,\r\n" +
-				" Lemons and oranges"),
+				" Lemons and oranges",
 		},
 	},
 
@@ -148,12 +148,12 @@ var msgTests = []msgTest{
 			VersionMajor: 2,
 			Status:       200,
 			Phrase:       "OK",
-			Warning: []byte("Morning and evening\r\n" +
+			Warning: "Morning and evening\r\n" +
 				" Maids heard the goblins cry:\r\n" +
 				" “Come buy our orchard fruits,\r\n" +
 				" Come buy, come buy:\r\n" +
 				" Apples and quinces,\r\n" +
-				" Lemons and oranges"),
+				" Lemons and oranges",
 			XHeader: &sip.XHeader{"X-LOL", []byte("omfg"), nil},
 		},
 	},
@@ -510,7 +510,7 @@ var msgTests = []msgTest{
 			VersionMajor: 2,
 			Status:       200,
 			Phrase:       "OK",
-			Warning:      []byte("Maids heard the goblins cry"),
+			Warning:      "Maids heard the goblins cry",
 			Via: &sip.Via{
 				Protocol:  "SIP",
 				Version:   "2.0",
@@ -686,7 +686,7 @@ var msgTests = []msgTest{
 			Method:       "OPTIONS",
 			CSeqMethod:   "OPTIONS",
 			MaxForwards:  60,
-			CallID:       []byte("e71a163e-c440-474d-a4ec-5cd85a0309c6"),
+			CallID:       "e71a163e-c440-474d-a4ec-5cd85a0309c6",
 			CSeq:         36612,
 			Request: &sip.URI{
 				Scheme: "sip",
@@ -724,8 +724,8 @@ var msgTests = []msgTest{
 					Port:   42367,
 				},
 			},
-			UserAgent: []byte("ghoul/0.1"),
-			Accept:    []byte("application/sdp"),
+			UserAgent: "ghoul/0.1",
+			Accept:    "application/sdp",
 		},
 	},
 
@@ -759,12 +759,12 @@ var msgTests = []msgTest{
 			VersionMajor: 2,
 			Status:       200,
 			Phrase:       "OK",
-			CallID:       []byte("99042736-d40b-4d96-a81b-867321443ff5"),
+			CallID:       "99042736-d40b-4d96-a81b-867321443ff5",
 			CSeq:         16378,
 			CSeqMethod:   "INVITE",
-			Server:       []byte("Asterisk PBX 10.11.1"),
-			Allow:        []byte("INVITE, ACK, CANCEL, OPTIONS, BYE, REFER, SUBSCRIBE, NOTIFY, INFO, PUBLISH"),
-			Supported:    []byte("replaces, timer"),
+			Server:       "Asterisk PBX 10.11.1",
+			Allow:        "INVITE, ACK, CANCEL, OPTIONS, BYE, REFER, SUBSCRIBE, NOTIFY, INFO, PUBLISH",
+			Supported:    "replaces, timer",
 			Via: &sip.Via{
 				Protocol:  "SIP",
 				Version:   "2.0",
@@ -835,7 +835,7 @@ var msgTests = []msgTest{
 			VersionMajor: 2,
 			Status:       200,
 			Phrase:       "OK",
-			CallID:       []byte("042736d4-0bd9-4681-ab86-7321443ff58a"),
+			CallID:       "042736d4-0bd9-4681-ab86-7321443ff58a",
 			CSeq:         31109,
 			CSeqMethod:   "INVITE",
 			Via: &sip.Via{
@@ -936,7 +936,7 @@ var msgTests = []msgTest{
 			Method:       "INVITE",
 			CSeqMethod:   "INVITE",
 			MaxForwards:  70,
-			CallID:       []byte("87704115-03b8-122e-08b5-001bfcce6bdf"),
+			CallID:       "87704115-03b8-122e-08b5-001bfcce6bdf",
 			CSeq:         133097268,
 			Request: &sip.URI{
 				Scheme: "sip",
@@ -978,11 +978,11 @@ var msgTests = []msgTest{
 				// 	},
 				// },
 			},
-			UserAgent:          []byte("tube/0.1"),
-			Allow:              []byte("INVITE, ACK, BYE, CANCEL, OPTIONS, PRACK, MESSAGE, SUBSCRIBE, NOTIFY, REFER, UPDATE, INFO"),
-			AllowEvents:        []byte("talk"),
-			ContentDisposition: []byte("session"),
-			Supported:          []byte("timer, 100rel"),
+			UserAgent:          "tube/0.1",
+			Allow:              "INVITE, ACK, BYE, CANCEL, OPTIONS, PRACK, MESSAGE, SUBSCRIBE, NOTIFY, REFER, UPDATE, INFO",
+			AllowEvents:        "talk",
+			ContentDisposition: "session",
+			Supported:          "timer, 100rel",
 			Payload: &sip.MiscPayload{
 				T: "application/sdp-lol",
 				D: []byte("v=0\r\n" +
@@ -1065,10 +1065,9 @@ var msgTests = []msgTest{
 				Param: &sip.Param{"tag", "98asjd8", nil},
 			},
 			MaxForwards: 68,
-			CallID:      []byte("wsinv.ndaksdj@192.0.2.1"),
+			CallID:      "wsinv.ndaksdj@192.0.2.1",
 			CSeq:        9,
 			CSeqMethod:  "INVITE",
-			Subject:     []byte{},
 			Via: &sip.Via{
 				Protocol:  "SIP",
 				Version:   "2.0",
@@ -1157,7 +1156,7 @@ var msgTests = []msgTest{
 		msg: sip.Msg{
 			VersionMajor: 2,
 			Method:       "!interesting-Method0123456789_*+`.%indeed'~",
-			CallID:       []byte("intmeth.word%ZK-!.*_+'@word`~)(><:\\/\"][?}{"),
+			CallID:       "intmeth.word%ZK-!.*_+'@word`~)(><:\\/\"][?}{",
 			CSeq:         139122385,
 			CSeqMethod:   "!interesting-Method0123456789_*+`.%indeed'~",
 			MaxForwards:  255,

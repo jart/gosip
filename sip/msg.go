@@ -30,56 +30,52 @@ type Msg struct {
 	Route       *Addr  // Used for goose routing and loose routing
 	RecordRoute *Addr  // Used for loose routing
 	Contact     *Addr  // Where we send response packets or nil
-	CallID      []byte // Identifies call from INVITE to BYE; never empty, only absent
+	CallID      string // Identifies call from invite to bye
 	CSeq        int    // Counter for network packet ordering
 	CSeqMethod  string // Helps with matching to orig message
 	MaxForwards int    // 0 has context specific meaning
-	UserAgent   []byte // Name of the SIP stack
+	UserAgent   string
 
 	// All the other RFC 3261 headers in plus some extras.
-	//
-	// These byte slices will be nil if absent, in which case the header never
-	// appeared. If they are empty, then the header did appear, but without a
-	// value.
-	Accept             []byte
-	AcceptContact      []byte
-	AcceptEncoding     []byte
-	AcceptLanguage     []byte
-	AlertInfo          []byte
-	Allow              []byte
-	AllowEvents        []byte
-	AuthenticationInfo []byte
-	Authorization      []byte
-	CallInfo           []byte
-	ContentDisposition []byte
-	ContentEncoding    []byte
-	ContentLanguage    []byte
-	Date               []byte
-	ErrorInfo          []byte
-	Event              []byte
+	Accept             string
+	AcceptContact      string
+	AcceptEncoding     string
+	AcceptLanguage     string
+	AlertInfo          string
+	Allow              string
+	AllowEvents        string
+	AuthenticationInfo string
+	Authorization      string
+	CallInfo           string
+	ContentDisposition string
+	ContentEncoding    string
+	ContentLanguage    string
+	Date               string
+	ErrorInfo          string
+	Event              string
 	Expires            int // Seconds registration should expire.
-	InReplyTo          []byte
-	MIMEVersion        []byte
+	InReplyTo          string
+	MIMEVersion        string
 	MinExpires         int // Registrars need this when responding
-	Organization       []byte
+	Organization       string
 	PAssertedIdentity  *Addr // P-Asserted-Identity or nil (used for PSTN ANI)
-	Priority           []byte
-	ProxyAuthenticate  []byte
-	ProxyAuthorization []byte
-	ProxyRequire       []byte
-	ReferTo            []byte
-	ReferredBy         []byte
+	Priority           string
+	ProxyAuthenticate  string
+	ProxyAuthorization string
+	ProxyRequire       string
+	ReferTo            string
+	ReferredBy         string
 	RemotePartyID      *Addr // Evil twin of P-Asserted-Identity.
-	ReplyTo            []byte
-	Require            []byte
-	RetryAfter         []byte
-	Server             []byte
-	Subject            []byte
-	Supported          []byte
-	Timestamp          []byte
-	Unsupported        []byte
-	WWWAuthenticate    []byte
-	Warning            []byte
+	ReplyTo            string
+	Require            string
+	RetryAfter         string
+	Server             string
+	Subject            string
+	Supported          string
+	Timestamp          string
+	Unsupported        string
+	WWWAuthenticate    string
+	Warning            string
 
 	// Extension headers.
 	XHeader *XHeader
@@ -138,15 +134,14 @@ func (msg *Msg) Append(b *bytes.Buffer) {
 		msg.appendVersion(b)
 		b.WriteString("\r\n")
 	} else {
+		if msg.Phrase == "" {
+			msg.Phrase = Phrase(msg.Status)
+		}
 		msg.appendVersion(b)
 		b.WriteString(" ")
 		b.WriteString(strconv.Itoa(msg.Status))
 		b.WriteString(" ")
-		if msg.Phrase == "" {
-			b.WriteString(Phrase(msg.Status))
-		} else {
-			b.WriteString(msg.Phrase)
-		}
+		b.WriteString(msg.Phrase)
 		b.WriteString("\r\n")
 	}
 
@@ -183,7 +178,7 @@ func (msg *Msg) Append(b *bytes.Buffer) {
 	}
 
 	b.WriteString("Call-ID: ")
-	b.Write(msg.CallID)
+	b.WriteString(msg.CallID)
 	b.WriteString("\r\n")
 
 	b.WriteString("CSeq: ")
@@ -192,9 +187,9 @@ func (msg *Msg) Append(b *bytes.Buffer) {
 	b.WriteString(msg.CSeqMethod)
 	b.WriteString("\r\n")
 
-	if msg.UserAgent != nil {
+	if msg.UserAgent != "" {
 		b.WriteString("User-Agent: ")
-		b.Write(msg.UserAgent)
+		b.WriteString(msg.UserAgent)
 		b.WriteString("\r\n")
 	}
 
@@ -208,93 +203,93 @@ func (msg *Msg) Append(b *bytes.Buffer) {
 		}
 	}
 
-	if msg.Accept != nil {
+	if msg.Accept != "" {
 		b.WriteString("Accept: ")
-		b.Write(msg.Accept)
+		b.WriteString(msg.Accept)
 		b.WriteString("\r\n")
 	}
 
-	if msg.AcceptEncoding != nil {
+	if msg.AcceptEncoding != "" {
 		b.WriteString("Accept-Encoding: ")
-		b.Write(msg.AcceptEncoding)
+		b.WriteString(msg.AcceptEncoding)
 		b.WriteString("\r\n")
 	}
 
-	if msg.AcceptLanguage != nil {
+	if msg.AcceptLanguage != "" {
 		b.WriteString("Accept-Language: ")
-		b.Write(msg.AcceptLanguage)
+		b.WriteString(msg.AcceptLanguage)
 		b.WriteString("\r\n")
 	}
 
-	if msg.AlertInfo != nil {
+	if msg.AlertInfo != "" {
 		b.WriteString("Alert-Info: ")
-		b.Write(msg.AlertInfo)
+		b.WriteString(msg.AlertInfo)
 		b.WriteString("\r\n")
 	}
 
-	if msg.Allow != nil {
+	if msg.Allow != "" {
 		b.WriteString("Allow: ")
-		b.Write(msg.Allow)
+		b.WriteString(msg.Allow)
 		b.WriteString("\r\n")
 	}
 
-	if msg.AllowEvents != nil {
+	if msg.AllowEvents != "" {
 		b.WriteString("Allow-Events: ")
-		b.Write(msg.AllowEvents)
+		b.WriteString(msg.AllowEvents)
 		b.WriteString("\r\n")
 	}
 
-	if msg.AuthenticationInfo != nil {
+	if msg.AuthenticationInfo != "" {
 		b.WriteString("Authentication-Info: ")
-		b.Write(msg.AuthenticationInfo)
+		b.WriteString(msg.AuthenticationInfo)
 		b.WriteString("\r\n")
 	}
 
-	if msg.Authorization != nil {
+	if msg.Authorization != "" {
 		b.WriteString("Authorization: ")
-		b.Write(msg.Authorization)
+		b.WriteString(msg.Authorization)
 		b.WriteString("\r\n")
 	}
 
-	if msg.CallInfo != nil {
+	if msg.CallInfo != "" {
 		b.WriteString("Call-Info: ")
-		b.Write(msg.CallInfo)
+		b.WriteString(msg.CallInfo)
 		b.WriteString("\r\n")
 	}
 
-	if msg.ContentDisposition != nil {
+	if msg.ContentDisposition != "" {
 		b.WriteString("Content-Disposition: ")
-		b.Write(msg.ContentDisposition)
+		b.WriteString(msg.ContentDisposition)
 		b.WriteString("\r\n")
 	}
 
-	if msg.ContentEncoding != nil {
+	if msg.ContentEncoding != "" {
 		b.WriteString("Content-Encoding: ")
-		b.Write(msg.ContentEncoding)
+		b.WriteString(msg.ContentEncoding)
 		b.WriteString("\r\n")
 	}
 
-	if msg.ContentLanguage != nil {
+	if msg.ContentLanguage != "" {
 		b.WriteString("Content-Language: ")
-		b.Write(msg.ContentLanguage)
+		b.WriteString(msg.ContentLanguage)
 		b.WriteString("\r\n")
 	}
 
-	if msg.Date != nil {
+	if msg.Date != "" {
 		b.WriteString("Date: ")
-		b.Write(msg.Date)
+		b.WriteString(msg.Date)
 		b.WriteString("\r\n")
 	}
 
-	if msg.ErrorInfo != nil {
+	if msg.ErrorInfo != "" {
 		b.WriteString("Error-Info: ")
-		b.Write(msg.ErrorInfo)
+		b.WriteString(msg.ErrorInfo)
 		b.WriteString("\r\n")
 	}
 
-	if msg.Event != nil {
+	if msg.Event != "" {
 		b.WriteString("Event: ")
-		b.Write(msg.Event)
+		b.WriteString(msg.Event)
 		b.WriteString("\r\n")
 	}
 
@@ -305,15 +300,15 @@ func (msg *Msg) Append(b *bytes.Buffer) {
 		b.WriteString("\r\n")
 	}
 
-	if msg.InReplyTo != nil {
+	if msg.InReplyTo != "" {
 		b.WriteString("In-Reply-To: ")
-		b.Write(msg.InReplyTo)
+		b.WriteString(msg.InReplyTo)
 		b.WriteString("\r\n")
 	}
 
-	if msg.MIMEVersion != nil {
+	if msg.MIMEVersion != "" {
 		b.WriteString("MIME-Version: ")
-		b.Write(msg.MIMEVersion)
+		b.WriteString(msg.MIMEVersion)
 		b.WriteString("\r\n")
 	}
 
@@ -323,9 +318,9 @@ func (msg *Msg) Append(b *bytes.Buffer) {
 		b.WriteString("\r\n")
 	}
 
-	if msg.Organization != nil {
+	if msg.Organization != "" {
 		b.WriteString("Organization: ")
-		b.Write(msg.Organization)
+		b.WriteString(msg.Organization)
 		b.WriteString("\r\n")
 	}
 
@@ -335,39 +330,39 @@ func (msg *Msg) Append(b *bytes.Buffer) {
 		b.WriteString("\r\n")
 	}
 
-	if msg.Priority != nil {
+	if msg.Priority != "" {
 		b.WriteString("Priority: ")
-		b.Write(msg.Priority)
+		b.WriteString(msg.Priority)
 		b.WriteString("\r\n")
 	}
 
-	if msg.ProxyAuthenticate != nil {
+	if msg.ProxyAuthenticate != "" {
 		b.WriteString("Proxy-Authenticate: ")
-		b.Write(msg.ProxyAuthenticate)
+		b.WriteString(msg.ProxyAuthenticate)
 		b.WriteString("\r\n")
 	}
 
-	if msg.ProxyAuthorization != nil {
+	if msg.ProxyAuthorization != "" {
 		b.WriteString("Proxy-Authorization: ")
-		b.Write(msg.ProxyAuthorization)
+		b.WriteString(msg.ProxyAuthorization)
 		b.WriteString("\r\n")
 	}
 
-	if msg.ProxyRequire != nil {
+	if msg.ProxyRequire != "" {
 		b.WriteString("Proxy-Require: ")
-		b.Write(msg.ProxyRequire)
+		b.WriteString(msg.ProxyRequire)
 		b.WriteString("\r\n")
 	}
 
-	if msg.ReferTo != nil {
+	if msg.ReferTo != "" {
 		b.WriteString("Refer-To: ")
-		b.Write(msg.ReferTo)
+		b.WriteString(msg.ReferTo)
 		b.WriteString("\r\n")
 	}
 
-	if msg.ReferredBy != nil {
+	if msg.ReferredBy != "" {
 		b.WriteString("Referred-By: ")
-		b.Write(msg.ReferredBy)
+		b.WriteString(msg.ReferredBy)
 		b.WriteString("\r\n")
 	}
 
@@ -377,63 +372,63 @@ func (msg *Msg) Append(b *bytes.Buffer) {
 		b.WriteString("\r\n")
 	}
 
-	if msg.ReplyTo != nil {
+	if msg.ReplyTo != "" {
 		b.WriteString("Reply-To: ")
-		b.Write(msg.ReplyTo)
+		b.WriteString(msg.ReplyTo)
 		b.WriteString("\r\n")
 	}
 
-	if msg.Require != nil {
+	if msg.Require != "" {
 		b.WriteString("Require: ")
-		b.Write(msg.Require)
+		b.WriteString(msg.Require)
 		b.WriteString("\r\n")
 	}
 
-	if msg.RetryAfter != nil {
+	if msg.RetryAfter != "" {
 		b.WriteString("RetryAfter: ")
-		b.Write(msg.RetryAfter)
+		b.WriteString(msg.RetryAfter)
 		b.WriteString("\r\n")
 	}
 
-	if msg.Server != nil {
+	if msg.Server != "" {
 		b.WriteString("Server: ")
-		b.Write(msg.Server)
+		b.WriteString(msg.Server)
 		b.WriteString("\r\n")
 	}
 
-	if msg.Subject != nil {
+	if msg.Subject != "" {
 		b.WriteString("Subject: ")
-		b.Write(msg.Subject)
+		b.WriteString(msg.Subject)
 		b.WriteString("\r\n")
 	}
 
-	if msg.Supported != nil {
+	if msg.Supported != "" {
 		b.WriteString("Supported: ")
-		b.Write(msg.Supported)
+		b.WriteString(msg.Supported)
 		b.WriteString("\r\n")
 	}
 
-	if msg.Timestamp != nil {
+	if msg.Timestamp != "" {
 		b.WriteString("Timestamp: ")
-		b.Write(msg.Timestamp)
+		b.WriteString(msg.Timestamp)
 		b.WriteString("\r\n")
 	}
 
-	if msg.Unsupported != nil {
+	if msg.Unsupported != "" {
 		b.WriteString("Unsupported: ")
-		b.Write(msg.Unsupported)
+		b.WriteString(msg.Unsupported)
 		b.WriteString("\r\n")
 	}
 
-	if msg.Warning != nil {
+	if msg.Warning != "" {
 		b.WriteString("Warning: ")
-		b.Write(msg.Warning)
+		b.WriteString(msg.Warning)
 		b.WriteString("\r\n")
 	}
 
-	if msg.WWWAuthenticate != nil {
+	if msg.WWWAuthenticate != "" {
 		b.WriteString("WWW-Authenticate: ")
-		b.Write(msg.WWWAuthenticate)
+		b.WriteString(msg.WWWAuthenticate)
 		b.WriteString("\r\n")
 	}
 
