@@ -4,6 +4,10 @@ import (
 	"bytes"
 )
 
+const (
+	hexChars = "0123456789abcdef"
+)
+
 // tokencify removes all characters that aren't tokenc.
 func tokencify(s []byte) []byte {
 	t := make([]byte, len(s))

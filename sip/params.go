@@ -2,7 +2,6 @@ package sip
 
 import (
 	"bytes"
-	"github.com/jart/gosip/util"
 	"sort"
 )
 
@@ -27,11 +26,11 @@ func (params Params) Append(b *bytes.Buffer) {
 		sort.Strings(keys)
 		for _, k := range keys {
 			b.WriteByte(';')
-			b.WriteString(util.URLEscape(k, false))
+			b.Write(escapeParam([]byte(k)))
 			v := params[k]
 			if v != "" {
 				b.WriteByte('=')
-				b.WriteString(util.URLEscape(v, false))
+				b.Write(escapeParam([]byte(v)))
 			}
 		}
 	}

@@ -1,35 +1,15 @@
-// Charset implementation using four int64 bitmasks
-//
-// Each charset mask is 32 bytes, which fits into a 64 byte cache line.
+// Charset implementation using int64 bitmasks
 
 package sip
 
-var tokencMask [4]uint64
-var qdtextcMask [4]uint64
-
-func init() {
-	charsetAddRange(&tokencMask, 'a', 'z')
-	charsetAddRange(&tokencMask, 'A', 'Z')
-	charsetAddRange(&tokencMask, '0', '9')
-	charsetAdd(&tokencMask, '-')
-	charsetAdd(&tokencMask, '.')
-	charsetAdd(&tokencMask, '!')
-	charsetAdd(&tokencMask, '%')
-	charsetAdd(&tokencMask, '*')
-	charsetAdd(&tokencMask, '_')
-	charsetAdd(&tokencMask, '+')
-	charsetAdd(&tokencMask, '`')
-	charsetAdd(&tokencMask, '\'')
-	charsetAdd(&tokencMask, '~')
-
-	charsetAdd(&qdtextcMask, '\r')
-	charsetAdd(&qdtextcMask, '\n')
-	charsetAdd(&qdtextcMask, '\t')
-	charsetAdd(&qdtextcMask, ' ')
-	charsetAdd(&qdtextcMask, '!')
-	charsetAddRange(&qdtextcMask, 0x23, 0x5B)
-	charsetAddRange(&qdtextcMask, 0x5D, 0x7E)
-}
+var (
+	tokencMask  [2]uint64
+	qdtextcMask [2]uint64
+	usercMask   [2]uint64
+	passcMask   [2]uint64
+	paramcMask  [2]uint64
+	headercMask [2]uint64
+)
 
 func tokenc(c byte) bool {
 	return charsetContains(&tokencMask, c)
@@ -37,6 +17,22 @@ func tokenc(c byte) bool {
 
 func qdtextc(c byte) bool {
 	return charsetContains(&qdtextcMask, c)
+}
+
+func userc(c byte) bool {
+	return charsetContains(&usercMask, c)
+}
+
+func passc(c byte) bool {
+	return charsetContains(&passcMask, c)
+}
+
+func paramc(c byte) bool {
+	return charsetContains(&paramcMask, c)
+}
+
+func headerc(c byte) bool {
+	return charsetContains(&headercMask, c)
 }
 
 func qdtextesc(c byte) bool {
@@ -49,31 +45,53 @@ func whitespacec(c byte) bool {
 	return c == ' ' || c == '\t' || c == '\r' || c == '\n'
 }
 
-func charsetContains(mask *[4]uint64, i byte) bool {
-	return mask[i/64]&(1<<(i%64)) != 0
+func init() {
+	charsetAddAlphaNumeric(&tokencMask)
+	charsetAdd(&tokencMask, '-', '.', '!', '%', '*', '_', '+', '`', '\'', '~')
+
+	charsetAddRange(&qdtextcMask, 0x23, 0x5B)
+	charsetAddRange(&qdtextcMask, 0x5D, 0x7E)
+	charsetAdd(&qdtextcMask, '\r', '\n', '\t', ' ', '!')
+
+	charsetAddAlphaNumeric(&usercMask)
+	charsetAddMark(&usercMask)
+	charsetAdd(&usercMask, '&', '=', '+', '$', ',', ';', '?', '/')
+
+	charsetAddAlphaNumeric(&passcMask)
+	charsetAddMark(&passcMask)
+	charsetAdd(&passcMask, '&', '=', '+', '$', ',')
+
+	charsetAddAlphaNumeric(&paramcMask)
+	charsetAddMark(&paramcMask)
+	charsetAdd(&paramcMask, '[', ']', '/', ':', '&', '+', '$')
+
+	charsetAddAlphaNumeric(&headercMask)
+	charsetAddMark(&headercMask)
+	charsetAdd(&headercMask, '[', ']', '/', '?', ':', '+', '$')
 }
 
-func charsetAdd(mask *[4]uint64, i byte) {
-	mask[i/64] |= 1 << (i % 64)
+func charsetContains(mask *[2]uint64, i byte) bool {
+	return i < 128 && mask[i/64]&(1<<(i%64)) != 0
 }
 
-func charsetAddRange(mask *[4]uint64, a, b byte) {
+func charsetAdd(mask *[2]uint64, vi ...byte) {
+	for _, i := range vi {
+		mask[i/64] |= 1 << (i % 64)
+	}
+}
+
+func charsetAddRange(mask *[2]uint64, a, b byte) {
 	for i := a; i <= b; i++ {
 		charsetAdd(mask, i)
 	}
-	// var m uint64
-	// i := a
-	// j := i / 64
-	// for i <= b {
-	// 	m &= 1 << (i % 64)
-	// 	i++
-	// 	if i%64 == 0 {
-	// 		mask[j] &= m
-	// 		j = i / 64
-	// 		m = 0
-	// 	}
-	// }
-	// if m != 0 {
-	// 	mask[j] |= m
-	// }
+}
+
+func charsetAddMark(mask *[2]uint64) {
+	charsetAdd(mask, '-', '_', '.', '!', '~', '*', '\'', '(', ')')
+}
+
+func charsetAddAlphaNumeric(mask *[2]uint64) {
+	charsetAddRange(mask, 'a', 'z')
+	charsetAddRange(mask, 'A', 'Z')
+	charsetAddRange(mask, '0', '9')
 }

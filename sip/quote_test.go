@@ -59,7 +59,7 @@ func TestQuote(t *testing.T) {
 	for _, test := range quoteTests {
 		out := string(quote([]byte(test.in)))
 		if test.out != out {
-			t.Error(test.name, test.out, "!=", out)
+			t.Errorf("%s: %s != %s", test.name, test.out, out)
 		}
 	}
 }

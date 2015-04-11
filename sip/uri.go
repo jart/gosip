@@ -76,27 +76,31 @@ func (uri *URI) String() string {
 
 func (uri *URI) Append(b *bytes.Buffer) {
 	if uri.Scheme == "" {
-		uri.Scheme = "sip"
+		b.WriteString("sip:")
+	} else {
+		b.WriteString(uri.Scheme)
+		b.WriteByte(':')
 	}
-	b.WriteString(uri.Scheme)
-	b.WriteString(":")
 	if uri.User != "" {
 		if uri.Pass != "" {
-			b.WriteString(util.URLEscape(uri.User, false))
-			b.WriteString(":")
-			b.WriteString(util.URLEscape(uri.Pass, false))
+			b.Write(escapeUser([]byte(uri.User)))
+			b.WriteByte(':')
+			b.Write(escapePass([]byte(uri.Pass)))
 		} else {
-			b.WriteString(util.URLEscape(uri.User, false))
+			b.Write(escapeUser([]byte(uri.User)))
 		}
-		b.WriteString("@")
+		b.WriteByte('@')
 	}
 	if util.IsIPv6(uri.Host) {
-		b.WriteString("[" + util.URLEscape(uri.Host, false) + "]")
+		b.WriteByte('[')
+		b.WriteString(uri.Host)
+		b.WriteByte(']')
 	} else {
-		b.WriteString(util.URLEscape(uri.Host, false))
+		b.WriteString(uri.Host)
 	}
 	if uri.Port > 0 {
-		b.WriteString(":" + portstr((uri.Port)))
+		b.WriteByte(':')
+		b.WriteString(portstr(uri.Port))
 	}
 	uri.Params.Append(b)
 	uri.Headers.Append(b)
@@ -143,16 +147,16 @@ func (headers URIHeaders) Append(b *bytes.Buffer) {
 		first := true
 		for _, k := range keys {
 			if first {
-				b.WriteString("?")
+				b.WriteByte('?')
 				first = false
 			} else {
-				b.WriteString("&")
+				b.WriteByte('&')
 			}
-			b.WriteString(util.URLEscape(k, false))
+			b.Write(escapeHeader([]byte(k)))
 			v := headers[k]
 			if v != "" {
-				b.WriteString("=")
-				b.WriteString(util.URLEscape(v, false))
+				b.WriteByte('=')
+				b.Write(escapeHeader([]byte(v)))
 			}
 		}
 	}

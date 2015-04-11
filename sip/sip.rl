@@ -80,10 +80,6 @@ action space {
 	amt++
 }
 
-action collapse {
-	amt = appendCollapse(buf, amt, fc)
-}
-
 action hexHi {
 	hex = unhex(fc) * 16
 }
@@ -92,10 +88,6 @@ action hexLo {
 	hex += unhex(fc)
 	buf[amt] = hex
 	amt++
-}
-
-action lower {
-	amt = appendLower(buf, amt, fc)
 }
 
 action Method {
