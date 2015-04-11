@@ -376,6 +376,12 @@ param           = param_name >start (EQUAL param_value)?;
 
 # Via Parsing
 #
+# Vias are used to trace SIP hops. It's similar to an address, but with simpler
+# syntax. Here's some examples:
+#
+#   - Via: SIP/2.0/UDP 1.2.3.4:5060;branch=z9hG4bK-d1d81e94a099
+#   - Via: SIP/2.0/TLS [feed:a::bee] ;branch="z9hG4bK-doge" ;rport=666
+#
 # Parsing these is kind of difficult because infinite whitespace is allowed
 # between colons, semicolons, commas, and don't forget that lines can
 # continue. So we're going to break things down into four separate machines
@@ -402,14 +408,13 @@ via            := ViaSent LWS ViaHost (COLON ViaPort)? via_end;
 #
 # These can come in the following forms, which can be comma-delimited:
 #
-#   - Unangled:        sip:example.lol
-#   - Angled:          <sip:example.lol>
-#   - Unquoted Angled: oh my goth <sip:example.lol>
-#   - Quoted Angled:   "oh my \"goth\"" <sip:example.lol>
+#   - Unangled: sip:example.lol
+#   - Angled: <sip:example.lol>
+#   - Unquoted: oh my goth <sip:boo@lol[feed:a::bee]:5060>
+#   - Quoted: "oh my \"goth\"" <sip:example.lol>
 #
-# We start off by setting the mark and performing lookahead for a ':', '<',
-# token, or '"' character. Then we backtrack to the mark and jump to the
-# appropriate machine.
+# In order to tell the unangled and unquoted angled forms apart, we need to
+# look for ':' or '<' character and then backtrack to the appropriate machine.
 #
 # URIs are parsed by a separate routine. Because Addr and URI can both have
 # parameters, they must be owned by the Addr object when in unangled form.
