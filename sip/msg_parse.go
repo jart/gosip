@@ -1630,7 +1630,7 @@ func ParseMsgBytes(data []byte) (msg *Msg, err error) {
 		}
 		goto st0
 tr368:
-//line sip.rl:178
+//line sip.rl:177
 
 	p--
 
@@ -1643,7 +1643,7 @@ st_case_0:
 		cs = 0
 		goto _out
 tr0:
-//line sip.rl:62
+//line sip.rl:61
 
 	mark = p
 
@@ -1688,7 +1688,7 @@ tr0:
 		}
 		goto st0
 tr3:
-//line sip.rl:102
+//line sip.rl:101
 
 	msg.Method = string(data[mark:p])
 
@@ -1702,7 +1702,7 @@ tr3:
 		}
 		goto tr5
 tr5:
-//line sip.rl:62
+//line sip.rl:61
 
 	mark = p
 
@@ -1716,7 +1716,7 @@ tr5:
 		}
 		goto st4
 tr7:
-//line sip.rl:114
+//line sip.rl:113
 
 	msg.Request, err = ParseURIBytes(data[mark:p])
 	if err != nil { return nil, err }
@@ -1759,7 +1759,7 @@ tr7:
 		}
 		goto st0
 tr12:
-//line sip.rl:106
+//line sip.rl:105
 
 	msg.VersionMajor = msg.VersionMajor * 10 + (data[p] - 0x30)
 
@@ -1783,7 +1783,7 @@ tr12:
 		}
 		goto st0
 tr14:
-//line sip.rl:110
+//line sip.rl:109
 
 	msg.VersionMinor = msg.VersionMinor * 10 + (data[p] - 0x30)
 
@@ -1807,7 +1807,7 @@ tr14:
 		}
 		goto st0
 tr42:
-//line sip.rl:123
+//line sip.rl:122
 
 	msg.Phrase = string(buf[0:amt])
 
@@ -1821,7 +1821,7 @@ tr42:
 		}
 		goto st0
 tr16:
-//line sip.rl:160
+//line sip.rl:159
 
 	{goto st246 }
 
@@ -1832,7 +1832,7 @@ tr16:
 //line msg_parse.go:1833
 		goto st0
 tr2:
-//line sip.rl:62
+//line sip.rl:61
 
 	mark = p
 
@@ -1961,7 +1961,7 @@ tr2:
 		}
 		goto st0
 tr20:
-//line sip.rl:106
+//line sip.rl:105
 
 	msg.VersionMajor = msg.VersionMajor * 10 + (data[p] - 0x30)
 
@@ -1985,7 +1985,7 @@ tr20:
 		}
 		goto st0
 tr22:
-//line sip.rl:110
+//line sip.rl:109
 
 	msg.VersionMinor = msg.VersionMinor * 10 + (data[p] - 0x30)
 
@@ -2009,7 +2009,7 @@ tr22:
 		}
 		goto st0
 tr24:
-//line sip.rl:119
+//line sip.rl:118
 
 	msg.Status = msg.Status * 10 + (int(data[p]) - 0x30)
 
@@ -2023,7 +2023,7 @@ tr24:
 		}
 		goto st0
 tr25:
-//line sip.rl:119
+//line sip.rl:118
 
 	msg.Status = msg.Status * 10 + (int(data[p]) - 0x30)
 
@@ -2037,7 +2037,7 @@ tr25:
 		}
 		goto st0
 tr26:
-//line sip.rl:119
+//line sip.rl:118
 
 	msg.Status = msg.Status * 10 + (int(data[p]) - 0x30)
 
@@ -2107,25 +2107,25 @@ tr26:
 		}
 		goto st0
 tr28:
-//line sip.rl:70
+//line sip.rl:69
 
 	amt = 0
 
-//line sip.rl:74
+//line sip.rl:73
 
 	buf[amt] = data[p]
 	amt++
 
 	goto st26
 tr35:
-//line sip.rl:74
+//line sip.rl:73
 
 	buf[amt] = data[p]
 	amt++
 
 	goto st26
 tr44:
-//line sip.rl:92
+//line sip.rl:91
 
 	hex += unhex(data[p])
 	buf[amt] = hex
@@ -2199,7 +2199,7 @@ tr44:
 		}
 		goto st0
 tr29:
-//line sip.rl:70
+//line sip.rl:69
 
 	amt = 0
 
@@ -2222,7 +2222,7 @@ tr29:
 		}
 		goto st0
 tr43:
-//line sip.rl:88
+//line sip.rl:87
 
 	hex = unhex(data[p]) * 16
 
@@ -2245,18 +2245,18 @@ tr43:
 		}
 		goto st0
 tr30:
-//line sip.rl:70
+//line sip.rl:69
 
 	amt = 0
 
-//line sip.rl:74
+//line sip.rl:73
 
 	buf[amt] = data[p]
 	amt++
 
 	goto st29
 tr37:
-//line sip.rl:74
+//line sip.rl:73
 
 	buf[amt] = data[p]
 	amt++
@@ -2271,18 +2271,18 @@ tr37:
 		}
 		goto st0
 tr31:
-//line sip.rl:70
+//line sip.rl:69
 
 	amt = 0
 
-//line sip.rl:74
+//line sip.rl:73
 
 	buf[amt] = data[p]
 	amt++
 
 	goto st30
 tr38:
-//line sip.rl:74
+//line sip.rl:73
 
 	buf[amt] = data[p]
 	amt++
@@ -2297,18 +2297,18 @@ tr38:
 		}
 		goto st0
 tr32:
-//line sip.rl:70
+//line sip.rl:69
 
 	amt = 0
 
-//line sip.rl:74
+//line sip.rl:73
 
 	buf[amt] = data[p]
 	amt++
 
 	goto st31
 tr39:
-//line sip.rl:74
+//line sip.rl:73
 
 	buf[amt] = data[p]
 	amt++
@@ -2323,18 +2323,18 @@ tr39:
 		}
 		goto st0
 tr33:
-//line sip.rl:70
+//line sip.rl:69
 
 	amt = 0
 
-//line sip.rl:74
+//line sip.rl:73
 
 	buf[amt] = data[p]
 	amt++
 
 	goto st32
 tr40:
-//line sip.rl:74
+//line sip.rl:73
 
 	buf[amt] = data[p]
 	amt++
@@ -2349,18 +2349,18 @@ tr40:
 		}
 		goto st0
 tr34:
-//line sip.rl:70
+//line sip.rl:69
 
 	amt = 0
 
-//line sip.rl:74
+//line sip.rl:73
 
 	buf[amt] = data[p]
 	amt++
 
 	goto st33
 tr41:
-//line sip.rl:74
+//line sip.rl:73
 
 	buf[amt] = data[p]
 	amt++
@@ -2411,11 +2411,11 @@ tr41:
 		}
 		goto st0
 tr45:
-//line sip.rl:70
+//line sip.rl:69
 
 	amt = 0
 
-//line sip.rl:62
+//line sip.rl:61
 
 	mark = p
 
@@ -2474,7 +2474,7 @@ tr45:
 		}
 		goto st0
 tr46:
-//line sip.rl:183
+//line sip.rl:182
 
 	name = string(data[mark:p])
 
@@ -2506,7 +2506,7 @@ tr46:
 		}
 		goto st0
 tr48:
-//line sip.rl:183
+//line sip.rl:182
 
 	name = string(data[mark:p])
 
@@ -2542,64 +2542,64 @@ tr48:
 		}
 		goto st0
 tr58:
-//line sip.rl:54
+//line sip.rl:53
 
 	p--
 
 
-//line sip.rl:153
+//line sip.rl:152
 
 	if via.Params == nil {
 		via.Params = Params{}
 	}
 	via.Params[name] = string(buf[0:amt])
 
-//line sip.rl:127
+//line sip.rl:126
 
 	*viap = via
 	viap = &via.Next
 	via = nil
 
-//line sip.rl:168
+//line sip.rl:167
 
 	via = new(Via)
 	{goto st69 }
 
 	goto st740
 tr62:
-//line sip.rl:54
+//line sip.rl:53
 
 	p--
 
 
-//line sip.rl:153
+//line sip.rl:152
 
 	if via.Params == nil {
 		via.Params = Params{}
 	}
 	via.Params[name] = string(buf[0:amt])
 
-//line sip.rl:173
+//line sip.rl:172
 
 	amt = 0  // Needed so ViaParam action works when there's no value.
 	{goto st34 }
 
 	goto st740
 tr74:
-//line sip.rl:153
+//line sip.rl:152
 
 	if via.Params == nil {
 		via.Params = Params{}
 	}
 	via.Params[name] = string(buf[0:amt])
 
-//line sip.rl:127
+//line sip.rl:126
 
 	*viap = via
 	viap = &via.Next
 	via = nil
 
-//line sip.rl:160
+//line sip.rl:159
 
 	{goto st246 }
 
@@ -2637,7 +2637,7 @@ tr74:
 		}
 		goto tr58
 tr49:
-//line sip.rl:183
+//line sip.rl:182
 
 	name = string(data[mark:p])
 
@@ -2700,7 +2700,7 @@ tr49:
 		}
 		goto tr62
 tr50:
-//line sip.rl:183
+//line sip.rl:182
 
 	name = string(data[mark:p])
 
@@ -2760,7 +2760,7 @@ tr50:
 		}
 		goto st0
 tr66:
-//line sip.rl:74
+//line sip.rl:73
 
 	buf[amt] = data[p]
 	amt++
@@ -2874,7 +2874,7 @@ tr66:
 		}
 		goto st0
 tr51:
-//line sip.rl:183
+//line sip.rl:182
 
 	name = string(data[mark:p])
 
@@ -2935,18 +2935,18 @@ tr51:
 		}
 		goto st0
 tr75:
-//line sip.rl:70
+//line sip.rl:69
 
 	amt = 0
 
-//line sip.rl:74
+//line sip.rl:73
 
 	buf[amt] = data[p]
 	amt++
 
 	goto st53
 tr84:
-//line sip.rl:74
+//line sip.rl:73
 
 	buf[amt] = data[p]
 	amt++
@@ -3001,7 +3001,7 @@ tr84:
 		}
 		goto st0
 tr76:
-//line sip.rl:70
+//line sip.rl:69
 
 	amt = 0
 
@@ -3033,7 +3033,7 @@ tr76:
 		}
 		goto st0
 tr77:
-//line sip.rl:70
+//line sip.rl:69
 
 	amt = 0
 
@@ -3056,18 +3056,18 @@ tr77:
 		}
 		goto st0
 tr78:
-//line sip.rl:70
+//line sip.rl:69
 
 	amt = 0
 
-//line sip.rl:74
+//line sip.rl:73
 
 	buf[amt] = data[p]
 	amt++
 
 	goto st56
 tr87:
-//line sip.rl:74
+//line sip.rl:73
 
 	buf[amt] = data[p]
 	amt++
@@ -3082,18 +3082,18 @@ tr87:
 		}
 		goto st0
 tr79:
-//line sip.rl:70
+//line sip.rl:69
 
 	amt = 0
 
-//line sip.rl:74
+//line sip.rl:73
 
 	buf[amt] = data[p]
 	amt++
 
 	goto st57
 tr88:
-//line sip.rl:74
+//line sip.rl:73
 
 	buf[amt] = data[p]
 	amt++
@@ -3108,18 +3108,18 @@ tr88:
 		}
 		goto st0
 tr80:
-//line sip.rl:70
+//line sip.rl:69
 
 	amt = 0
 
-//line sip.rl:74
+//line sip.rl:73
 
 	buf[amt] = data[p]
 	amt++
 
 	goto st58
 tr89:
-//line sip.rl:74
+//line sip.rl:73
 
 	buf[amt] = data[p]
 	amt++
@@ -3134,18 +3134,18 @@ tr89:
 		}
 		goto st0
 tr81:
-//line sip.rl:70
+//line sip.rl:69
 
 	amt = 0
 
-//line sip.rl:74
+//line sip.rl:73
 
 	buf[amt] = data[p]
 	amt++
 
 	goto st59
 tr90:
-//line sip.rl:74
+//line sip.rl:73
 
 	buf[amt] = data[p]
 	amt++
@@ -3160,18 +3160,18 @@ tr90:
 		}
 		goto st0
 tr82:
-//line sip.rl:70
+//line sip.rl:69
 
 	amt = 0
 
-//line sip.rl:74
+//line sip.rl:73
 
 	buf[amt] = data[p]
 	amt++
 
 	goto st60
 tr91:
-//line sip.rl:74
+//line sip.rl:73
 
 	buf[amt] = data[p]
 	amt++
@@ -3186,18 +3186,18 @@ tr91:
 		}
 		goto st0
 tr83:
-//line sip.rl:70
+//line sip.rl:69
 
 	amt = 0
 
-//line sip.rl:74
+//line sip.rl:73
 
 	buf[amt] = data[p]
 	amt++
 
 	goto st61
 tr92:
-//line sip.rl:74
+//line sip.rl:73
 
 	buf[amt] = data[p]
 	amt++
@@ -3212,7 +3212,7 @@ tr92:
 		}
 		goto st0
 tr93:
-//line sip.rl:74
+//line sip.rl:73
 
 	buf[amt] = data[p]
 	amt++
@@ -3291,7 +3291,7 @@ tr93:
 		}
 		goto st0
 tr52:
-//line sip.rl:183
+//line sip.rl:182
 
 	name = string(data[mark:p])
 
@@ -3367,7 +3367,7 @@ tr52:
 		}
 		goto st0
 tr98:
-//line sip.rl:62
+//line sip.rl:61
 
 	mark = p
 
@@ -3420,7 +3420,7 @@ tr98:
 		}
 		goto st0
 tr99:
-//line sip.rl:133
+//line sip.rl:132
 
 	via.Protocol = string(data[mark:p])
 
@@ -3448,7 +3448,7 @@ tr99:
 		}
 		goto st0
 tr101:
-//line sip.rl:133
+//line sip.rl:132
 
 	via.Protocol = string(data[mark:p])
 
@@ -3504,7 +3504,7 @@ tr101:
 		}
 		goto st0
 tr106:
-//line sip.rl:62
+//line sip.rl:61
 
 	mark = p
 
@@ -3557,7 +3557,7 @@ tr106:
 		}
 		goto st0
 tr108:
-//line sip.rl:137
+//line sip.rl:136
 
 	via.Version = string(data[mark:p])
 
@@ -3585,7 +3585,7 @@ tr108:
 		}
 		goto st0
 tr110:
-//line sip.rl:137
+//line sip.rl:136
 
 	via.Version = string(data[mark:p])
 
@@ -3641,7 +3641,7 @@ tr110:
 		}
 		goto st0
 tr115:
-//line sip.rl:62
+//line sip.rl:61
 
 	mark = p
 
@@ -3697,7 +3697,7 @@ tr115:
 		}
 		goto st0
 tr117:
-//line sip.rl:141
+//line sip.rl:140
 
 	via.Transport = string(data[mark:p])
 
@@ -3742,7 +3742,7 @@ tr117:
 		}
 		goto st0
 tr121:
-//line sip.rl:62
+//line sip.rl:61
 
 	mark = p
 
@@ -3793,7 +3793,7 @@ tr121:
 		}
 		goto st0
 tr124:
-//line sip.rl:145
+//line sip.rl:144
 
 	via.Host = string(data[mark:p])
 
@@ -3825,7 +3825,7 @@ tr124:
 		}
 		goto st0
 tr125:
-//line sip.rl:145
+//line sip.rl:144
 
 	via.Host = string(data[mark:p])
 
@@ -3861,43 +3861,43 @@ tr125:
 		}
 		goto st0
 tr136:
-//line sip.rl:54
+//line sip.rl:53
 
 	p--
 
 
-//line sip.rl:127
+//line sip.rl:126
 
 	*viap = via
 	viap = &via.Next
 	via = nil
 
-//line sip.rl:168
+//line sip.rl:167
 
 	via = new(Via)
 	{goto st69 }
 
 	goto st741
 tr145:
-//line sip.rl:54
+//line sip.rl:53
 
 	p--
 
 
-//line sip.rl:173
+//line sip.rl:172
 
 	amt = 0  // Needed so ViaParam action works when there's no value.
 	{goto st34 }
 
 	goto st741
 tr151:
-//line sip.rl:127
+//line sip.rl:126
 
 	*viap = via
 	viap = &via.Next
 	via = nil
 
-//line sip.rl:160
+//line sip.rl:159
 
 	{goto st246 }
 
@@ -3935,7 +3935,7 @@ tr151:
 		}
 		goto tr136
 tr127:
-//line sip.rl:145
+//line sip.rl:144
 
 	via.Host = string(data[mark:p])
 
@@ -3964,7 +3964,7 @@ tr127:
 		}
 		goto st0
 tr140:
-//line sip.rl:149
+//line sip.rl:148
 
 	via.Port = via.Port * 10 + (uint16(data[p]) - 0x30)
 
@@ -4022,7 +4022,7 @@ tr140:
 		}
 		goto st0
 tr128:
-//line sip.rl:145
+//line sip.rl:144
 
 	via.Host = string(data[mark:p])
 
@@ -4116,7 +4116,7 @@ tr128:
 		}
 		goto st0
 tr129:
-//line sip.rl:145
+//line sip.rl:144
 
 	via.Host = string(data[mark:p])
 
@@ -4160,7 +4160,7 @@ tr129:
 		}
 		goto st0
 tr130:
-//line sip.rl:145
+//line sip.rl:144
 
 	via.Host = string(data[mark:p])
 
@@ -4219,7 +4219,7 @@ tr130:
 		}
 		goto st0
 tr156:
-//line sip.rl:62
+//line sip.rl:61
 
 	mark = p
 
@@ -4248,7 +4248,7 @@ tr156:
 		}
 		goto st0
 tr158:
-//line sip.rl:145
+//line sip.rl:144
 
 	via.Host = string(data[mark:p])
 
@@ -4282,7 +4282,7 @@ tr158:
 		}
 		goto st0
 tr119:
-//line sip.rl:141
+//line sip.rl:140
 
 	via.Transport = string(data[mark:p])
 
@@ -4392,7 +4392,7 @@ tr119:
 		}
 		goto st0
 tr111:
-//line sip.rl:137
+//line sip.rl:136
 
 	via.Version = string(data[mark:p])
 
@@ -4485,7 +4485,7 @@ tr111:
 		}
 		goto st0
 tr102:
-//line sip.rl:133
+//line sip.rl:132
 
 	via.Protocol = string(data[mark:p])
 
@@ -4557,11 +4557,11 @@ tr102:
 		}
 		goto st0
 tr169:
-//line sip.rl:70
+//line sip.rl:69
 
 	amt = 0
 
-//line sip.rl:62
+//line sip.rl:61
 
 	mark = p
 
@@ -4620,7 +4620,7 @@ tr169:
 		}
 		goto st0
 tr170:
-//line sip.rl:183
+//line sip.rl:182
 
 	name = string(data[mark:p])
 
@@ -4652,7 +4652,7 @@ tr170:
 		}
 		goto st0
 tr172:
-//line sip.rl:183
+//line sip.rl:182
 
 	name = string(data[mark:p])
 
@@ -4688,62 +4688,62 @@ tr172:
 		}
 		goto st0
 tr182:
-//line sip.rl:236
+//line sip.rl:235
 
 	if addr.Params == nil {
 		addr.Params = Params{}
 	}
 	addr.Params[name] = string(buf[0:amt])
 
-//line sip.rl:243
+//line sip.rl:242
 
 	*addrp = addr
 	addrp = &addr.Next
 	addr = nil
 
-//line sip.rl:54
+//line sip.rl:53
 
 	p--
 
 
-//line sip.rl:199
+//line sip.rl:198
 
 	{goto st222 }
 
 	goto st742
 tr186:
-//line sip.rl:236
+//line sip.rl:235
 
 	if addr.Params == nil {
 		addr.Params = Params{}
 	}
 	addr.Params[name] = string(buf[0:amt])
 
-//line sip.rl:54
+//line sip.rl:53
 
 	p--
 
 
-//line sip.rl:211
+//line sip.rl:210
 
 	{goto st119 }
 
 	goto st742
 tr198:
-//line sip.rl:236
+//line sip.rl:235
 
 	if addr.Params == nil {
 		addr.Params = Params{}
 	}
 	addr.Params[name] = string(buf[0:amt])
 
-//line sip.rl:243
+//line sip.rl:242
 
 	*addrp = addr
 	addrp = &addr.Next
 	addr = nil
 
-//line sip.rl:160
+//line sip.rl:159
 
 	{goto st246 }
 
@@ -4781,7 +4781,7 @@ tr198:
 		}
 		goto tr182
 tr173:
-//line sip.rl:183
+//line sip.rl:182
 
 	name = string(data[mark:p])
 
@@ -4844,7 +4844,7 @@ tr173:
 		}
 		goto tr186
 tr174:
-//line sip.rl:183
+//line sip.rl:182
 
 	name = string(data[mark:p])
 
@@ -4904,7 +4904,7 @@ tr174:
 		}
 		goto st0
 tr190:
-//line sip.rl:74
+//line sip.rl:73
 
 	buf[amt] = data[p]
 	amt++
@@ -5018,7 +5018,7 @@ tr190:
 		}
 		goto st0
 tr175:
-//line sip.rl:183
+//line sip.rl:182
 
 	name = string(data[mark:p])
 
@@ -5079,18 +5079,18 @@ tr175:
 		}
 		goto st0
 tr199:
-//line sip.rl:70
+//line sip.rl:69
 
 	amt = 0
 
-//line sip.rl:74
+//line sip.rl:73
 
 	buf[amt] = data[p]
 	amt++
 
 	goto st138
 tr208:
-//line sip.rl:74
+//line sip.rl:73
 
 	buf[amt] = data[p]
 	amt++
@@ -5145,7 +5145,7 @@ tr208:
 		}
 		goto st0
 tr200:
-//line sip.rl:70
+//line sip.rl:69
 
 	amt = 0
 
@@ -5177,7 +5177,7 @@ tr200:
 		}
 		goto st0
 tr201:
-//line sip.rl:70
+//line sip.rl:69
 
 	amt = 0
 
@@ -5200,18 +5200,18 @@ tr201:
 		}
 		goto st0
 tr202:
-//line sip.rl:70
+//line sip.rl:69
 
 	amt = 0
 
-//line sip.rl:74
+//line sip.rl:73
 
 	buf[amt] = data[p]
 	amt++
 
 	goto st141
 tr211:
-//line sip.rl:74
+//line sip.rl:73
 
 	buf[amt] = data[p]
 	amt++
@@ -5226,18 +5226,18 @@ tr211:
 		}
 		goto st0
 tr203:
-//line sip.rl:70
+//line sip.rl:69
 
 	amt = 0
 
-//line sip.rl:74
+//line sip.rl:73
 
 	buf[amt] = data[p]
 	amt++
 
 	goto st142
 tr212:
-//line sip.rl:74
+//line sip.rl:73
 
 	buf[amt] = data[p]
 	amt++
@@ -5252,18 +5252,18 @@ tr212:
 		}
 		goto st0
 tr204:
-//line sip.rl:70
+//line sip.rl:69
 
 	amt = 0
 
-//line sip.rl:74
+//line sip.rl:73
 
 	buf[amt] = data[p]
 	amt++
 
 	goto st143
 tr213:
-//line sip.rl:74
+//line sip.rl:73
 
 	buf[amt] = data[p]
 	amt++
@@ -5278,18 +5278,18 @@ tr213:
 		}
 		goto st0
 tr205:
-//line sip.rl:70
+//line sip.rl:69
 
 	amt = 0
 
-//line sip.rl:74
+//line sip.rl:73
 
 	buf[amt] = data[p]
 	amt++
 
 	goto st144
 tr214:
-//line sip.rl:74
+//line sip.rl:73
 
 	buf[amt] = data[p]
 	amt++
@@ -5304,18 +5304,18 @@ tr214:
 		}
 		goto st0
 tr206:
-//line sip.rl:70
+//line sip.rl:69
 
 	amt = 0
 
-//line sip.rl:74
+//line sip.rl:73
 
 	buf[amt] = data[p]
 	amt++
 
 	goto st145
 tr215:
-//line sip.rl:74
+//line sip.rl:73
 
 	buf[amt] = data[p]
 	amt++
@@ -5330,18 +5330,18 @@ tr215:
 		}
 		goto st0
 tr207:
-//line sip.rl:70
+//line sip.rl:69
 
 	amt = 0
 
-//line sip.rl:74
+//line sip.rl:73
 
 	buf[amt] = data[p]
 	amt++
 
 	goto st146
 tr216:
-//line sip.rl:74
+//line sip.rl:73
 
 	buf[amt] = data[p]
 	amt++
@@ -5356,7 +5356,7 @@ tr216:
 		}
 		goto st0
 tr217:
-//line sip.rl:74
+//line sip.rl:73
 
 	buf[amt] = data[p]
 	amt++
@@ -5435,7 +5435,7 @@ tr217:
 		}
 		goto st0
 tr176:
-//line sip.rl:183
+//line sip.rl:182
 
 	name = string(data[mark:p])
 
@@ -5528,7 +5528,7 @@ tr176:
 		}
 		goto st0
 tr281:
-//line sip.rl:219
+//line sip.rl:218
 
 	addr.Display = string(buf[0:amt])
 
@@ -5556,7 +5556,7 @@ tr281:
 		}
 		goto st0
 tr257:
-//line sip.rl:223
+//line sip.rl:222
 {
 	end := p
 	for end > mark && whitespacec(data[end - 1]) {
@@ -5566,7 +5566,7 @@ tr257:
 }
 	goto st156
 tr282:
-//line sip.rl:219
+//line sip.rl:218
 
 	addr.Display = string(buf[0:amt])
 
@@ -5585,7 +5585,7 @@ tr282:
 		}
 		goto st0
 tr227:
-//line sip.rl:62
+//line sip.rl:61
 
 	mark = p
 
@@ -5675,7 +5675,7 @@ tr227:
 		}
 		goto st0
 tr231:
-//line sip.rl:231
+//line sip.rl:230
 
 	addr.Uri, err = ParseURIBytes(data[mark:p])
 	if err != nil { return nil, err }
@@ -5737,41 +5737,41 @@ tr231:
 		}
 		goto st0
 tr237:
-//line sip.rl:243
+//line sip.rl:242
 
 	*addrp = addr
 	addrp = &addr.Next
 	addr = nil
 
-//line sip.rl:54
+//line sip.rl:53
 
 	p--
 
 
-//line sip.rl:199
+//line sip.rl:198
 
 	{goto st222 }
 
 	goto st743
 tr241:
-//line sip.rl:54
+//line sip.rl:53
 
 	p--
 
 
-//line sip.rl:211
+//line sip.rl:210
 
 	{goto st119 }
 
 	goto st743
 tr245:
-//line sip.rl:243
+//line sip.rl:242
 
 	*addrp = addr
 	addrp = &addr.Next
 	addr = nil
 
-//line sip.rl:160
+//line sip.rl:159
 
 	{goto st246 }
 
@@ -5945,7 +5945,7 @@ tr245:
 		}
 		goto st0
 tr262:
-//line sip.rl:223
+//line sip.rl:222
 {
 	end := p
 	for end > mark && whitespacec(data[end - 1]) {
@@ -5955,7 +5955,7 @@ tr262:
 }
 	goto st176
 tr283:
-//line sip.rl:219
+//line sip.rl:218
 
 	addr.Display = string(buf[0:amt])
 
@@ -5991,7 +5991,7 @@ tr283:
 		}
 		goto st0
 tr223:
-//line sip.rl:62
+//line sip.rl:61
 
 	mark = p
 
@@ -6047,7 +6047,7 @@ tr223:
 		}
 		goto st0
 tr256:
-//line sip.rl:223
+//line sip.rl:222
 {
 	end := p
 	for end > mark && whitespacec(data[end - 1]) {
@@ -6109,7 +6109,7 @@ tr256:
 		}
 		goto st0
 tr258:
-//line sip.rl:223
+//line sip.rl:222
 {
 	end := p
 	for end > mark && whitespacec(data[end - 1]) {
@@ -6137,7 +6137,7 @@ tr258:
 		}
 		goto st0
 tr261:
-//line sip.rl:223
+//line sip.rl:222
 {
 	end := p
 	for end > mark && whitespacec(data[end - 1]) {
@@ -6199,7 +6199,7 @@ tr261:
 		}
 		goto st0
 tr224:
-//line sip.rl:70
+//line sip.rl:69
 
 	amt = 0
 
@@ -6253,18 +6253,18 @@ tr224:
 		}
 		goto st0
 tr263:
-//line sip.rl:70
+//line sip.rl:69
 
 	amt = 0
 
-//line sip.rl:74
+//line sip.rl:73
 
 	buf[amt] = data[p]
 	amt++
 
 	goto st185
 tr272:
-//line sip.rl:74
+//line sip.rl:73
 
 	buf[amt] = data[p]
 	amt++
@@ -6319,7 +6319,7 @@ tr272:
 		}
 		goto st0
 tr264:
-//line sip.rl:70
+//line sip.rl:69
 
 	amt = 0
 
@@ -6347,7 +6347,7 @@ tr264:
 		}
 		goto st0
 tr265:
-//line sip.rl:70
+//line sip.rl:69
 
 	amt = 0
 
@@ -6370,18 +6370,18 @@ tr265:
 		}
 		goto st0
 tr266:
-//line sip.rl:70
+//line sip.rl:69
 
 	amt = 0
 
-//line sip.rl:74
+//line sip.rl:73
 
 	buf[amt] = data[p]
 	amt++
 
 	goto st188
 tr275:
-//line sip.rl:74
+//line sip.rl:73
 
 	buf[amt] = data[p]
 	amt++
@@ -6396,18 +6396,18 @@ tr275:
 		}
 		goto st0
 tr267:
-//line sip.rl:70
+//line sip.rl:69
 
 	amt = 0
 
-//line sip.rl:74
+//line sip.rl:73
 
 	buf[amt] = data[p]
 	amt++
 
 	goto st189
 tr276:
-//line sip.rl:74
+//line sip.rl:73
 
 	buf[amt] = data[p]
 	amt++
@@ -6422,18 +6422,18 @@ tr276:
 		}
 		goto st0
 tr268:
-//line sip.rl:70
+//line sip.rl:69
 
 	amt = 0
 
-//line sip.rl:74
+//line sip.rl:73
 
 	buf[amt] = data[p]
 	amt++
 
 	goto st190
 tr277:
-//line sip.rl:74
+//line sip.rl:73
 
 	buf[amt] = data[p]
 	amt++
@@ -6448,18 +6448,18 @@ tr277:
 		}
 		goto st0
 tr269:
-//line sip.rl:70
+//line sip.rl:69
 
 	amt = 0
 
-//line sip.rl:74
+//line sip.rl:73
 
 	buf[amt] = data[p]
 	amt++
 
 	goto st191
 tr278:
-//line sip.rl:74
+//line sip.rl:73
 
 	buf[amt] = data[p]
 	amt++
@@ -6474,18 +6474,18 @@ tr278:
 		}
 		goto st0
 tr270:
-//line sip.rl:70
+//line sip.rl:69
 
 	amt = 0
 
-//line sip.rl:74
+//line sip.rl:73
 
 	buf[amt] = data[p]
 	amt++
 
 	goto st192
 tr279:
-//line sip.rl:74
+//line sip.rl:73
 
 	buf[amt] = data[p]
 	amt++
@@ -6500,18 +6500,18 @@ tr279:
 		}
 		goto st0
 tr271:
-//line sip.rl:70
+//line sip.rl:69
 
 	amt = 0
 
-//line sip.rl:74
+//line sip.rl:73
 
 	buf[amt] = data[p]
 	amt++
 
 	goto st193
 tr280:
-//line sip.rl:74
+//line sip.rl:73
 
 	buf[amt] = data[p]
 	amt++
@@ -6526,7 +6526,7 @@ tr280:
 		}
 		goto st0
 tr284:
-//line sip.rl:74
+//line sip.rl:73
 
 	buf[amt] = data[p]
 	amt++
@@ -6658,7 +6658,7 @@ tr284:
 		}
 		goto st0
 tr288:
-//line sip.rl:231
+//line sip.rl:230
 
 	addr.Uri, err = ParseURIBytes(data[mark:p])
 	if err != nil { return nil, err }
@@ -6718,29 +6718,29 @@ tr288:
 		}
 		goto st0
 tr297:
-//line sip.rl:243
+//line sip.rl:242
 
 	*addrp = addr
 	addrp = &addr.Next
 	addr = nil
 
-//line sip.rl:54
+//line sip.rl:53
 
 	p--
 
 
-//line sip.rl:199
+//line sip.rl:198
 
 	{goto st222 }
 
 	goto st744
 tr301:
-//line sip.rl:54
+//line sip.rl:53
 
 	p--
 
 
-//line sip.rl:211
+//line sip.rl:210
 
 	{goto st119 }
 
@@ -6834,7 +6834,7 @@ tr301:
 		}
 		goto tr301
 tr292:
-//line sip.rl:231
+//line sip.rl:230
 
 	addr.Uri, err = ParseURIBytes(data[mark:p])
 	if err != nil { return nil, err }
@@ -6873,7 +6873,7 @@ tr292:
 		}
 		goto st0
 tr289:
-//line sip.rl:231
+//line sip.rl:230
 
 	addr.Uri, err = ParseURIBytes(data[mark:p])
 	if err != nil { return nil, err }
@@ -6937,7 +6937,7 @@ tr289:
 		}
 		goto st0
 tr307:
-//line sip.rl:231
+//line sip.rl:230
 
 	addr.Uri, err = ParseURIBytes(data[mark:p])
 	if err != nil { return nil, err }
@@ -6978,18 +6978,18 @@ tr307:
 		}
 		goto st0
 tr313:
-//line sip.rl:243
+//line sip.rl:242
 
 	*addrp = addr
 	addrp = &addr.Next
 	addr = nil
 
-//line sip.rl:54
+//line sip.rl:53
 
 	p--
 
 
-//line sip.rl:199
+//line sip.rl:198
 
 	{goto st222 }
 
@@ -7025,7 +7025,7 @@ tr313:
 		}
 		goto st0
 tr311:
-//line sip.rl:231
+//line sip.rl:230
 
 	addr.Uri, err = ParseURIBytes(data[mark:p])
 	if err != nil { return nil, err }
@@ -7064,29 +7064,29 @@ tr311:
 		}
 		goto tr297
 tr308:
-//line sip.rl:243
+//line sip.rl:242
 
 	*addrp = addr
 	addrp = &addr.Next
 	addr = nil
 
-//line sip.rl:54
+//line sip.rl:53
 
 	p--
 
 
-//line sip.rl:199
+//line sip.rl:198
 
 	{goto st222 }
 
 	goto st746
 tr318:
-//line sip.rl:54
+//line sip.rl:53
 
 	p--
 
 
-//line sip.rl:211
+//line sip.rl:210
 
 	{goto st119 }
 
@@ -7140,7 +7140,7 @@ tr318:
 		}
 		goto st0
 tr290:
-//line sip.rl:231
+//line sip.rl:230
 
 	addr.Uri, err = ParseURIBytes(data[mark:p])
 	if err != nil { return nil, err }
@@ -7204,7 +7204,7 @@ tr290:
 		}
 		goto st0
 tr317:
-//line sip.rl:231
+//line sip.rl:230
 
 	addr.Uri, err = ParseURIBytes(data[mark:p])
 	if err != nil { return nil, err }
@@ -7245,12 +7245,12 @@ tr317:
 		}
 		goto st0
 tr323:
-//line sip.rl:54
+//line sip.rl:53
 
 	p--
 
 
-//line sip.rl:211
+//line sip.rl:210
 
 	{goto st119 }
 
@@ -7286,7 +7286,7 @@ tr323:
 		}
 		goto st0
 tr321:
-//line sip.rl:231
+//line sip.rl:230
 
 	addr.Uri, err = ParseURIBytes(data[mark:p])
 	if err != nil { return nil, err }
@@ -7325,17 +7325,17 @@ tr321:
 		}
 		goto tr301
 tr319:
-//line sip.rl:231
+//line sip.rl:230
 
 	addr.Uri, err = ParseURIBytes(data[mark:p])
 	if err != nil { return nil, err }
 
-//line sip.rl:54
+//line sip.rl:53
 
 	p--
 
 
-//line sip.rl:211
+//line sip.rl:210
 
 	{goto st119 }
 
@@ -7398,23 +7398,23 @@ tr319:
 		}
 		goto st0
 tr309:
-//line sip.rl:231
+//line sip.rl:230
 
 	addr.Uri, err = ParseURIBytes(data[mark:p])
 	if err != nil { return nil, err }
 
-//line sip.rl:243
+//line sip.rl:242
 
 	*addrp = addr
 	addrp = &addr.Next
 	addr = nil
 
-//line sip.rl:54
+//line sip.rl:53
 
 	p--
 
 
-//line sip.rl:199
+//line sip.rl:198
 
 	{goto st222 }
 
@@ -7477,39 +7477,39 @@ tr309:
 		}
 		goto st0
 tr310:
-//line sip.rl:231
+//line sip.rl:230
 
 	addr.Uri, err = ParseURIBytes(data[mark:p])
 	if err != nil { return nil, err }
 
-//line sip.rl:243
+//line sip.rl:242
 
 	*addrp = addr
 	addrp = &addr.Next
 	addr = nil
 
-//line sip.rl:54
+//line sip.rl:53
 
 	p--
 
 
-//line sip.rl:199
+//line sip.rl:198
 
 	{goto st222 }
 
 	goto st750
 tr320:
-//line sip.rl:231
+//line sip.rl:230
 
 	addr.Uri, err = ParseURIBytes(data[mark:p])
 	if err != nil { return nil, err }
 
-//line sip.rl:54
+//line sip.rl:53
 
 	p--
 
 
-//line sip.rl:211
+//line sip.rl:210
 
 	{goto st119 }
 
@@ -7523,7 +7523,7 @@ tr320:
 		}
 		goto st0
 tr327:
-//line sip.rl:160
+//line sip.rl:159
 
 	{goto st246 }
 
@@ -7534,7 +7534,7 @@ tr327:
 //line msg_parse.go:7535
 		goto st0
 tr291:
-//line sip.rl:231
+//line sip.rl:230
 
 	addr.Uri, err = ParseURIBytes(data[mark:p])
 	if err != nil { return nil, err }
@@ -7593,7 +7593,7 @@ tr291:
 		}
 		goto st0
 tr328:
-//line sip.rl:62
+//line sip.rl:61
 
 	mark = p
 
@@ -7700,46 +7700,46 @@ tr328:
 		}
 		goto st0
 tr329:
-//line sip.rl:215
+//line sip.rl:214
 
 	addr = new(Addr)
 
-//line sip.rl:54
+//line sip.rl:53
 
 	p--
 
 
-//line sip.rl:207
+//line sip.rl:206
 
 	{goto st154 }
 
 	goto st752
 tr334:
-//line sip.rl:215
+//line sip.rl:214
 
 	addr = new(Addr)
 
-//line sip.rl:66
+//line sip.rl:65
 
 	p = ( mark) - 1
 
 
-//line sip.rl:207
+//line sip.rl:206
 
 	{goto st154 }
 
 	goto st752
 tr338:
-//line sip.rl:215
+//line sip.rl:214
 
 	addr = new(Addr)
 
-//line sip.rl:66
+//line sip.rl:65
 
 	p = ( mark) - 1
 
 
-//line sip.rl:203
+//line sip.rl:202
 
 	{goto st195 }
 
@@ -7809,7 +7809,7 @@ tr338:
 		}
 		goto st0
 tr330:
-//line sip.rl:62
+//line sip.rl:61
 
 	mark = p
 
@@ -7916,7 +7916,7 @@ tr330:
 		}
 		goto st0
 tr339:
-//line sip.rl:62
+//line sip.rl:61
 
 	mark = p
 
@@ -7968,7 +7968,7 @@ tr339:
 		}
 		goto st0
 tr340:
-//line sip.rl:62
+//line sip.rl:61
 
 	mark = p
 
@@ -7982,7 +7982,7 @@ tr340:
 		}
 		goto st0
 tr341:
-//line sip.rl:62
+//line sip.rl:61
 
 	mark = p
 
@@ -7996,7 +7996,7 @@ tr341:
 		}
 		goto st0
 tr342:
-//line sip.rl:62
+//line sip.rl:61
 
 	mark = p
 
@@ -8010,7 +8010,7 @@ tr342:
 		}
 		goto st0
 tr343:
-//line sip.rl:62
+//line sip.rl:61
 
 	mark = p
 
@@ -8024,7 +8024,7 @@ tr343:
 		}
 		goto st0
 tr344:
-//line sip.rl:62
+//line sip.rl:61
 
 	mark = p
 
@@ -8038,7 +8038,7 @@ tr344:
 		}
 		goto st0
 tr345:
-//line sip.rl:62
+//line sip.rl:61
 
 	mark = p
 
@@ -8052,7 +8052,7 @@ tr345:
 		}
 		goto st0
 tr355:
-//line sip.rl:187
+//line sip.rl:186
 {
 	b := data[mark:p - 1]
 	if value != nil {
@@ -8064,7 +8064,7 @@ tr355:
 		msg.Headers[name] = string(b)
 	}
 }
-//line sip.rl:160
+//line sip.rl:159
 
 	{goto st246 }
 
@@ -8075,7 +8075,7 @@ tr355:
 //line msg_parse.go:8076
 		goto st0
 tr346:
-//line sip.rl:62
+//line sip.rl:61
 
 	mark = p
 
@@ -8177,7 +8177,7 @@ tr346:
 		}
 		goto st0
 tr358:
-//line sip.rl:183
+//line sip.rl:182
 
 	name = string(data[mark:p])
 
@@ -8196,7 +8196,7 @@ tr358:
 		}
 		goto st0
 tr359:
-//line sip.rl:183
+//line sip.rl:182
 
 	name = string(data[mark:p])
 
@@ -8232,14 +8232,14 @@ tr359:
 		}
 		goto st0
 tr362:
-//line sip.rl:535
+//line sip.rl:539
 value=nil
-//line sip.rl:54
+//line sip.rl:53
 
 	p--
 
 
-//line sip.rl:164
+//line sip.rl:163
 
 	{goto st229 }
 
@@ -8322,11 +8322,11 @@ value=nil
 		}
 		goto st0
 tr366:
-//line sip.rl:62
+//line sip.rl:61
 
 	mark = p
 
-//line sip.rl:54
+//line sip.rl:53
 
 	p--
 
@@ -8436,153 +8436,153 @@ tr366:
 		}
 		goto tr368
 tr387:
-//line sip.rl:453
+//line sip.rl:457
 value=&msg.AcceptContact
 	goto st249
 tr402:
-//line sip.rl:452
+//line sip.rl:456
 value=&msg.Accept
 	goto st249
 tr421:
-//line sip.rl:454
+//line sip.rl:458
 value=&msg.AcceptEncoding
 	goto st249
 tr430:
-//line sip.rl:455
+//line sip.rl:459
 value=&msg.AcceptLanguage
 	goto st249
 tr441:
-//line sip.rl:458
+//line sip.rl:462
 value=&msg.AlertInfo
 	goto st249
 tr445:
-//line sip.rl:456
+//line sip.rl:460
 value=&msg.Allow
 	goto st249
 tr454:
-//line sip.rl:457
+//line sip.rl:461
 value=&msg.AllowEvents
 	goto st249
 tr474:
-//line sip.rl:459
+//line sip.rl:463
 value=&msg.AuthenticationInfo
 	goto st249
 tr484:
-//line sip.rl:460
+//line sip.rl:464
 value=&msg.Authorization
 	goto st249
 tr486:
-//line sip.rl:477
+//line sip.rl:481
 value=&msg.ReferredBy
 	goto st249
 tr532:
-//line sip.rl:464
+//line sip.rl:468
 value=&msg.CallInfo
 	goto st249
 tr565:
-//line sip.rl:461
+//line sip.rl:465
 value=&msg.ContentDisposition
 	goto st249
 tr574:
-//line sip.rl:463
+//line sip.rl:467
 value=&msg.ContentEncoding
 	goto st249
 tr584:
-//line sip.rl:462
+//line sip.rl:466
 value=&msg.ContentLanguage
 	goto st249
 tr619:
-//line sip.rl:465
+//line sip.rl:469
 value=&msg.Date
 	goto st249
 tr632:
-//line sip.rl:466
+//line sip.rl:470
 value=&msg.ErrorInfo
 	goto st249
 tr637:
-//line sip.rl:467
+//line sip.rl:471
 value=&msg.Event
 	goto st249
 tr666:
-//line sip.rl:468
+//line sip.rl:472
 value=&msg.InReplyTo
 	goto st249
 tr668:
-//line sip.rl:482
+//line sip.rl:486
 value=&msg.Supported
 	goto st249
 tr707:
-//line sip.rl:470
+//line sip.rl:474
 value=&msg.MIMEVersion
 	goto st249
 tr735:
-//line sip.rl:471
+//line sip.rl:475
 value=&msg.Organization
 	goto st249
 tr765:
-//line sip.rl:472
+//line sip.rl:476
 value=&msg.Priority
 	goto st249
 tr784:
-//line sip.rl:473
+//line sip.rl:477
 value=&msg.ProxyAuthenticate
 	goto st249
 tr794:
-//line sip.rl:474
+//line sip.rl:478
 value=&msg.ProxyAuthorization
 	goto st249
 tr802:
-//line sip.rl:475
+//line sip.rl:479
 value=&msg.ProxyRequire
 	goto st249
 tr804:
-//line sip.rl:476
+//line sip.rl:480
 value=&msg.ReferTo
 	goto st249
 tr854:
-//line sip.rl:469
+//line sip.rl:473
 value=&msg.ReplyTo
 	goto st249
 tr860:
-//line sip.rl:478
+//line sip.rl:482
 value=&msg.Require
 	goto st249
 tr870:
-//line sip.rl:479
+//line sip.rl:483
 value=&msg.RetryAfter
 	goto st249
 tr877:
-//line sip.rl:481
+//line sip.rl:485
 value=&msg.Subject
 	goto st249
 tr885:
-//line sip.rl:480
+//line sip.rl:484
 value=&msg.Server
 	goto st249
 tr909:
-//line sip.rl:483
+//line sip.rl:487
 value=&msg.Timestamp
 	goto st249
 tr911:
-//line sip.rl:456
+//line sip.rl:460
 value=&msg.Allow
-//line sip.rl:457
+//line sip.rl:461
 value=&msg.AllowEvents
 	goto st249
 tr924:
-//line sip.rl:484
+//line sip.rl:488
 value=&msg.Unsupported
 	goto st249
 tr934:
-//line sip.rl:485
+//line sip.rl:489
 value=&msg.UserAgent
 	goto st249
 tr951:
-//line sip.rl:486
+//line sip.rl:490
 value=&msg.Warning
 	goto st249
 tr967:
-//line sip.rl:487
+//line sip.rl:491
 value=&msg.WWWAuthenticate
 	goto st249
 	st249:
@@ -8599,153 +8599,153 @@ value=&msg.WWWAuthenticate
 		}
 		goto st0
 tr388:
-//line sip.rl:453
+//line sip.rl:457
 value=&msg.AcceptContact
 	goto st250
 tr404:
-//line sip.rl:452
+//line sip.rl:456
 value=&msg.Accept
 	goto st250
 tr422:
-//line sip.rl:454
+//line sip.rl:458
 value=&msg.AcceptEncoding
 	goto st250
 tr431:
-//line sip.rl:455
+//line sip.rl:459
 value=&msg.AcceptLanguage
 	goto st250
 tr442:
-//line sip.rl:458
+//line sip.rl:462
 value=&msg.AlertInfo
 	goto st250
 tr447:
-//line sip.rl:456
+//line sip.rl:460
 value=&msg.Allow
 	goto st250
 tr455:
-//line sip.rl:457
+//line sip.rl:461
 value=&msg.AllowEvents
 	goto st250
 tr475:
-//line sip.rl:459
+//line sip.rl:463
 value=&msg.AuthenticationInfo
 	goto st250
 tr485:
-//line sip.rl:460
+//line sip.rl:464
 value=&msg.Authorization
 	goto st250
 tr487:
-//line sip.rl:477
+//line sip.rl:481
 value=&msg.ReferredBy
 	goto st250
 tr533:
-//line sip.rl:464
+//line sip.rl:468
 value=&msg.CallInfo
 	goto st250
 tr566:
-//line sip.rl:461
+//line sip.rl:465
 value=&msg.ContentDisposition
 	goto st250
 tr575:
-//line sip.rl:463
+//line sip.rl:467
 value=&msg.ContentEncoding
 	goto st250
 tr585:
-//line sip.rl:462
+//line sip.rl:466
 value=&msg.ContentLanguage
 	goto st250
 tr620:
-//line sip.rl:465
+//line sip.rl:469
 value=&msg.Date
 	goto st250
 tr633:
-//line sip.rl:466
+//line sip.rl:470
 value=&msg.ErrorInfo
 	goto st250
 tr638:
-//line sip.rl:467
+//line sip.rl:471
 value=&msg.Event
 	goto st250
 tr667:
-//line sip.rl:468
+//line sip.rl:472
 value=&msg.InReplyTo
 	goto st250
 tr669:
-//line sip.rl:482
+//line sip.rl:486
 value=&msg.Supported
 	goto st250
 tr708:
-//line sip.rl:470
+//line sip.rl:474
 value=&msg.MIMEVersion
 	goto st250
 tr736:
-//line sip.rl:471
+//line sip.rl:475
 value=&msg.Organization
 	goto st250
 tr766:
-//line sip.rl:472
+//line sip.rl:476
 value=&msg.Priority
 	goto st250
 tr785:
-//line sip.rl:473
+//line sip.rl:477
 value=&msg.ProxyAuthenticate
 	goto st250
 tr795:
-//line sip.rl:474
+//line sip.rl:478
 value=&msg.ProxyAuthorization
 	goto st250
 tr803:
-//line sip.rl:475
+//line sip.rl:479
 value=&msg.ProxyRequire
 	goto st250
 tr805:
-//line sip.rl:476
+//line sip.rl:480
 value=&msg.ReferTo
 	goto st250
 tr855:
-//line sip.rl:469
+//line sip.rl:473
 value=&msg.ReplyTo
 	goto st250
 tr861:
-//line sip.rl:478
+//line sip.rl:482
 value=&msg.Require
 	goto st250
 tr871:
-//line sip.rl:479
+//line sip.rl:483
 value=&msg.RetryAfter
 	goto st250
 tr878:
-//line sip.rl:481
+//line sip.rl:485
 value=&msg.Subject
 	goto st250
 tr886:
-//line sip.rl:480
+//line sip.rl:484
 value=&msg.Server
 	goto st250
 tr910:
-//line sip.rl:483
+//line sip.rl:487
 value=&msg.Timestamp
 	goto st250
 tr912:
-//line sip.rl:456
+//line sip.rl:460
 value=&msg.Allow
-//line sip.rl:457
+//line sip.rl:461
 value=&msg.AllowEvents
 	goto st250
 tr925:
-//line sip.rl:484
+//line sip.rl:488
 value=&msg.Unsupported
 	goto st250
 tr935:
-//line sip.rl:485
+//line sip.rl:489
 value=&msg.UserAgent
 	goto st250
 tr952:
-//line sip.rl:486
+//line sip.rl:490
 value=&msg.Warning
 	goto st250
 tr968:
-//line sip.rl:487
+//line sip.rl:491
 value=&msg.WWWAuthenticate
 	goto st250
 	st250:
@@ -8779,49 +8779,49 @@ value=&msg.WWWAuthenticate
 		}
 		goto st0
 tr509:
-//line sip.rl:160
+//line sip.rl:159
 
 	{goto st246 }
 
 	goto st755
 tr394:
-//line sip.rl:54
+//line sip.rl:53
 
 	p--
 
 
-//line sip.rl:164
+//line sip.rl:163
 
 	{goto st229 }
 
 	goto st755
 tr544:
-//line sip.rl:537
+//line sip.rl:541
 value=nil
-//line sip.rl:54
+//line sip.rl:53
 
 	p--
 
 
-//line sip.rl:199
+//line sip.rl:198
 
 	{goto st222 }
 
 	goto st755
 tr939:
-//line sip.rl:54
+//line sip.rl:53
 
 	p--
 
 
-//line sip.rl:168
+//line sip.rl:167
 
 	via = new(Via)
 	{goto st69 }
 
 	goto st755
 tr969:
-//line sip.rl:58
+//line sip.rl:57
 
 	{p++; cs = 755; goto _out }
 
@@ -9736,7 +9736,7 @@ tr969:
 		}
 		goto st0
 tr493:
-//line sip.rl:62
+//line sip.rl:61
 
 	mark = p
 
@@ -9788,7 +9788,7 @@ tr493:
 		}
 		goto st0
 tr494:
-//line sip.rl:62
+//line sip.rl:61
 
 	mark = p
 
@@ -9802,7 +9802,7 @@ tr494:
 		}
 		goto st0
 tr495:
-//line sip.rl:62
+//line sip.rl:61
 
 	mark = p
 
@@ -9816,7 +9816,7 @@ tr495:
 		}
 		goto st0
 tr496:
-//line sip.rl:62
+//line sip.rl:61
 
 	mark = p
 
@@ -9830,7 +9830,7 @@ tr496:
 		}
 		goto st0
 tr497:
-//line sip.rl:62
+//line sip.rl:61
 
 	mark = p
 
@@ -9844,7 +9844,7 @@ tr497:
 		}
 		goto st0
 tr498:
-//line sip.rl:62
+//line sip.rl:61
 
 	mark = p
 
@@ -9858,29 +9858,29 @@ tr498:
 		}
 		goto st0
 tr499:
-//line sip.rl:62
+//line sip.rl:61
 
 	mark = p
 
-//line sip.rl:257
+//line sip.rl:256
 
 	ctype = string(data[mark:p])
 
 	goto st339
 tr507:
-//line sip.rl:257
+//line sip.rl:256
 
 	ctype = string(data[mark:p])
 
 	goto st339
 tr526:
-//line sip.rl:249
+//line sip.rl:248
 
 	msg.CallID = string(data[mark:p])
 
 	goto st339
 tr611:
-//line sip.rl:265
+//line sip.rl:264
 
 	msg.CSeqMethod = string(data[mark:p])
 
@@ -9894,7 +9894,7 @@ tr611:
 		}
 		goto st0
 tr513:
-//line sip.rl:62
+//line sip.rl:61
 
 	mark = p
 
@@ -10110,7 +10110,7 @@ tr513:
 		}
 		goto st0
 tr522:
-//line sip.rl:62
+//line sip.rl:61
 
 	mark = p
 
@@ -10412,31 +10412,31 @@ tr522:
 		}
 		goto tr368
 tr540:
-//line sip.rl:439
+//line sip.rl:443
 addrp=lastAddr(&msg.Contact)
 	goto st368
 tr651:
-//line sip.rl:440
+//line sip.rl:444
 addrp=lastAddr(&msg.From)
 	goto st368
 tr756:
-//line sip.rl:441
+//line sip.rl:445
 addrp=lastAddr(&msg.PAssertedIdentity)
 	goto st368
 tr823:
-//line sip.rl:442
+//line sip.rl:446
 addrp=lastAddr(&msg.RecordRoute)
 	goto st368
 tr847:
-//line sip.rl:443
+//line sip.rl:447
 addrp=lastAddr(&msg.RemotePartyID)
 	goto st368
 tr875:
-//line sip.rl:444
+//line sip.rl:448
 addrp=lastAddr(&msg.Route)
 	goto st368
 tr898:
-//line sip.rl:445
+//line sip.rl:449
 addrp=lastAddr(&msg.To)
 	goto st368
 	st368:
@@ -10453,31 +10453,31 @@ addrp=lastAddr(&msg.To)
 		}
 		goto st0
 tr541:
-//line sip.rl:439
+//line sip.rl:443
 addrp=lastAddr(&msg.Contact)
 	goto st369
 tr652:
-//line sip.rl:440
+//line sip.rl:444
 addrp=lastAddr(&msg.From)
 	goto st369
 tr757:
-//line sip.rl:441
+//line sip.rl:445
 addrp=lastAddr(&msg.PAssertedIdentity)
 	goto st369
 tr824:
-//line sip.rl:442
+//line sip.rl:446
 addrp=lastAddr(&msg.RecordRoute)
 	goto st369
 tr848:
-//line sip.rl:443
+//line sip.rl:447
 addrp=lastAddr(&msg.RemotePartyID)
 	goto st369
 tr876:
-//line sip.rl:444
+//line sip.rl:448
 addrp=lastAddr(&msg.Route)
 	goto st369
 tr899:
-//line sip.rl:445
+//line sip.rl:449
 addrp=lastAddr(&msg.To)
 	goto st369
 	st369:
@@ -10953,15 +10953,15 @@ addrp=lastAddr(&msg.To)
 		}
 		goto st0
 tr592:
-//line sip.rl:495
+//line sip.rl:499
 clen=0
-//line sip.rl:253
+//line sip.rl:252
 
 	clen = clen * 10 + (int(data[p]) - 0x30)
 
 	goto st411
 tr594:
-//line sip.rl:253
+//line sip.rl:252
 
 	clen = clen * 10 + (int(data[p]) - 0x30)
 
@@ -11123,7 +11123,7 @@ tr594:
 		}
 		goto st0
 tr605:
-//line sip.rl:261
+//line sip.rl:260
 
 	msg.CSeq = msg.CSeq * 10 + (int(data[p]) - 0x30)
 
@@ -11201,7 +11201,7 @@ tr605:
 		}
 		goto st0
 tr609:
-//line sip.rl:62
+//line sip.rl:61
 
 	mark = p
 
@@ -11633,15 +11633,15 @@ tr609:
 		}
 		goto st0
 tr646:
-//line sip.rl:498
+//line sip.rl:502
 msg.Expires=0
-//line sip.rl:269
+//line sip.rl:268
 
 	msg.Expires = msg.Expires * 10 + (int(data[p]) - 0x30)
 
 	goto st459
 tr648:
-//line sip.rl:269
+//line sip.rl:268
 
 	msg.Expires = msg.Expires * 10 + (int(data[p]) - 0x30)
 
@@ -11913,45 +11913,45 @@ tr648:
 		}
 		goto st0
 tr672:
-//line sip.rl:495
+//line sip.rl:499
 clen=0
-//line sip.rl:253
+//line sip.rl:252
 
 	clen = clen * 10 + (int(data[p]) - 0x30)
 
-//line sip.rl:498
+//line sip.rl:502
 msg.Expires=0
-//line sip.rl:269
+//line sip.rl:268
 
 	msg.Expires = msg.Expires * 10 + (int(data[p]) - 0x30)
 
-//line sip.rl:499
+//line sip.rl:503
 msg.MaxForwards=0
-//line sip.rl:273
+//line sip.rl:272
 
 	msg.MaxForwards = msg.MaxForwards * 10 + (int(data[p]) - 0x30)
 
-//line sip.rl:500
+//line sip.rl:504
 msg.MinExpires=0
-//line sip.rl:277
+//line sip.rl:276
 
 	msg.MinExpires = msg.MinExpires * 10 + (int(data[p]) - 0x30)
 
 	goto st482
 tr674:
-//line sip.rl:253
+//line sip.rl:252
 
 	clen = clen * 10 + (int(data[p]) - 0x30)
 
-//line sip.rl:269
+//line sip.rl:268
 
 	msg.Expires = msg.Expires * 10 + (int(data[p]) - 0x30)
 
-//line sip.rl:273
+//line sip.rl:272
 
 	msg.MaxForwards = msg.MaxForwards * 10 + (int(data[p]) - 0x30)
 
-//line sip.rl:277
+//line sip.rl:276
 
 	msg.MinExpires = msg.MinExpires * 10 + (int(data[p]) - 0x30)
 
@@ -12168,15 +12168,15 @@ tr674:
 		}
 		goto st0
 tr691:
-//line sip.rl:499
+//line sip.rl:503
 msg.MaxForwards=0
-//line sip.rl:273
+//line sip.rl:272
 
 	msg.MaxForwards = msg.MaxForwards * 10 + (int(data[p]) - 0x30)
 
 	goto st500
 tr693:
-//line sip.rl:273
+//line sip.rl:272
 
 	msg.MaxForwards = msg.MaxForwards * 10 + (int(data[p]) - 0x30)
 
@@ -12466,15 +12466,15 @@ tr693:
 		}
 		goto st0
 tr719:
-//line sip.rl:500
+//line sip.rl:504
 msg.MinExpires=0
-//line sip.rl:277
+//line sip.rl:276
 
 	msg.MinExpires = msg.MinExpires * 10 + (int(data[p]) - 0x30)
 
 	goto st526
 tr721:
-//line sip.rl:277
+//line sip.rl:276
 
 	msg.MinExpires = msg.MinExpires * 10 + (int(data[p]) - 0x30)
 
@@ -14747,14 +14747,14 @@ tr721:
 	if p == eof {
 		switch cs {
 		case 247, 248, 254, 255, 256, 257, 258, 259, 260, 261, 262, 263, 264, 265, 266, 267, 268, 269, 270, 271, 272, 273, 274, 275, 276, 277, 278, 279, 280, 281, 282, 283, 284, 285, 286, 287, 288, 289, 290, 291, 292, 293, 294, 295, 296, 297, 298, 299, 300, 301, 302, 303, 304, 305, 306, 307, 308, 309, 310, 311, 312, 313, 314, 315, 316, 317, 318, 319, 320, 321, 322, 323, 324, 325, 326, 327, 328, 329, 330, 345, 346, 347, 348, 349, 350, 359, 360, 361, 362, 363, 364, 365, 366, 367, 373, 374, 375, 376, 377, 378, 379, 380, 381, 382, 383, 384, 385, 386, 387, 388, 389, 390, 391, 392, 393, 394, 395, 396, 397, 398, 399, 400, 401, 402, 403, 404, 405, 406, 407, 408, 415, 416, 417, 418, 419, 420, 421, 433, 434, 435, 436, 437, 438, 439, 440, 441, 442, 443, 444, 445, 446, 447, 448, 449, 450, 451, 452, 453, 454, 455, 456, 463, 464, 465, 466, 467, 468, 469, 470, 471, 472, 473, 474, 475, 476, 477, 478, 479, 486, 487, 488, 489, 490, 491, 492, 493, 494, 495, 496, 497, 504, 505, 506, 507, 508, 509, 510, 511, 512, 513, 514, 515, 516, 517, 518, 519, 520, 521, 522, 523, 530, 531, 532, 533, 534, 535, 536, 537, 538, 539, 540, 541, 542, 543, 544, 545, 546, 547, 548, 549, 550, 551, 552, 553, 554, 555, 556, 557, 558, 559, 560, 561, 562, 563, 564, 565, 566, 567, 568, 569, 570, 571, 572, 573, 574, 575, 576, 577, 578, 579, 580, 581, 582, 583, 584, 585, 586, 587, 588, 589, 590, 591, 592, 593, 594, 595, 596, 597, 598, 599, 600, 601, 602, 603, 604, 605, 606, 607, 608, 609, 610, 611, 612, 613, 614, 615, 616, 617, 618, 619, 620, 621, 622, 623, 624, 625, 626, 627, 628, 629, 630, 631, 632, 633, 634, 635, 636, 637, 638, 639, 640, 641, 642, 643, 644, 645, 646, 647, 648, 649, 650, 651, 652, 653, 654, 655, 656, 657, 658, 659, 660, 661, 662, 663, 664, 665, 666, 667, 668, 669, 670, 671, 672, 673, 674, 675, 676, 677, 678, 679, 680, 681, 682, 683, 684, 685, 686, 687, 688, 689, 690, 691, 692, 693, 694, 695, 696, 697, 698, 699, 700, 701, 702, 703, 704, 705, 706, 707, 708, 714, 715, 716, 717, 718, 719, 720, 721, 722, 723, 724, 725, 726, 727, 728, 729, 730, 731, 732, 733, 734, 735, 736, 737:
-//line sip.rl:178
+//line sip.rl:177
 
 	p--
 
 	{goto st239 }
 
 		case 751:
-//line sip.rl:243
+//line sip.rl:242
 
 	*addrp = addr
 	addrp = &addr.Next

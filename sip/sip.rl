@@ -47,7 +47,6 @@
 #     header, using commas within a single header, or both.
 #
 # See: http://www.colm.net/files/ragel/ragel-guide-6.9.pdf
-# See: http://zedshaw.com/archive/ragel-state-charts/
 
 machine sip;
 
@@ -338,9 +337,9 @@ HCOLON          = WSP* ":" SWS;
 LDQUOT          = SWS "\"";
 RDQUOT          = "\"" SWS;
 escaped         = "%" ( xdigit @hexHi ) ( xdigit @hexLo ) ;
-ipv4            = digit | "." ;
-ipv6            = xdigit | "." | ":" ;
-hostname        = alpha | digit | "-" | "." ;
+ipv4c           = digit | "." ;
+ipv6c           = xdigit | "." | ":" ;
+hostc           = alnum | "-" | "." ;
 token           = tokenc+;
 tokenhost       = ( tokenc | "[" | "]" | ":" )+;
 reasonc         = UTF8_NONASCII | ( reserved | unreserved | SP | HTAB ) @append;
@@ -390,9 +389,9 @@ ViaProtocol     = token >mark %ViaProtocol;
 ViaVersion      = token >mark %ViaVersion;
 ViaTransport    = token >mark %ViaTransport;
 ViaSent         = ViaProtocol SLASH ViaVersion SLASH ViaTransport;
-ViaHostIPv4     = ( digit | "." )+ >mark %ViaHost;
-ViaHostIPv6     = "[" ( xdigit | "." | ":" )+ >mark %ViaHost "]";
-ViaHostName     = ( alnum | "." | "-" )+ >mark %ViaHost;
+ViaHostIPv4     = ipv4c+ >mark %ViaHost;
+ViaHostIPv6     = "[" ipv6c+ >mark %ViaHost "]";
+ViaHostName     = hostc+ >mark %ViaHost;
 ViaHost         = ViaHostIPv4 | ViaHostIPv6 | ViaHostName;
 ViaPort         = digit+ @ViaPort;
 via_param_end   = CRLF @ViaParam @Via @goto_header
