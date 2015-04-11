@@ -8232,7 +8232,7 @@ tr359:
 		}
 		goto st0
 tr362:
-//line sip.rl:539
+//line sip.rl:545
 value=nil
 //line sip.rl:53
 
@@ -8436,153 +8436,153 @@ tr366:
 		}
 		goto tr368
 tr387:
-//line sip.rl:457
+//line sip.rl:463
 value=&msg.AcceptContact
 	goto st249
 tr402:
-//line sip.rl:456
+//line sip.rl:462
 value=&msg.Accept
 	goto st249
 tr421:
-//line sip.rl:458
+//line sip.rl:464
 value=&msg.AcceptEncoding
 	goto st249
 tr430:
-//line sip.rl:459
+//line sip.rl:465
 value=&msg.AcceptLanguage
 	goto st249
 tr441:
-//line sip.rl:462
+//line sip.rl:468
 value=&msg.AlertInfo
 	goto st249
 tr445:
-//line sip.rl:460
+//line sip.rl:466
 value=&msg.Allow
 	goto st249
 tr454:
-//line sip.rl:461
+//line sip.rl:467
 value=&msg.AllowEvents
 	goto st249
 tr474:
-//line sip.rl:463
+//line sip.rl:469
 value=&msg.AuthenticationInfo
 	goto st249
 tr484:
-//line sip.rl:464
+//line sip.rl:470
 value=&msg.Authorization
 	goto st249
 tr486:
-//line sip.rl:481
+//line sip.rl:487
 value=&msg.ReferredBy
 	goto st249
 tr532:
-//line sip.rl:468
+//line sip.rl:474
 value=&msg.CallInfo
 	goto st249
 tr565:
-//line sip.rl:465
+//line sip.rl:471
 value=&msg.ContentDisposition
 	goto st249
 tr574:
-//line sip.rl:467
+//line sip.rl:473
 value=&msg.ContentEncoding
 	goto st249
 tr584:
-//line sip.rl:466
+//line sip.rl:472
 value=&msg.ContentLanguage
 	goto st249
 tr619:
-//line sip.rl:469
+//line sip.rl:475
 value=&msg.Date
 	goto st249
 tr632:
-//line sip.rl:470
+//line sip.rl:476
 value=&msg.ErrorInfo
 	goto st249
 tr637:
-//line sip.rl:471
+//line sip.rl:477
 value=&msg.Event
 	goto st249
 tr666:
-//line sip.rl:472
+//line sip.rl:478
 value=&msg.InReplyTo
 	goto st249
 tr668:
-//line sip.rl:486
+//line sip.rl:492
 value=&msg.Supported
 	goto st249
 tr707:
-//line sip.rl:474
+//line sip.rl:480
 value=&msg.MIMEVersion
 	goto st249
 tr735:
-//line sip.rl:475
+//line sip.rl:481
 value=&msg.Organization
 	goto st249
 tr765:
-//line sip.rl:476
+//line sip.rl:482
 value=&msg.Priority
 	goto st249
 tr784:
-//line sip.rl:477
+//line sip.rl:483
 value=&msg.ProxyAuthenticate
 	goto st249
 tr794:
-//line sip.rl:478
+//line sip.rl:484
 value=&msg.ProxyAuthorization
 	goto st249
 tr802:
-//line sip.rl:479
+//line sip.rl:485
 value=&msg.ProxyRequire
 	goto st249
 tr804:
-//line sip.rl:480
+//line sip.rl:486
 value=&msg.ReferTo
 	goto st249
 tr854:
-//line sip.rl:473
+//line sip.rl:479
 value=&msg.ReplyTo
 	goto st249
 tr860:
-//line sip.rl:482
+//line sip.rl:488
 value=&msg.Require
 	goto st249
 tr870:
-//line sip.rl:483
+//line sip.rl:489
 value=&msg.RetryAfter
 	goto st249
 tr877:
-//line sip.rl:485
+//line sip.rl:491
 value=&msg.Subject
 	goto st249
 tr885:
-//line sip.rl:484
+//line sip.rl:490
 value=&msg.Server
 	goto st249
 tr909:
-//line sip.rl:487
+//line sip.rl:493
 value=&msg.Timestamp
 	goto st249
 tr911:
-//line sip.rl:460
+//line sip.rl:466
 value=&msg.Allow
-//line sip.rl:461
+//line sip.rl:467
 value=&msg.AllowEvents
 	goto st249
 tr924:
-//line sip.rl:488
+//line sip.rl:494
 value=&msg.Unsupported
 	goto st249
 tr934:
-//line sip.rl:489
+//line sip.rl:495
 value=&msg.UserAgent
 	goto st249
 tr951:
-//line sip.rl:490
+//line sip.rl:496
 value=&msg.Warning
 	goto st249
 tr967:
-//line sip.rl:491
+//line sip.rl:497
 value=&msg.WWWAuthenticate
 	goto st249
 	st249:
@@ -8599,153 +8599,153 @@ value=&msg.WWWAuthenticate
 		}
 		goto st0
 tr388:
-//line sip.rl:457
+//line sip.rl:463
 value=&msg.AcceptContact
 	goto st250
 tr404:
-//line sip.rl:456
+//line sip.rl:462
 value=&msg.Accept
 	goto st250
 tr422:
-//line sip.rl:458
+//line sip.rl:464
 value=&msg.AcceptEncoding
 	goto st250
 tr431:
-//line sip.rl:459
+//line sip.rl:465
 value=&msg.AcceptLanguage
 	goto st250
 tr442:
-//line sip.rl:462
+//line sip.rl:468
 value=&msg.AlertInfo
 	goto st250
 tr447:
-//line sip.rl:460
+//line sip.rl:466
 value=&msg.Allow
 	goto st250
 tr455:
-//line sip.rl:461
+//line sip.rl:467
 value=&msg.AllowEvents
 	goto st250
 tr475:
-//line sip.rl:463
+//line sip.rl:469
 value=&msg.AuthenticationInfo
 	goto st250
 tr485:
-//line sip.rl:464
+//line sip.rl:470
 value=&msg.Authorization
 	goto st250
 tr487:
-//line sip.rl:481
+//line sip.rl:487
 value=&msg.ReferredBy
 	goto st250
 tr533:
-//line sip.rl:468
+//line sip.rl:474
 value=&msg.CallInfo
 	goto st250
 tr566:
-//line sip.rl:465
+//line sip.rl:471
 value=&msg.ContentDisposition
 	goto st250
 tr575:
-//line sip.rl:467
+//line sip.rl:473
 value=&msg.ContentEncoding
 	goto st250
 tr585:
-//line sip.rl:466
+//line sip.rl:472
 value=&msg.ContentLanguage
 	goto st250
 tr620:
-//line sip.rl:469
+//line sip.rl:475
 value=&msg.Date
 	goto st250
 tr633:
-//line sip.rl:470
+//line sip.rl:476
 value=&msg.ErrorInfo
 	goto st250
 tr638:
-//line sip.rl:471
+//line sip.rl:477
 value=&msg.Event
 	goto st250
 tr667:
-//line sip.rl:472
+//line sip.rl:478
 value=&msg.InReplyTo
 	goto st250
 tr669:
-//line sip.rl:486
+//line sip.rl:492
 value=&msg.Supported
 	goto st250
 tr708:
-//line sip.rl:474
+//line sip.rl:480
 value=&msg.MIMEVersion
 	goto st250
 tr736:
-//line sip.rl:475
+//line sip.rl:481
 value=&msg.Organization
 	goto st250
 tr766:
-//line sip.rl:476
+//line sip.rl:482
 value=&msg.Priority
 	goto st250
 tr785:
-//line sip.rl:477
+//line sip.rl:483
 value=&msg.ProxyAuthenticate
 	goto st250
 tr795:
-//line sip.rl:478
+//line sip.rl:484
 value=&msg.ProxyAuthorization
 	goto st250
 tr803:
-//line sip.rl:479
+//line sip.rl:485
 value=&msg.ProxyRequire
 	goto st250
 tr805:
-//line sip.rl:480
+//line sip.rl:486
 value=&msg.ReferTo
 	goto st250
 tr855:
-//line sip.rl:473
+//line sip.rl:479
 value=&msg.ReplyTo
 	goto st250
 tr861:
-//line sip.rl:482
+//line sip.rl:488
 value=&msg.Require
 	goto st250
 tr871:
-//line sip.rl:483
+//line sip.rl:489
 value=&msg.RetryAfter
 	goto st250
 tr878:
-//line sip.rl:485
+//line sip.rl:491
 value=&msg.Subject
 	goto st250
 tr886:
-//line sip.rl:484
+//line sip.rl:490
 value=&msg.Server
 	goto st250
 tr910:
-//line sip.rl:487
+//line sip.rl:493
 value=&msg.Timestamp
 	goto st250
 tr912:
-//line sip.rl:460
+//line sip.rl:466
 value=&msg.Allow
-//line sip.rl:461
+//line sip.rl:467
 value=&msg.AllowEvents
 	goto st250
 tr925:
-//line sip.rl:488
+//line sip.rl:494
 value=&msg.Unsupported
 	goto st250
 tr935:
-//line sip.rl:489
+//line sip.rl:495
 value=&msg.UserAgent
 	goto st250
 tr952:
-//line sip.rl:490
+//line sip.rl:496
 value=&msg.Warning
 	goto st250
 tr968:
-//line sip.rl:491
+//line sip.rl:497
 value=&msg.WWWAuthenticate
 	goto st250
 	st250:
@@ -8796,7 +8796,7 @@ tr394:
 
 	goto st755
 tr544:
-//line sip.rl:541
+//line sip.rl:547
 value=nil
 //line sip.rl:53
 
@@ -10412,31 +10412,31 @@ tr522:
 		}
 		goto tr368
 tr540:
-//line sip.rl:443
+//line sip.rl:449
 addrp=lastAddr(&msg.Contact)
 	goto st368
 tr651:
-//line sip.rl:444
+//line sip.rl:450
 addrp=lastAddr(&msg.From)
 	goto st368
 tr756:
-//line sip.rl:445
+//line sip.rl:451
 addrp=lastAddr(&msg.PAssertedIdentity)
 	goto st368
 tr823:
-//line sip.rl:446
+//line sip.rl:452
 addrp=lastAddr(&msg.RecordRoute)
 	goto st368
 tr847:
-//line sip.rl:447
+//line sip.rl:453
 addrp=lastAddr(&msg.RemotePartyID)
 	goto st368
 tr875:
-//line sip.rl:448
+//line sip.rl:454
 addrp=lastAddr(&msg.Route)
 	goto st368
 tr898:
-//line sip.rl:449
+//line sip.rl:455
 addrp=lastAddr(&msg.To)
 	goto st368
 	st368:
@@ -10453,31 +10453,31 @@ addrp=lastAddr(&msg.To)
 		}
 		goto st0
 tr541:
-//line sip.rl:443
+//line sip.rl:449
 addrp=lastAddr(&msg.Contact)
 	goto st369
 tr652:
-//line sip.rl:444
+//line sip.rl:450
 addrp=lastAddr(&msg.From)
 	goto st369
 tr757:
-//line sip.rl:445
+//line sip.rl:451
 addrp=lastAddr(&msg.PAssertedIdentity)
 	goto st369
 tr824:
-//line sip.rl:446
+//line sip.rl:452
 addrp=lastAddr(&msg.RecordRoute)
 	goto st369
 tr848:
-//line sip.rl:447
+//line sip.rl:453
 addrp=lastAddr(&msg.RemotePartyID)
 	goto st369
 tr876:
-//line sip.rl:448
+//line sip.rl:454
 addrp=lastAddr(&msg.Route)
 	goto st369
 tr899:
-//line sip.rl:449
+//line sip.rl:455
 addrp=lastAddr(&msg.To)
 	goto st369
 	st369:
@@ -10953,7 +10953,7 @@ addrp=lastAddr(&msg.To)
 		}
 		goto st0
 tr592:
-//line sip.rl:499
+//line sip.rl:505
 clen=0
 //line sip.rl:252
 
@@ -11633,7 +11633,7 @@ tr609:
 		}
 		goto st0
 tr646:
-//line sip.rl:502
+//line sip.rl:508
 msg.Expires=0
 //line sip.rl:268
 
@@ -11913,25 +11913,25 @@ tr648:
 		}
 		goto st0
 tr672:
-//line sip.rl:499
+//line sip.rl:505
 clen=0
 //line sip.rl:252
 
 	clen = clen * 10 + (int(data[p]) - 0x30)
 
-//line sip.rl:502
+//line sip.rl:508
 msg.Expires=0
 //line sip.rl:268
 
 	msg.Expires = msg.Expires * 10 + (int(data[p]) - 0x30)
 
-//line sip.rl:503
+//line sip.rl:509
 msg.MaxForwards=0
 //line sip.rl:272
 
 	msg.MaxForwards = msg.MaxForwards * 10 + (int(data[p]) - 0x30)
 
-//line sip.rl:504
+//line sip.rl:510
 msg.MinExpires=0
 //line sip.rl:276
 
@@ -12168,7 +12168,7 @@ tr674:
 		}
 		goto st0
 tr691:
-//line sip.rl:503
+//line sip.rl:509
 msg.MaxForwards=0
 //line sip.rl:272
 
@@ -12466,7 +12466,7 @@ tr693:
 		}
 		goto st0
 tr719:
-//line sip.rl:504
+//line sip.rl:510
 msg.MinExpires=0
 //line sip.rl:276
 
