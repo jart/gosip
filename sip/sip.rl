@@ -116,6 +116,10 @@ action ReasonPhrase {
 	msg.Phrase = string(buf[0:amt])
 }
 
+action ViaNew {
+	via = new(Via)
+}
+
 action Via {
 	*viap = via
 	viap = &via.Next
@@ -149,24 +153,6 @@ action ViaParam {
 	via.Params[name] = string(buf[0:amt])
 }
 
-action goto_header {
-	fgoto header;
-}
-
-action goto_value {
-	fgoto value;
-}
-
-action goto_via {
-	via = new(Via)
-	fgoto via;
-}
-
-action goto_via_param {
-	amt = 0  // Needed so ViaParam action works when there's no value.
-	fgoto via_param;
-}
-
 action gxh {
 	fhold;
 	fgoto xheader;
@@ -187,26 +173,6 @@ action value {{
 		msg.Headers[name] = string(b)
 	}
 }}
-
-action goto_ctype {
-	fgoto ctype;
-}
-
-action goto_addr {
-	fgoto addr;
-}
-
-action goto_addr_uri {
-	fgoto addr_uri;
-}
-
-action goto_addr_angled {
-	fgoto addr_angled;
-}
-
-action goto_addr_param {
-	fgoto addr_param;
-}
 
 action AddrNew {
 	addr = new(Addr)
@@ -273,6 +239,16 @@ action MaxForwards {
 action MinExpires {
 	msg.MinExpires = msg.MinExpires * 10 + (int(fc) - 0x30)
 }
+
+action goto_addr { fgoto addr; }
+action goto_addr_angled { fgoto addr_angled; }
+action goto_addr_param { fgoto addr_param; }
+action goto_addr_uri { fgoto addr_uri; }
+action goto_ctype { fgoto ctype; }
+action goto_header { fgoto header; }
+action goto_value { fgoto value; }
+action goto_via { fgoto via; }
+action goto_via_param { fgoto via_param; }
 
 action lookAheadWSP { lookAheadWSP(data, p, pe) }
 
@@ -398,12 +374,12 @@ ViaHostName     = hostc+ >mark %ViaHost;
 ViaHost         = ViaHostIPv4 | ViaHostIPv6 | ViaHostName;
 ViaPort         = digit+ @ViaPort;
 via_param_end   = CRLF @ViaParam @Via @goto_header
-                | SEMI <: any @hold @ViaParam @goto_via_param
-                | COMMA <: any @hold @ViaParam @Via @goto_via;
+                | SEMI <: any @ViaParam @hold @start @goto_via_param
+                | COMMA <: any @ViaParam @Via @ViaNew @hold @goto_via;
 via_param      := param via_param_end;
 via_end         = CRLF @Via @goto_header
-                | SEMI <: any @hold @goto_via_param
-                | COMMA <: any @hold @Via @goto_via;
+                | SEMI <: any @hold @start @goto_via_param
+                | COMMA <: any @Via @ViaNew @hold @goto_via;
 via            := ViaSent LWS ViaHost (COLON ViaPort)? via_end;
 
 # Address Parsing
@@ -548,7 +524,7 @@ xheader := token %name HCOLON <: any @{value=nil} @hold @goto_value;
 sheader  = cheader <: CRLF @goto_header
          | aname $!gxh HCOLON <: any @{value=nil} @hold @goto_addr
          | sname $!gxh HCOLON <: any @hold @goto_value
-         | ("Via"i | "v"i) $!gxh HCOLON <: any @hold @goto_via
+         | ("Via"i | "v"i) $!gxh HCOLON <: any @ViaNew @hold @goto_via
          | ("Content-Type"i | "c"i) $!gxh HCOLON <: any @hold @goto_ctype;
 header  := CRLF @break
          | tokenc @mark @hold sheader;

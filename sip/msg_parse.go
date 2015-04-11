@@ -1685,7 +1685,7 @@ func ParseMsgBytes(data []byte) (msg *Msg, err error) {
 		}
 		goto st0
 tr416:
-//line sip.rl:170
+//line sip.rl:156
 
 	p--
 
@@ -1876,15 +1876,13 @@ tr42:
 		}
 		goto st0
 tr16:
-//line sip.rl:152
-
-	{goto st280 }
-
+//line sip.rl:248
+ {goto st280 } 
 	goto st765
 	st765:
 		p++
 	st_case_765:
-//line msg_parse.go:1888
+//line msg_parse.go:1886
 		goto st0
 tr2:
 //line sip.rl:62
@@ -1895,7 +1893,7 @@ tr2:
 	st14:
 		p++
 	st_case_14:
-//line msg_parse.go:1899
+//line msg_parse.go:1897
 		switch data[p] {
 		case 32:
 			goto tr3
@@ -2024,7 +2022,7 @@ tr20:
 	st18:
 		p++
 	st_case_18:
-//line msg_parse.go:2028
+//line msg_parse.go:2026
 		if data[p] == 46 {
 			goto st19
 		}
@@ -2048,7 +2046,7 @@ tr22:
 	st20:
 		p++
 	st_case_20:
-//line msg_parse.go:2052
+//line msg_parse.go:2050
 		if data[p] == 32 {
 			goto st21
 		}
@@ -2072,7 +2070,7 @@ tr24:
 	st22:
 		p++
 	st_case_22:
-//line msg_parse.go:2076
+//line msg_parse.go:2074
 		if 48 <= data[p] && data[p] <= 57 {
 			goto tr25
 		}
@@ -2086,7 +2084,7 @@ tr25:
 	st23:
 		p++
 	st_case_23:
-//line msg_parse.go:2090
+//line msg_parse.go:2088
 		if 48 <= data[p] && data[p] <= 57 {
 			goto tr26
 		}
@@ -2100,7 +2098,7 @@ tr26:
 	st24:
 		p++
 	st_case_24:
-//line msg_parse.go:2104
+//line msg_parse.go:2102
 		if data[p] == 32 {
 			goto st25
 		}
@@ -2190,7 +2188,7 @@ tr44:
 	st26:
 		p++
 	st_case_26:
-//line msg_parse.go:2194
+//line msg_parse.go:2192
 		_widec = int16(data[p])
 		if 13 <= data[p] && data[p] <= 13 {
 			_widec = 256 + (int16(data[p]) - 0)
@@ -2262,7 +2260,7 @@ tr29:
 	st27:
 		p++
 	st_case_27:
-//line msg_parse.go:2266
+//line msg_parse.go:2264
 		switch {
 		case data[p] < 65:
 			if 48 <= data[p] && data[p] <= 57 {
@@ -2285,7 +2283,7 @@ tr43:
 	st28:
 		p++
 	st_case_28:
-//line msg_parse.go:2289
+//line msg_parse.go:2287
 		switch {
 		case data[p] < 65:
 			if 48 <= data[p] && data[p] <= 57 {
@@ -2320,7 +2318,7 @@ tr37:
 	st29:
 		p++
 	st_case_29:
-//line msg_parse.go:2324
+//line msg_parse.go:2322
 		if 128 <= data[p] && data[p] <= 191 {
 			goto tr35
 		}
@@ -2346,7 +2344,7 @@ tr38:
 	st30:
 		p++
 	st_case_30:
-//line msg_parse.go:2350
+//line msg_parse.go:2348
 		if 128 <= data[p] && data[p] <= 191 {
 			goto tr37
 		}
@@ -2372,7 +2370,7 @@ tr39:
 	st31:
 		p++
 	st_case_31:
-//line msg_parse.go:2376
+//line msg_parse.go:2374
 		if 128 <= data[p] && data[p] <= 191 {
 			goto tr38
 		}
@@ -2398,7 +2396,7 @@ tr40:
 	st32:
 		p++
 	st_case_32:
-//line msg_parse.go:2402
+//line msg_parse.go:2400
 		if 128 <= data[p] && data[p] <= 191 {
 			goto tr39
 		}
@@ -2424,7 +2422,7 @@ tr41:
 	st33:
 		p++
 	st_case_33:
-//line msg_parse.go:2428
+//line msg_parse.go:2426
 		if 128 <= data[p] && data[p] <= 191 {
 			goto tr40
 		}
@@ -2474,7 +2472,7 @@ tr45:
 	st35:
 		p++
 	st_case_35:
-//line msg_parse.go:2478
+//line msg_parse.go:2476
 		switch data[p] {
 		case 33:
 			goto st35
@@ -2595,7 +2593,7 @@ tr45:
 		}
 		goto st0
 tr49:
-//line sip.rl:253
+//line sip.rl:219
 
 	ctype = string(data[mark:p])
 
@@ -2603,7 +2601,7 @@ tr49:
 	st38:
 		p++
 	st_case_38:
-//line msg_parse.go:2607
+//line msg_parse.go:2605
 		_widec = int16(data[p])
 		if 13 <= data[p] && data[p] <= 13 {
 			_widec = 256 + (int16(data[p]) - 0)
@@ -2623,7 +2621,7 @@ tr49:
 		}
 		goto st0
 tr50:
-//line sip.rl:253
+//line sip.rl:219
 
 	ctype = string(data[mark:p])
 
@@ -2631,7 +2629,7 @@ tr50:
 	st39:
 		p++
 	st_case_39:
-//line msg_parse.go:2635
+//line msg_parse.go:2633
 		_widec = int16(data[p])
 		if 13 <= data[p] && data[p] <= 13 {
 			_widec = 256 + (int16(data[p]) - 0)
@@ -2855,7 +2853,7 @@ tr50:
 		}
 		goto st0
 tr51:
-//line sip.rl:253
+//line sip.rl:219
 
 	ctype = string(data[mark:p])
 
@@ -2863,24 +2861,22 @@ tr51:
 	st44:
 		p++
 	st_case_44:
-//line msg_parse.go:2867
+//line msg_parse.go:2865
 		if data[p] == 10 {
 			goto tr65
 		}
 		goto st0
 tr65:
-//line sip.rl:152
-
-	{goto st280 }
-
+//line sip.rl:248
+ {goto st280 } 
 	goto st766
 	st766:
 		p++
 	st_case_766:
-//line msg_parse.go:2881
+//line msg_parse.go:2877
 		goto st0
 tr52:
-//line sip.rl:253
+//line sip.rl:219
 
 	ctype = string(data[mark:p])
 
@@ -2888,7 +2884,7 @@ tr52:
 	st45:
 		p++
 	st_case_45:
-//line msg_parse.go:2892
+//line msg_parse.go:2888
 		if data[p] == 10 {
 			goto st46
 		}
@@ -2983,7 +2979,7 @@ tr77:
 	st49:
 		p++
 	st_case_49:
-//line msg_parse.go:2987
+//line msg_parse.go:2983
 		_widec = int16(data[p])
 		if 13 <= data[p] && data[p] <= 13 {
 			_widec = 256 + (int16(data[p]) - 0)
@@ -3037,7 +3033,7 @@ tr69:
 	st50:
 		p++
 	st_case_50:
-//line msg_parse.go:3041
+//line msg_parse.go:3037
 		_widec = int16(data[p])
 		if 13 <= data[p] && data[p] <= 13 {
 			_widec = 256 + (int16(data[p]) - 0)
@@ -3067,7 +3063,7 @@ tr70:
 	st51:
 		p++
 	st_case_51:
-//line msg_parse.go:3071
+//line msg_parse.go:3067
 		switch {
 		case data[p] < 11:
 			if data[p] <= 9 {
@@ -3102,7 +3098,7 @@ tr80:
 	st52:
 		p++
 	st_case_52:
-//line msg_parse.go:3106
+//line msg_parse.go:3102
 		if 128 <= data[p] && data[p] <= 191 {
 			goto tr77
 		}
@@ -3128,7 +3124,7 @@ tr81:
 	st53:
 		p++
 	st_case_53:
-//line msg_parse.go:3132
+//line msg_parse.go:3128
 		if 128 <= data[p] && data[p] <= 191 {
 			goto tr80
 		}
@@ -3154,7 +3150,7 @@ tr82:
 	st54:
 		p++
 	st_case_54:
-//line msg_parse.go:3158
+//line msg_parse.go:3154
 		if 128 <= data[p] && data[p] <= 191 {
 			goto tr81
 		}
@@ -3180,7 +3176,7 @@ tr83:
 	st55:
 		p++
 	st_case_55:
-//line msg_parse.go:3184
+//line msg_parse.go:3180
 		if 128 <= data[p] && data[p] <= 191 {
 			goto tr82
 		}
@@ -3206,7 +3202,7 @@ tr84:
 	st56:
 		p++
 	st_case_56:
-//line msg_parse.go:3210
+//line msg_parse.go:3206
 		if 128 <= data[p] && data[p] <= 191 {
 			goto tr83
 		}
@@ -3232,7 +3228,7 @@ tr85:
 	st57:
 		p++
 	st_case_57:
-//line msg_parse.go:3236
+//line msg_parse.go:3232
 		if data[p] == 10 {
 			goto tr86
 		}
@@ -3247,7 +3243,7 @@ tr86:
 	st58:
 		p++
 	st_case_58:
-//line msg_parse.go:3251
+//line msg_parse.go:3247
 		switch data[p] {
 		case 9:
 			goto tr77
@@ -3449,7 +3445,7 @@ tr93:
 	st69:
 		p++
 	st_case_69:
-//line msg_parse.go:3453
+//line msg_parse.go:3449
 		_widec = int16(data[p])
 		if 13 <= data[p] && data[p] <= 13 {
 			_widec = 256 + (int16(data[p]) - 0)
@@ -3500,7 +3496,7 @@ tr93:
 		}
 		goto st0
 tr94:
-//line sip.rl:175
+//line sip.rl:161
 
 	name = string(data[mark:p])
 
@@ -3508,7 +3504,7 @@ tr94:
 	st70:
 		p++
 	st_case_70:
-//line msg_parse.go:3512
+//line msg_parse.go:3508
 		_widec = int16(data[p])
 		if 13 <= data[p] && data[p] <= 13 {
 			_widec = 256 + (int16(data[p]) - 0)
@@ -3532,7 +3528,7 @@ tr94:
 		}
 		goto st0
 tr96:
-//line sip.rl:175
+//line sip.rl:161
 
 	name = string(data[mark:p])
 
@@ -3540,7 +3536,7 @@ tr96:
 	st71:
 		p++
 	st_case_71:
-//line msg_parse.go:3544
+//line msg_parse.go:3540
 		_widec = int16(data[p])
 		if 13 <= data[p] && data[p] <= 13 {
 			_widec = 256 + (int16(data[p]) - 0)
@@ -3568,72 +3564,72 @@ tr96:
 		}
 		goto st0
 tr106:
-//line sip.rl:54
-
-	p--
-
-
-//line sip.rl:145
+//line sip.rl:149
 
 	if via.Params == nil {
 		via.Params = Params{}
 	}
 	via.Params[name] = string(buf[0:amt])
 
-//line sip.rl:119
+//line sip.rl:123
 
 	*viap = via
 	viap = &via.Next
 	via = nil
 
-//line sip.rl:160
+//line sip.rl:119
 
 	via = new(Via)
-	{goto st103 }
 
-	goto st767
-tr110:
 //line sip.rl:54
 
 	p--
 
 
-//line sip.rl:145
+//line sip.rl:250
+ {goto st103 } 
+	goto st767
+tr110:
+//line sip.rl:149
 
 	if via.Params == nil {
 		via.Params = Params{}
 	}
 	via.Params[name] = string(buf[0:amt])
 
-//line sip.rl:165
+//line sip.rl:54
 
-	amt = 0  // Needed so ViaParam action works when there's no value.
-	{goto st68 }
+	p--
 
+
+//line sip.rl:70
+
+	amt = 0
+
+//line sip.rl:251
+ {goto st68 } 
 	goto st767
 tr122:
-//line sip.rl:145
+//line sip.rl:149
 
 	if via.Params == nil {
 		via.Params = Params{}
 	}
 	via.Params[name] = string(buf[0:amt])
 
-//line sip.rl:119
+//line sip.rl:123
 
 	*viap = via
 	viap = &via.Next
 	via = nil
 
-//line sip.rl:152
-
-	{goto st280 }
-
+//line sip.rl:248
+ {goto st280 } 
 	goto st767
 	st767:
 		p++
 	st_case_767:
-//line msg_parse.go:3637
+//line msg_parse.go:3633
 		goto st0
 	st72:
 		p++
@@ -3663,7 +3659,7 @@ tr122:
 		}
 		goto tr106
 tr97:
-//line sip.rl:175
+//line sip.rl:161
 
 	name = string(data[mark:p])
 
@@ -3671,7 +3667,7 @@ tr97:
 	st75:
 		p++
 	st_case_75:
-//line msg_parse.go:3675
+//line msg_parse.go:3671
 		_widec = int16(data[p])
 		if 13 <= data[p] && data[p] <= 13 {
 			_widec = 256 + (int16(data[p]) - 0)
@@ -3726,7 +3722,7 @@ tr97:
 		}
 		goto tr110
 tr98:
-//line sip.rl:175
+//line sip.rl:161
 
 	name = string(data[mark:p])
 
@@ -3734,7 +3730,7 @@ tr98:
 	st79:
 		p++
 	st_case_79:
-//line msg_parse.go:3738
+//line msg_parse.go:3734
 		_widec = int16(data[p])
 		if 13 <= data[p] && data[p] <= 13 {
 			_widec = 256 + (int16(data[p]) - 0)
@@ -3795,7 +3791,7 @@ tr114:
 	st80:
 		p++
 	st_case_80:
-//line msg_parse.go:3799
+//line msg_parse.go:3795
 		_widec = int16(data[p])
 		if 13 <= data[p] && data[p] <= 13 {
 			_widec = 256 + (int16(data[p]) - 0)
@@ -3900,7 +3896,7 @@ tr114:
 		}
 		goto st0
 tr99:
-//line sip.rl:175
+//line sip.rl:161
 
 	name = string(data[mark:p])
 
@@ -3908,7 +3904,7 @@ tr99:
 	st85:
 		p++
 	st_case_85:
-//line msg_parse.go:3912
+//line msg_parse.go:3908
 		if data[p] == 10 {
 			goto tr122
 		}
@@ -3981,7 +3977,7 @@ tr132:
 	st87:
 		p++
 	st_case_87:
-//line msg_parse.go:3985
+//line msg_parse.go:3981
 		_widec = int16(data[p])
 		if 13 <= data[p] && data[p] <= 13 {
 			_widec = 256 + (int16(data[p]) - 0)
@@ -4035,7 +4031,7 @@ tr124:
 	st88:
 		p++
 	st_case_88:
-//line msg_parse.go:4039
+//line msg_parse.go:4035
 		_widec = int16(data[p])
 		if 13 <= data[p] && data[p] <= 13 {
 			_widec = 256 + (int16(data[p]) - 0)
@@ -4067,7 +4063,7 @@ tr125:
 	st89:
 		p++
 	st_case_89:
-//line msg_parse.go:4071
+//line msg_parse.go:4067
 		switch {
 		case data[p] < 11:
 			if data[p] <= 9 {
@@ -4102,7 +4098,7 @@ tr135:
 	st90:
 		p++
 	st_case_90:
-//line msg_parse.go:4106
+//line msg_parse.go:4102
 		if 128 <= data[p] && data[p] <= 191 {
 			goto tr132
 		}
@@ -4128,7 +4124,7 @@ tr136:
 	st91:
 		p++
 	st_case_91:
-//line msg_parse.go:4132
+//line msg_parse.go:4128
 		if 128 <= data[p] && data[p] <= 191 {
 			goto tr135
 		}
@@ -4154,7 +4150,7 @@ tr137:
 	st92:
 		p++
 	st_case_92:
-//line msg_parse.go:4158
+//line msg_parse.go:4154
 		if 128 <= data[p] && data[p] <= 191 {
 			goto tr136
 		}
@@ -4180,7 +4176,7 @@ tr138:
 	st93:
 		p++
 	st_case_93:
-//line msg_parse.go:4184
+//line msg_parse.go:4180
 		if 128 <= data[p] && data[p] <= 191 {
 			goto tr137
 		}
@@ -4206,7 +4202,7 @@ tr139:
 	st94:
 		p++
 	st_case_94:
-//line msg_parse.go:4210
+//line msg_parse.go:4206
 		if 128 <= data[p] && data[p] <= 191 {
 			goto tr138
 		}
@@ -4232,7 +4228,7 @@ tr140:
 	st95:
 		p++
 	st_case_95:
-//line msg_parse.go:4236
+//line msg_parse.go:4232
 		if data[p] == 10 {
 			goto tr141
 		}
@@ -4247,7 +4243,7 @@ tr141:
 	st96:
 		p++
 	st_case_96:
-//line msg_parse.go:4251
+//line msg_parse.go:4247
 		switch data[p] {
 		case 9:
 			goto tr132
@@ -4317,7 +4313,7 @@ tr141:
 		}
 		goto st0
 tr100:
-//line sip.rl:175
+//line sip.rl:161
 
 	name = string(data[mark:p])
 
@@ -4325,7 +4321,7 @@ tr100:
 	st100:
 		p++
 	st_case_100:
-//line msg_parse.go:4329
+//line msg_parse.go:4325
 		if data[p] == 10 {
 			goto st101
 		}
@@ -4401,7 +4397,7 @@ tr146:
 	st104:
 		p++
 	st_case_104:
-//line msg_parse.go:4405
+//line msg_parse.go:4401
 		_widec = int16(data[p])
 		if 13 <= data[p] && data[p] <= 13 {
 			_widec = 256 + (int16(data[p]) - 0)
@@ -4446,7 +4442,7 @@ tr146:
 		}
 		goto st0
 tr147:
-//line sip.rl:125
+//line sip.rl:129
 
 	via.Protocol = string(data[mark:p])
 
@@ -4454,7 +4450,7 @@ tr147:
 	st105:
 		p++
 	st_case_105:
-//line msg_parse.go:4458
+//line msg_parse.go:4454
 		_widec = int16(data[p])
 		if 13 <= data[p] && data[p] <= 13 {
 			_widec = 256 + (int16(data[p]) - 0)
@@ -4474,7 +4470,7 @@ tr147:
 		}
 		goto st0
 tr149:
-//line sip.rl:125
+//line sip.rl:129
 
 	via.Protocol = string(data[mark:p])
 
@@ -4482,7 +4478,7 @@ tr149:
 	st106:
 		p++
 	st_case_106:
-//line msg_parse.go:4486
+//line msg_parse.go:4482
 		_widec = int16(data[p])
 		if 13 <= data[p] && data[p] <= 13 {
 			_widec = 256 + (int16(data[p]) - 0)
@@ -4538,7 +4534,7 @@ tr154:
 	st107:
 		p++
 	st_case_107:
-//line msg_parse.go:4542
+//line msg_parse.go:4538
 		_widec = int16(data[p])
 		if 13 <= data[p] && data[p] <= 13 {
 			_widec = 256 + (int16(data[p]) - 0)
@@ -4583,7 +4579,7 @@ tr154:
 		}
 		goto st0
 tr156:
-//line sip.rl:129
+//line sip.rl:133
 
 	via.Version = string(data[mark:p])
 
@@ -4591,7 +4587,7 @@ tr156:
 	st108:
 		p++
 	st_case_108:
-//line msg_parse.go:4595
+//line msg_parse.go:4591
 		_widec = int16(data[p])
 		if 13 <= data[p] && data[p] <= 13 {
 			_widec = 256 + (int16(data[p]) - 0)
@@ -4611,7 +4607,7 @@ tr156:
 		}
 		goto st0
 tr158:
-//line sip.rl:129
+//line sip.rl:133
 
 	via.Version = string(data[mark:p])
 
@@ -4619,7 +4615,7 @@ tr158:
 	st109:
 		p++
 	st_case_109:
-//line msg_parse.go:4623
+//line msg_parse.go:4619
 		_widec = int16(data[p])
 		if 13 <= data[p] && data[p] <= 13 {
 			_widec = 256 + (int16(data[p]) - 0)
@@ -4675,7 +4671,7 @@ tr163:
 	st110:
 		p++
 	st_case_110:
-//line msg_parse.go:4679
+//line msg_parse.go:4675
 		_widec = int16(data[p])
 		if 13 <= data[p] && data[p] <= 13 {
 			_widec = 256 + (int16(data[p]) - 0)
@@ -4723,7 +4719,7 @@ tr163:
 		}
 		goto st0
 tr165:
-//line sip.rl:133
+//line sip.rl:137
 
 	via.Transport = string(data[mark:p])
 
@@ -4731,7 +4727,7 @@ tr165:
 	st111:
 		p++
 	st_case_111:
-//line msg_parse.go:4735
+//line msg_parse.go:4731
 		_widec = int16(data[p])
 		if 13 <= data[p] && data[p] <= 13 {
 			_widec = 256 + (int16(data[p]) - 0)
@@ -4776,7 +4772,7 @@ tr169:
 	st112:
 		p++
 	st_case_112:
-//line msg_parse.go:4780
+//line msg_parse.go:4776
 		_widec = int16(data[p])
 		if 13 <= data[p] && data[p] <= 13 {
 			_widec = 256 + (int16(data[p]) - 0)
@@ -4819,7 +4815,7 @@ tr169:
 		}
 		goto st0
 tr172:
-//line sip.rl:137
+//line sip.rl:141
 
 	via.Host = string(data[mark:p])
 
@@ -4827,7 +4823,7 @@ tr172:
 	st113:
 		p++
 	st_case_113:
-//line msg_parse.go:4831
+//line msg_parse.go:4827
 		_widec = int16(data[p])
 		if 13 <= data[p] && data[p] <= 13 {
 			_widec = 256 + (int16(data[p]) - 0)
@@ -4851,7 +4847,7 @@ tr172:
 		}
 		goto st0
 tr173:
-//line sip.rl:137
+//line sip.rl:141
 
 	via.Host = string(data[mark:p])
 
@@ -4859,7 +4855,7 @@ tr173:
 	st114:
 		p++
 	st_case_114:
-//line msg_parse.go:4863
+//line msg_parse.go:4859
 		_widec = int16(data[p])
 		if 13 <= data[p] && data[p] <= 13 {
 			_widec = 256 + (int16(data[p]) - 0)
@@ -4887,22 +4883,23 @@ tr173:
 		}
 		goto st0
 tr184:
-//line sip.rl:54
-
-	p--
-
-
-//line sip.rl:119
+//line sip.rl:123
 
 	*viap = via
 	viap = &via.Next
 	via = nil
 
-//line sip.rl:160
+//line sip.rl:119
 
 	via = new(Via)
-	{goto st103 }
 
+//line sip.rl:54
+
+	p--
+
+
+//line sip.rl:250
+ {goto st103 } 
 	goto st768
 tr193:
 //line sip.rl:54
@@ -4910,28 +4907,27 @@ tr193:
 	p--
 
 
-//line sip.rl:165
+//line sip.rl:70
 
-	amt = 0  // Needed so ViaParam action works when there's no value.
-	{goto st68 }
+	amt = 0
 
+//line sip.rl:251
+ {goto st68 } 
 	goto st768
 tr199:
-//line sip.rl:119
+//line sip.rl:123
 
 	*viap = via
 	viap = &via.Next
 	via = nil
 
-//line sip.rl:152
-
-	{goto st280 }
-
+//line sip.rl:248
+ {goto st280 } 
 	goto st768
 	st768:
 		p++
 	st_case_768:
-//line msg_parse.go:4935
+//line msg_parse.go:4931
 		goto st0
 	st115:
 		p++
@@ -4961,7 +4957,7 @@ tr199:
 		}
 		goto tr184
 tr175:
-//line sip.rl:137
+//line sip.rl:141
 
 	via.Host = string(data[mark:p])
 
@@ -4969,7 +4965,7 @@ tr175:
 	st118:
 		p++
 	st_case_118:
-//line msg_parse.go:4973
+//line msg_parse.go:4969
 		_widec = int16(data[p])
 		if 13 <= data[p] && data[p] <= 13 {
 			_widec = 256 + (int16(data[p]) - 0)
@@ -4990,7 +4986,7 @@ tr175:
 		}
 		goto st0
 tr188:
-//line sip.rl:141
+//line sip.rl:145
 
 	via.Port = via.Port * 10 + (uint16(data[p]) - 0x30)
 
@@ -4998,7 +4994,7 @@ tr188:
 	st119:
 		p++
 	st_case_119:
-//line msg_parse.go:5002
+//line msg_parse.go:4998
 		_widec = int16(data[p])
 		if 13 <= data[p] && data[p] <= 13 {
 			_widec = 256 + (int16(data[p]) - 0)
@@ -5048,7 +5044,7 @@ tr188:
 		}
 		goto st0
 tr176:
-//line sip.rl:137
+//line sip.rl:141
 
 	via.Host = string(data[mark:p])
 
@@ -5056,7 +5052,7 @@ tr176:
 	st121:
 		p++
 	st_case_121:
-//line msg_parse.go:5060
+//line msg_parse.go:5056
 		_widec = int16(data[p])
 		if 13 <= data[p] && data[p] <= 13 {
 			_widec = 256 + (int16(data[p]) - 0)
@@ -5142,7 +5138,7 @@ tr176:
 		}
 		goto st0
 tr177:
-//line sip.rl:137
+//line sip.rl:141
 
 	via.Host = string(data[mark:p])
 
@@ -5150,7 +5146,7 @@ tr177:
 	st128:
 		p++
 	st_case_128:
-//line msg_parse.go:5154
+//line msg_parse.go:5150
 		if data[p] == 10 {
 			goto tr199
 		}
@@ -5186,7 +5182,7 @@ tr177:
 		}
 		goto st0
 tr178:
-//line sip.rl:137
+//line sip.rl:141
 
 	via.Host = string(data[mark:p])
 
@@ -5194,7 +5190,7 @@ tr178:
 	st132:
 		p++
 	st_case_132:
-//line msg_parse.go:5198
+//line msg_parse.go:5194
 		if data[p] == 10 {
 			goto st133
 		}
@@ -5253,7 +5249,7 @@ tr204:
 	st136:
 		p++
 	st_case_136:
-//line msg_parse.go:5257
+//line msg_parse.go:5253
 		switch data[p] {
 		case 46:
 			goto st136
@@ -5274,7 +5270,7 @@ tr204:
 		}
 		goto st0
 tr206:
-//line sip.rl:137
+//line sip.rl:141
 
 	via.Host = string(data[mark:p])
 
@@ -5282,7 +5278,7 @@ tr206:
 	st137:
 		p++
 	st_case_137:
-//line msg_parse.go:5286
+//line msg_parse.go:5282
 		_widec = int16(data[p])
 		if 13 <= data[p] && data[p] <= 13 {
 			_widec = 256 + (int16(data[p]) - 0)
@@ -5308,7 +5304,7 @@ tr206:
 		}
 		goto st0
 tr167:
-//line sip.rl:133
+//line sip.rl:137
 
 	via.Transport = string(data[mark:p])
 
@@ -5316,7 +5312,7 @@ tr167:
 	st138:
 		p++
 	st_case_138:
-//line msg_parse.go:5320
+//line msg_parse.go:5316
 		if data[p] == 10 {
 			goto st139
 		}
@@ -5418,7 +5414,7 @@ tr167:
 		}
 		goto st0
 tr159:
-//line sip.rl:129
+//line sip.rl:133
 
 	via.Version = string(data[mark:p])
 
@@ -5426,7 +5422,7 @@ tr159:
 	st144:
 		p++
 	st_case_144:
-//line msg_parse.go:5430
+//line msg_parse.go:5426
 		if data[p] == 10 {
 			goto st145
 		}
@@ -5511,7 +5507,7 @@ tr159:
 		}
 		goto st0
 tr150:
-//line sip.rl:125
+//line sip.rl:129
 
 	via.Protocol = string(data[mark:p])
 
@@ -5519,7 +5515,7 @@ tr150:
 	st150:
 		p++
 	st_case_150:
-//line msg_parse.go:5523
+//line msg_parse.go:5519
 		if data[p] == 10 {
 			goto st151
 		}
@@ -5595,7 +5591,7 @@ tr217:
 	st154:
 		p++
 	st_case_154:
-//line msg_parse.go:5599
+//line msg_parse.go:5595
 		_widec = int16(data[p])
 		if 13 <= data[p] && data[p] <= 13 {
 			_widec = 256 + (int16(data[p]) - 0)
@@ -5646,7 +5642,7 @@ tr217:
 		}
 		goto st0
 tr218:
-//line sip.rl:175
+//line sip.rl:161
 
 	name = string(data[mark:p])
 
@@ -5654,7 +5650,7 @@ tr218:
 	st155:
 		p++
 	st_case_155:
-//line msg_parse.go:5658
+//line msg_parse.go:5654
 		_widec = int16(data[p])
 		if 13 <= data[p] && data[p] <= 13 {
 			_widec = 256 + (int16(data[p]) - 0)
@@ -5678,7 +5674,7 @@ tr218:
 		}
 		goto st0
 tr220:
-//line sip.rl:175
+//line sip.rl:161
 
 	name = string(data[mark:p])
 
@@ -5686,7 +5682,7 @@ tr220:
 	st156:
 		p++
 	st_case_156:
-//line msg_parse.go:5690
+//line msg_parse.go:5686
 		_widec = int16(data[p])
 		if 13 <= data[p] && data[p] <= 13 {
 			_widec = 256 + (int16(data[p]) - 0)
@@ -5714,14 +5710,14 @@ tr220:
 		}
 		goto st0
 tr230:
-//line sip.rl:232
+//line sip.rl:198
 
 	if addr.Params == nil {
 		addr.Params = Params{}
 	}
 	addr.Params[name] = string(buf[0:amt])
 
-//line sip.rl:239
+//line sip.rl:205
 
 	*addrp = addr
 	addrp = &addr.Next
@@ -5732,13 +5728,11 @@ tr230:
 	p--
 
 
-//line sip.rl:195
-
-	{goto st256 }
-
+//line sip.rl:243
+ {goto st256 } 
 	goto st769
 tr234:
-//line sip.rl:232
+//line sip.rl:198
 
 	if addr.Params == nil {
 		addr.Params = Params{}
@@ -5750,34 +5744,30 @@ tr234:
 	p--
 
 
-//line sip.rl:207
-
-	{goto st153 }
-
+//line sip.rl:245
+ {goto st153 } 
 	goto st769
 tr246:
-//line sip.rl:232
+//line sip.rl:198
 
 	if addr.Params == nil {
 		addr.Params = Params{}
 	}
 	addr.Params[name] = string(buf[0:amt])
 
-//line sip.rl:239
+//line sip.rl:205
 
 	*addrp = addr
 	addrp = &addr.Next
 	addr = nil
 
-//line sip.rl:152
-
-	{goto st280 }
-
+//line sip.rl:248
+ {goto st280 } 
 	goto st769
 	st769:
 		p++
 	st_case_769:
-//line msg_parse.go:5781
+//line msg_parse.go:5771
 		goto st0
 	st157:
 		p++
@@ -5807,7 +5797,7 @@ tr246:
 		}
 		goto tr230
 tr221:
-//line sip.rl:175
+//line sip.rl:161
 
 	name = string(data[mark:p])
 
@@ -5815,7 +5805,7 @@ tr221:
 	st160:
 		p++
 	st_case_160:
-//line msg_parse.go:5819
+//line msg_parse.go:5809
 		_widec = int16(data[p])
 		if 13 <= data[p] && data[p] <= 13 {
 			_widec = 256 + (int16(data[p]) - 0)
@@ -5870,7 +5860,7 @@ tr221:
 		}
 		goto tr234
 tr222:
-//line sip.rl:175
+//line sip.rl:161
 
 	name = string(data[mark:p])
 
@@ -5878,7 +5868,7 @@ tr222:
 	st164:
 		p++
 	st_case_164:
-//line msg_parse.go:5882
+//line msg_parse.go:5872
 		_widec = int16(data[p])
 		if 13 <= data[p] && data[p] <= 13 {
 			_widec = 256 + (int16(data[p]) - 0)
@@ -5939,7 +5929,7 @@ tr238:
 	st165:
 		p++
 	st_case_165:
-//line msg_parse.go:5943
+//line msg_parse.go:5933
 		_widec = int16(data[p])
 		if 13 <= data[p] && data[p] <= 13 {
 			_widec = 256 + (int16(data[p]) - 0)
@@ -6044,7 +6034,7 @@ tr238:
 		}
 		goto st0
 tr223:
-//line sip.rl:175
+//line sip.rl:161
 
 	name = string(data[mark:p])
 
@@ -6052,7 +6042,7 @@ tr223:
 	st170:
 		p++
 	st_case_170:
-//line msg_parse.go:6056
+//line msg_parse.go:6046
 		if data[p] == 10 {
 			goto tr246
 		}
@@ -6125,7 +6115,7 @@ tr256:
 	st172:
 		p++
 	st_case_172:
-//line msg_parse.go:6129
+//line msg_parse.go:6119
 		_widec = int16(data[p])
 		if 13 <= data[p] && data[p] <= 13 {
 			_widec = 256 + (int16(data[p]) - 0)
@@ -6179,7 +6169,7 @@ tr248:
 	st173:
 		p++
 	st_case_173:
-//line msg_parse.go:6183
+//line msg_parse.go:6173
 		_widec = int16(data[p])
 		if 13 <= data[p] && data[p] <= 13 {
 			_widec = 256 + (int16(data[p]) - 0)
@@ -6211,7 +6201,7 @@ tr249:
 	st174:
 		p++
 	st_case_174:
-//line msg_parse.go:6215
+//line msg_parse.go:6205
 		switch {
 		case data[p] < 11:
 			if data[p] <= 9 {
@@ -6246,7 +6236,7 @@ tr259:
 	st175:
 		p++
 	st_case_175:
-//line msg_parse.go:6250
+//line msg_parse.go:6240
 		if 128 <= data[p] && data[p] <= 191 {
 			goto tr256
 		}
@@ -6272,7 +6262,7 @@ tr260:
 	st176:
 		p++
 	st_case_176:
-//line msg_parse.go:6276
+//line msg_parse.go:6266
 		if 128 <= data[p] && data[p] <= 191 {
 			goto tr259
 		}
@@ -6298,7 +6288,7 @@ tr261:
 	st177:
 		p++
 	st_case_177:
-//line msg_parse.go:6302
+//line msg_parse.go:6292
 		if 128 <= data[p] && data[p] <= 191 {
 			goto tr260
 		}
@@ -6324,7 +6314,7 @@ tr262:
 	st178:
 		p++
 	st_case_178:
-//line msg_parse.go:6328
+//line msg_parse.go:6318
 		if 128 <= data[p] && data[p] <= 191 {
 			goto tr261
 		}
@@ -6350,7 +6340,7 @@ tr263:
 	st179:
 		p++
 	st_case_179:
-//line msg_parse.go:6354
+//line msg_parse.go:6344
 		if 128 <= data[p] && data[p] <= 191 {
 			goto tr262
 		}
@@ -6376,7 +6366,7 @@ tr264:
 	st180:
 		p++
 	st_case_180:
-//line msg_parse.go:6380
+//line msg_parse.go:6370
 		if data[p] == 10 {
 			goto tr265
 		}
@@ -6391,7 +6381,7 @@ tr265:
 	st181:
 		p++
 	st_case_181:
-//line msg_parse.go:6395
+//line msg_parse.go:6385
 		switch data[p] {
 		case 9:
 			goto tr256
@@ -6461,7 +6451,7 @@ tr265:
 		}
 		goto st0
 tr224:
-//line sip.rl:175
+//line sip.rl:161
 
 	name = string(data[mark:p])
 
@@ -6469,7 +6459,7 @@ tr224:
 	st185:
 		p++
 	st_case_185:
-//line msg_parse.go:6473
+//line msg_parse.go:6463
 		if data[p] == 10 {
 			goto st186
 		}
@@ -6554,7 +6544,7 @@ tr224:
 		}
 		goto st0
 tr329:
-//line sip.rl:215
+//line sip.rl:181
 
 	addr.Display = string(buf[0:amt])
 
@@ -6562,7 +6552,7 @@ tr329:
 	st189:
 		p++
 	st_case_189:
-//line msg_parse.go:6566
+//line msg_parse.go:6556
 		_widec = int16(data[p])
 		if 13 <= data[p] && data[p] <= 13 {
 			_widec = 256 + (int16(data[p]) - 0)
@@ -6582,7 +6572,7 @@ tr329:
 		}
 		goto st0
 tr305:
-//line sip.rl:219
+//line sip.rl:185
 {
 	end := p
 	for end > mark && whitespacec(data[end - 1]) {
@@ -6592,7 +6582,7 @@ tr305:
 }
 	goto st190
 tr330:
-//line sip.rl:215
+//line sip.rl:181
 
 	addr.Display = string(buf[0:amt])
 
@@ -6600,7 +6590,7 @@ tr330:
 	st190:
 		p++
 	st_case_190:
-//line msg_parse.go:6604
+//line msg_parse.go:6594
 		switch {
 		case data[p] > 90:
 			if 97 <= data[p] && data[p] <= 122 {
@@ -6619,7 +6609,7 @@ tr275:
 	st191:
 		p++
 	st_case_191:
-//line msg_parse.go:6623
+//line msg_parse.go:6613
 		switch data[p] {
 		case 43:
 			goto st191
@@ -6701,7 +6691,7 @@ tr275:
 		}
 		goto st0
 tr279:
-//line sip.rl:227
+//line sip.rl:193
 
 	addr.Uri, err = ParseURIBytes(data[mark:p])
 	if err != nil { return nil, err }
@@ -6710,7 +6700,7 @@ tr279:
 	st194:
 		p++
 	st_case_194:
-//line msg_parse.go:6714
+//line msg_parse.go:6704
 		_widec = int16(data[p])
 		if 13 <= data[p] && data[p] <= 13 {
 			_widec = 256 + (int16(data[p]) - 0)
@@ -6763,7 +6753,7 @@ tr279:
 		}
 		goto st0
 tr285:
-//line sip.rl:239
+//line sip.rl:205
 
 	*addrp = addr
 	addrp = &addr.Next
@@ -6774,10 +6764,8 @@ tr285:
 	p--
 
 
-//line sip.rl:195
-
-	{goto st256 }
-
+//line sip.rl:243
+ {goto st256 } 
 	goto st770
 tr289:
 //line sip.rl:54
@@ -6785,27 +6773,23 @@ tr289:
 	p--
 
 
-//line sip.rl:207
-
-	{goto st153 }
-
+//line sip.rl:245
+ {goto st153 } 
 	goto st770
 tr293:
-//line sip.rl:239
+//line sip.rl:205
 
 	*addrp = addr
 	addrp = &addr.Next
 	addr = nil
 
-//line sip.rl:152
-
-	{goto st280 }
-
+//line sip.rl:248
+ {goto st280 } 
 	goto st770
 	st770:
 		p++
 	st_case_770:
-//line msg_parse.go:6809
+//line msg_parse.go:6793
 		goto st0
 	st196:
 		p++
@@ -6971,7 +6955,7 @@ tr293:
 		}
 		goto st0
 tr310:
-//line sip.rl:219
+//line sip.rl:185
 {
 	end := p
 	for end > mark && whitespacec(data[end - 1]) {
@@ -6981,7 +6965,7 @@ tr310:
 }
 	goto st210
 tr331:
-//line sip.rl:215
+//line sip.rl:181
 
 	addr.Display = string(buf[0:amt])
 
@@ -6989,7 +6973,7 @@ tr331:
 	st210:
 		p++
 	st_case_210:
-//line msg_parse.go:6993
+//line msg_parse.go:6977
 		if data[p] == 10 {
 			goto st211
 		}
@@ -7025,7 +7009,7 @@ tr271:
 	st213:
 		p++
 	st_case_213:
-//line msg_parse.go:7029
+//line msg_parse.go:7013
 		_widec = int16(data[p])
 		if 13 <= data[p] && data[p] <= 13 {
 			_widec = 256 + (int16(data[p]) - 0)
@@ -7073,7 +7057,7 @@ tr271:
 		}
 		goto st0
 tr304:
-//line sip.rl:219
+//line sip.rl:185
 {
 	end := p
 	for end > mark && whitespacec(data[end - 1]) {
@@ -7085,7 +7069,7 @@ tr304:
 	st214:
 		p++
 	st_case_214:
-//line msg_parse.go:7089
+//line msg_parse.go:7073
 		_widec = int16(data[p])
 		if 13 <= data[p] && data[p] <= 13 {
 			_widec = 256 + (int16(data[p]) - 0)
@@ -7135,7 +7119,7 @@ tr304:
 		}
 		goto st0
 tr306:
-//line sip.rl:219
+//line sip.rl:185
 {
 	end := p
 	for end > mark && whitespacec(data[end - 1]) {
@@ -7147,7 +7131,7 @@ tr306:
 	st215:
 		p++
 	st_case_215:
-//line msg_parse.go:7151
+//line msg_parse.go:7135
 		if data[p] == 10 {
 			goto st216
 		}
@@ -7163,7 +7147,7 @@ tr306:
 		}
 		goto st0
 tr309:
-//line sip.rl:219
+//line sip.rl:185
 {
 	end := p
 	for end > mark && whitespacec(data[end - 1]) {
@@ -7175,7 +7159,7 @@ tr309:
 	st217:
 		p++
 	st_case_217:
-//line msg_parse.go:7179
+//line msg_parse.go:7163
 		_widec = int16(data[p])
 		if 13 <= data[p] && data[p] <= 13 {
 			_widec = 256 + (int16(data[p]) - 0)
@@ -7233,7 +7217,7 @@ tr272:
 	st218:
 		p++
 	st_case_218:
-//line msg_parse.go:7237
+//line msg_parse.go:7221
 		_widec = int16(data[p])
 		if 13 <= data[p] && data[p] <= 13 {
 			_widec = 256 + (int16(data[p]) - 0)
@@ -7299,7 +7283,7 @@ tr320:
 	st219:
 		p++
 	st_case_219:
-//line msg_parse.go:7303
+//line msg_parse.go:7287
 		_widec = int16(data[p])
 		if 13 <= data[p] && data[p] <= 13 {
 			_widec = 256 + (int16(data[p]) - 0)
@@ -7353,7 +7337,7 @@ tr312:
 	st220:
 		p++
 	st_case_220:
-//line msg_parse.go:7357
+//line msg_parse.go:7341
 		_widec = int16(data[p])
 		if 13 <= data[p] && data[p] <= 13 {
 			_widec = 256 + (int16(data[p]) - 0)
@@ -7381,7 +7365,7 @@ tr313:
 	st221:
 		p++
 	st_case_221:
-//line msg_parse.go:7385
+//line msg_parse.go:7369
 		switch {
 		case data[p] < 11:
 			if data[p] <= 9 {
@@ -7416,7 +7400,7 @@ tr323:
 	st222:
 		p++
 	st_case_222:
-//line msg_parse.go:7420
+//line msg_parse.go:7404
 		if 128 <= data[p] && data[p] <= 191 {
 			goto tr320
 		}
@@ -7442,7 +7426,7 @@ tr324:
 	st223:
 		p++
 	st_case_223:
-//line msg_parse.go:7446
+//line msg_parse.go:7430
 		if 128 <= data[p] && data[p] <= 191 {
 			goto tr323
 		}
@@ -7468,7 +7452,7 @@ tr325:
 	st224:
 		p++
 	st_case_224:
-//line msg_parse.go:7472
+//line msg_parse.go:7456
 		if 128 <= data[p] && data[p] <= 191 {
 			goto tr324
 		}
@@ -7494,7 +7478,7 @@ tr326:
 	st225:
 		p++
 	st_case_225:
-//line msg_parse.go:7498
+//line msg_parse.go:7482
 		if 128 <= data[p] && data[p] <= 191 {
 			goto tr325
 		}
@@ -7520,7 +7504,7 @@ tr327:
 	st226:
 		p++
 	st_case_226:
-//line msg_parse.go:7524
+//line msg_parse.go:7508
 		if 128 <= data[p] && data[p] <= 191 {
 			goto tr326
 		}
@@ -7546,7 +7530,7 @@ tr328:
 	st227:
 		p++
 	st_case_227:
-//line msg_parse.go:7550
+//line msg_parse.go:7534
 		if data[p] == 10 {
 			goto tr332
 		}
@@ -7561,7 +7545,7 @@ tr332:
 	st228:
 		p++
 	st_case_228:
-//line msg_parse.go:7565
+//line msg_parse.go:7549
 		switch data[p] {
 		case 9:
 			goto tr320
@@ -7684,7 +7668,7 @@ tr332:
 		}
 		goto st0
 tr336:
-//line sip.rl:227
+//line sip.rl:193
 
 	addr.Uri, err = ParseURIBytes(data[mark:p])
 	if err != nil { return nil, err }
@@ -7693,7 +7677,7 @@ tr336:
 	st233:
 		p++
 	st_case_233:
-//line msg_parse.go:7697
+//line msg_parse.go:7681
 		_widec = int16(data[p])
 		if 13 <= data[p] && data[p] <= 13 {
 			_widec = 256 + (int16(data[p]) - 0)
@@ -7744,7 +7728,7 @@ tr336:
 		}
 		goto st0
 tr345:
-//line sip.rl:239
+//line sip.rl:205
 
 	*addrp = addr
 	addrp = &addr.Next
@@ -7755,10 +7739,8 @@ tr345:
 	p--
 
 
-//line sip.rl:195
-
-	{goto st256 }
-
+//line sip.rl:243
+ {goto st256 } 
 	goto st771
 tr349:
 //line sip.rl:54
@@ -7766,15 +7748,13 @@ tr349:
 	p--
 
 
-//line sip.rl:207
-
-	{goto st153 }
-
+//line sip.rl:245
+ {goto st153 } 
 	goto st771
 	st771:
 		p++
 	st_case_771:
-//line msg_parse.go:7778
+//line msg_parse.go:7758
 		goto st0
 	st235:
 		p++
@@ -7860,7 +7840,7 @@ tr349:
 		}
 		goto tr349
 tr340:
-//line sip.rl:227
+//line sip.rl:193
 
 	addr.Uri, err = ParseURIBytes(data[mark:p])
 	if err != nil { return nil, err }
@@ -7869,7 +7849,7 @@ tr340:
 	st242:
 		p++
 	st_case_242:
-//line msg_parse.go:7873
+//line msg_parse.go:7853
 		if data[p] == 10 {
 			goto st243
 		}
@@ -7899,7 +7879,7 @@ tr340:
 		}
 		goto st0
 tr337:
-//line sip.rl:227
+//line sip.rl:193
 
 	addr.Uri, err = ParseURIBytes(data[mark:p])
 	if err != nil { return nil, err }
@@ -7908,7 +7888,7 @@ tr337:
 	st245:
 		p++
 	st_case_245:
-//line msg_parse.go:7912
+//line msg_parse.go:7892
 		_widec = int16(data[p])
 		if 13 <= data[p] && data[p] <= 13 {
 			_widec = 256 + (int16(data[p]) - 0)
@@ -7963,7 +7943,7 @@ tr337:
 		}
 		goto st0
 tr355:
-//line sip.rl:227
+//line sip.rl:193
 
 	addr.Uri, err = ParseURIBytes(data[mark:p])
 	if err != nil { return nil, err }
@@ -7972,7 +7952,7 @@ tr355:
 	st246:
 		p++
 	st_case_246:
-//line msg_parse.go:7976
+//line msg_parse.go:7956
 		_widec = int16(data[p])
 		if 13 <= data[p] && data[p] <= 13 {
 			_widec = 256 + (int16(data[p]) - 0)
@@ -8004,7 +7984,7 @@ tr355:
 		}
 		goto st0
 tr361:
-//line sip.rl:239
+//line sip.rl:205
 
 	*addrp = addr
 	addrp = &addr.Next
@@ -8015,15 +7995,13 @@ tr361:
 	p--
 
 
-//line sip.rl:195
-
-	{goto st256 }
-
+//line sip.rl:243
+ {goto st256 } 
 	goto st772
 	st772:
 		p++
 	st_case_772:
-//line msg_parse.go:8027
+//line msg_parse.go:8005
 		_widec = int16(data[p])
 		if 13 <= data[p] && data[p] <= 13 {
 			_widec = 256 + (int16(data[p]) - 0)
@@ -8051,7 +8029,7 @@ tr361:
 		}
 		goto st0
 tr359:
-//line sip.rl:227
+//line sip.rl:193
 
 	addr.Uri, err = ParseURIBytes(data[mark:p])
 	if err != nil { return nil, err }
@@ -8060,7 +8038,7 @@ tr359:
 	st247:
 		p++
 	st_case_247:
-//line msg_parse.go:8064
+//line msg_parse.go:8042
 		if data[p] == 10 {
 			goto st248
 		}
@@ -8090,7 +8068,7 @@ tr359:
 		}
 		goto tr345
 tr356:
-//line sip.rl:239
+//line sip.rl:205
 
 	*addrp = addr
 	addrp = &addr.Next
@@ -8101,10 +8079,8 @@ tr356:
 	p--
 
 
-//line sip.rl:195
-
-	{goto st256 }
-
+//line sip.rl:243
+ {goto st256 } 
 	goto st773
 tr366:
 //line sip.rl:54
@@ -8112,15 +8088,13 @@ tr366:
 	p--
 
 
-//line sip.rl:207
-
-	{goto st153 }
-
+//line sip.rl:245
+ {goto st153 } 
 	goto st773
 	st773:
 		p++
 	st_case_773:
-//line msg_parse.go:8124
+//line msg_parse.go:8098
 		_widec = int16(data[p])
 		if 13 <= data[p] && data[p] <= 13 {
 			_widec = 256 + (int16(data[p]) - 0)
@@ -8166,7 +8140,7 @@ tr366:
 		}
 		goto st0
 tr338:
-//line sip.rl:227
+//line sip.rl:193
 
 	addr.Uri, err = ParseURIBytes(data[mark:p])
 	if err != nil { return nil, err }
@@ -8175,7 +8149,7 @@ tr338:
 	st250:
 		p++
 	st_case_250:
-//line msg_parse.go:8179
+//line msg_parse.go:8153
 		_widec = int16(data[p])
 		if 13 <= data[p] && data[p] <= 13 {
 			_widec = 256 + (int16(data[p]) - 0)
@@ -8230,7 +8204,7 @@ tr338:
 		}
 		goto st0
 tr365:
-//line sip.rl:227
+//line sip.rl:193
 
 	addr.Uri, err = ParseURIBytes(data[mark:p])
 	if err != nil { return nil, err }
@@ -8239,7 +8213,7 @@ tr365:
 	st251:
 		p++
 	st_case_251:
-//line msg_parse.go:8243
+//line msg_parse.go:8217
 		_widec = int16(data[p])
 		if 13 <= data[p] && data[p] <= 13 {
 			_widec = 256 + (int16(data[p]) - 0)
@@ -8276,15 +8250,13 @@ tr371:
 	p--
 
 
-//line sip.rl:207
-
-	{goto st153 }
-
+//line sip.rl:245
+ {goto st153 } 
 	goto st774
 	st774:
 		p++
 	st_case_774:
-//line msg_parse.go:8288
+//line msg_parse.go:8260
 		_widec = int16(data[p])
 		if 13 <= data[p] && data[p] <= 13 {
 			_widec = 256 + (int16(data[p]) - 0)
@@ -8312,7 +8284,7 @@ tr371:
 		}
 		goto st0
 tr369:
-//line sip.rl:227
+//line sip.rl:193
 
 	addr.Uri, err = ParseURIBytes(data[mark:p])
 	if err != nil { return nil, err }
@@ -8321,7 +8293,7 @@ tr369:
 	st252:
 		p++
 	st_case_252:
-//line msg_parse.go:8325
+//line msg_parse.go:8297
 		if data[p] == 10 {
 			goto st253
 		}
@@ -8351,7 +8323,7 @@ tr369:
 		}
 		goto tr349
 tr367:
-//line sip.rl:227
+//line sip.rl:193
 
 	addr.Uri, err = ParseURIBytes(data[mark:p])
 	if err != nil { return nil, err }
@@ -8361,15 +8333,13 @@ tr367:
 	p--
 
 
-//line sip.rl:207
-
-	{goto st153 }
-
+//line sip.rl:245
+ {goto st153 } 
 	goto st775
 	st775:
 		p++
 	st_case_775:
-//line msg_parse.go:8373
+//line msg_parse.go:8343
 		_widec = int16(data[p])
 		if 13 <= data[p] && data[p] <= 13 {
 			_widec = 256 + (int16(data[p]) - 0)
@@ -8424,12 +8394,12 @@ tr367:
 		}
 		goto st0
 tr357:
-//line sip.rl:227
+//line sip.rl:193
 
 	addr.Uri, err = ParseURIBytes(data[mark:p])
 	if err != nil { return nil, err }
 
-//line sip.rl:239
+//line sip.rl:205
 
 	*addrp = addr
 	addrp = &addr.Next
@@ -8440,15 +8410,13 @@ tr357:
 	p--
 
 
-//line sip.rl:195
-
-	{goto st256 }
-
+//line sip.rl:243
+ {goto st256 } 
 	goto st776
 	st776:
 		p++
 	st_case_776:
-//line msg_parse.go:8452
+//line msg_parse.go:8420
 		_widec = int16(data[p])
 		if 13 <= data[p] && data[p] <= 13 {
 			_widec = 256 + (int16(data[p]) - 0)
@@ -8503,12 +8471,12 @@ tr357:
 		}
 		goto st0
 tr358:
-//line sip.rl:227
+//line sip.rl:193
 
 	addr.Uri, err = ParseURIBytes(data[mark:p])
 	if err != nil { return nil, err }
 
-//line sip.rl:239
+//line sip.rl:205
 
 	*addrp = addr
 	addrp = &addr.Next
@@ -8519,13 +8487,11 @@ tr358:
 	p--
 
 
-//line sip.rl:195
-
-	{goto st256 }
-
+//line sip.rl:243
+ {goto st256 } 
 	goto st777
 tr368:
-//line sip.rl:227
+//line sip.rl:193
 
 	addr.Uri, err = ParseURIBytes(data[mark:p])
 	if err != nil { return nil, err }
@@ -8535,32 +8501,28 @@ tr368:
 	p--
 
 
-//line sip.rl:207
-
-	{goto st153 }
-
+//line sip.rl:245
+ {goto st153 } 
 	goto st777
 	st777:
 		p++
 	st_case_777:
-//line msg_parse.go:8547
+//line msg_parse.go:8511
 		if data[p] == 10 {
 			goto tr375
 		}
 		goto st0
 tr375:
-//line sip.rl:152
-
-	{goto st280 }
-
+//line sip.rl:248
+ {goto st280 } 
 	goto st778
 	st778:
 		p++
 	st_case_778:
-//line msg_parse.go:8561
+//line msg_parse.go:8523
 		goto st0
 tr339:
-//line sip.rl:227
+//line sip.rl:193
 
 	addr.Uri, err = ParseURIBytes(data[mark:p])
 	if err != nil { return nil, err }
@@ -8569,7 +8531,7 @@ tr339:
 	st255:
 		p++
 	st_case_255:
-//line msg_parse.go:8573
+//line msg_parse.go:8535
 		if data[p] == 10 {
 			goto tr375
 		}
@@ -8627,7 +8589,7 @@ tr376:
 	st257:
 		p++
 	st_case_257:
-//line msg_parse.go:8631
+//line msg_parse.go:8593
 		_widec = int16(data[p])
 		if 13 <= data[p] && data[p] <= 13 {
 			_widec = 256 + (int16(data[p]) - 0)
@@ -8726,7 +8688,7 @@ tr376:
 		}
 		goto st0
 tr377:
-//line sip.rl:211
+//line sip.rl:177
 
 	addr = new(Addr)
 
@@ -8735,13 +8697,11 @@ tr377:
 	p--
 
 
-//line sip.rl:203
-
-	{goto st188 }
-
+//line sip.rl:244
+ {goto st188 } 
 	goto st779
 tr382:
-//line sip.rl:211
+//line sip.rl:177
 
 	addr = new(Addr)
 
@@ -8750,13 +8710,11 @@ tr382:
 	p = ( mark) - 1
 
 
-//line sip.rl:203
-
-	{goto st188 }
-
+//line sip.rl:244
+ {goto st188 } 
 	goto st779
 tr386:
-//line sip.rl:211
+//line sip.rl:177
 
 	addr = new(Addr)
 
@@ -8765,15 +8723,13 @@ tr386:
 	p = ( mark) - 1
 
 
-//line sip.rl:199
-
-	{goto st229 }
-
+//line sip.rl:246
+ {goto st229 } 
 	goto st779
 	st779:
 		p++
 	st_case_779:
-//line msg_parse.go:8777
+//line msg_parse.go:8733
 		goto st0
 	st259:
 		p++
@@ -8843,7 +8799,7 @@ tr378:
 	st262:
 		p++
 	st_case_262:
-//line msg_parse.go:8847
+//line msg_parse.go:8803
 		_widec = int16(data[p])
 		if 13 <= data[p] && data[p] <= 13 {
 			_widec = 256 + (int16(data[p]) - 0)
@@ -8950,7 +8906,7 @@ tr387:
 	st264:
 		p++
 	st_case_264:
-//line msg_parse.go:8954
+//line msg_parse.go:8910
 		_widec = int16(data[p])
 		if 13 <= data[p] && data[p] <= 13 {
 			_widec = 256 + (int16(data[p]) - 0)
@@ -9002,7 +8958,7 @@ tr388:
 	st265:
 		p++
 	st_case_265:
-//line msg_parse.go:9006
+//line msg_parse.go:8962
 		if 128 <= data[p] && data[p] <= 191 {
 			goto st264
 		}
@@ -9016,7 +8972,7 @@ tr389:
 	st266:
 		p++
 	st_case_266:
-//line msg_parse.go:9020
+//line msg_parse.go:8976
 		if 128 <= data[p] && data[p] <= 191 {
 			goto st265
 		}
@@ -9030,7 +8986,7 @@ tr390:
 	st267:
 		p++
 	st_case_267:
-//line msg_parse.go:9034
+//line msg_parse.go:8990
 		if 128 <= data[p] && data[p] <= 191 {
 			goto st266
 		}
@@ -9044,7 +9000,7 @@ tr391:
 	st268:
 		p++
 	st_case_268:
-//line msg_parse.go:9048
+//line msg_parse.go:9004
 		if 128 <= data[p] && data[p] <= 191 {
 			goto st267
 		}
@@ -9058,7 +9014,7 @@ tr392:
 	st269:
 		p++
 	st_case_269:
-//line msg_parse.go:9062
+//line msg_parse.go:9018
 		if 128 <= data[p] && data[p] <= 191 {
 			goto st268
 		}
@@ -9072,13 +9028,13 @@ tr393:
 	st270:
 		p++
 	st_case_270:
-//line msg_parse.go:9076
+//line msg_parse.go:9032
 		if data[p] == 10 {
 			goto tr403
 		}
 		goto st0
 tr403:
-//line sip.rl:179
+//line sip.rl:165
 {
 	b := data[mark:p - 1]
 	if value != nil {
@@ -9090,15 +9046,13 @@ tr403:
 		msg.Headers[name] = string(b)
 	}
 }
-//line sip.rl:152
-
-	{goto st280 }
-
+//line sip.rl:248
+ {goto st280 } 
 	goto st780
 	st780:
 		p++
 	st_case_780:
-//line msg_parse.go:9102
+//line msg_parse.go:9056
 		goto st0
 tr394:
 //line sip.rl:62
@@ -9109,7 +9063,7 @@ tr394:
 	st271:
 		p++
 	st_case_271:
-//line msg_parse.go:9113
+//line msg_parse.go:9067
 		if data[p] == 10 {
 			goto st272
 		}
@@ -9203,7 +9157,7 @@ tr394:
 		}
 		goto st0
 tr406:
-//line sip.rl:175
+//line sip.rl:161
 
 	name = string(data[mark:p])
 
@@ -9211,7 +9165,7 @@ tr406:
 	st275:
 		p++
 	st_case_275:
-//line msg_parse.go:9215
+//line msg_parse.go:9169
 		switch data[p] {
 		case 9:
 			goto st275
@@ -9222,7 +9176,7 @@ tr406:
 		}
 		goto st0
 tr407:
-//line sip.rl:175
+//line sip.rl:161
 
 	name = string(data[mark:p])
 
@@ -9230,7 +9184,7 @@ tr407:
 	st276:
 		p++
 	st_case_276:
-//line msg_parse.go:9234
+//line msg_parse.go:9188
 		_widec = int16(data[p])
 		if 13 <= data[p] && data[p] <= 13 {
 			_widec = 256 + (int16(data[p]) - 0)
@@ -9258,22 +9212,20 @@ tr407:
 		}
 		goto st0
 tr410:
-//line sip.rl:547
+//line sip.rl:523
 value=nil
 //line sip.rl:54
 
 	p--
 
 
-//line sip.rl:156
-
-	{goto st263 }
-
+//line sip.rl:249
+ {goto st263 } 
 	goto st781
 	st781:
 		p++
 	st_case_781:
-//line msg_parse.go:9277
+//line msg_parse.go:9229
 		goto st0
 	st277:
 		p++
@@ -9361,7 +9313,7 @@ tr414:
 	st281:
 		p++
 	st_case_281:
-//line msg_parse.go:9365
+//line msg_parse.go:9317
 		switch data[p] {
 		case 65:
 			goto st282
@@ -9462,159 +9414,159 @@ tr414:
 		}
 		goto tr416
 tr435:
-//line sip.rl:466
+//line sip.rl:442
 value=&msg.AcceptContact
 	goto st283
 tr450:
-//line sip.rl:465
+//line sip.rl:441
 value=&msg.Accept
 	goto st283
 tr469:
-//line sip.rl:467
+//line sip.rl:443
 value=&msg.AcceptEncoding
 	goto st283
 tr478:
-//line sip.rl:468
+//line sip.rl:444
 value=&msg.AcceptLanguage
 	goto st283
 tr489:
-//line sip.rl:471
+//line sip.rl:447
 value=&msg.AlertInfo
 	goto st283
 tr493:
-//line sip.rl:469
+//line sip.rl:445
 value=&msg.Allow
 	goto st283
 tr502:
-//line sip.rl:470
+//line sip.rl:446
 value=&msg.AllowEvents
 	goto st283
 tr522:
-//line sip.rl:472
+//line sip.rl:448
 value=&msg.AuthenticationInfo
 	goto st283
 tr532:
-//line sip.rl:473
+//line sip.rl:449
 value=&msg.Authorization
 	goto st283
 tr534:
-//line sip.rl:490
+//line sip.rl:466
 value=&msg.ReferredBy
 	goto st283
 tr564:
-//line sip.rl:477
+//line sip.rl:453
 value=&msg.CallInfo
 	goto st283
 tr597:
-//line sip.rl:474
+//line sip.rl:450
 value=&msg.ContentDisposition
 	goto st283
 tr606:
-//line sip.rl:476
+//line sip.rl:452
 value=&msg.ContentEncoding
 	goto st283
 tr616:
-//line sip.rl:475
+//line sip.rl:451
 value=&msg.ContentLanguage
 	goto st283
 tr651:
-//line sip.rl:478
+//line sip.rl:454
 value=&msg.Date
 	goto st283
 tr664:
-//line sip.rl:479
+//line sip.rl:455
 value=&msg.ErrorInfo
 	goto st283
 tr669:
-//line sip.rl:480
+//line sip.rl:456
 value=&msg.Event
 	goto st283
 tr698:
-//line sip.rl:481
+//line sip.rl:457
 value=&msg.InReplyTo
 	goto st283
 tr700:
-//line sip.rl:495
+//line sip.rl:471
 value=&msg.Supported
 	goto st283
 tr739:
-//line sip.rl:483
+//line sip.rl:459
 value=&msg.MIMEVersion
 	goto st283
 tr767:
-//line sip.rl:484
+//line sip.rl:460
 value=&msg.Organization
 	goto st283
 tr797:
-//line sip.rl:485
+//line sip.rl:461
 value=&msg.Priority
 	goto st283
 tr816:
-//line sip.rl:486
+//line sip.rl:462
 value=&msg.ProxyAuthenticate
 	goto st283
 tr826:
-//line sip.rl:487
+//line sip.rl:463
 value=&msg.ProxyAuthorization
 	goto st283
 tr834:
-//line sip.rl:488
+//line sip.rl:464
 value=&msg.ProxyRequire
 	goto st283
 tr836:
-//line sip.rl:489
+//line sip.rl:465
 value=&msg.ReferTo
 	goto st283
 tr886:
-//line sip.rl:482
+//line sip.rl:458
 value=&msg.ReplyTo
 	goto st283
 tr892:
-//line sip.rl:491
+//line sip.rl:467
 value=&msg.Require
 	goto st283
 tr902:
-//line sip.rl:492
+//line sip.rl:468
 value=&msg.RetryAfter
 	goto st283
 tr909:
-//line sip.rl:494
+//line sip.rl:470
 value=&msg.Subject
 	goto st283
 tr917:
-//line sip.rl:493
+//line sip.rl:469
 value=&msg.Server
 	goto st283
 tr941:
-//line sip.rl:496
+//line sip.rl:472
 value=&msg.Timestamp
 	goto st283
 tr943:
-//line sip.rl:469
+//line sip.rl:445
 value=&msg.Allow
-//line sip.rl:470
+//line sip.rl:446
 value=&msg.AllowEvents
 	goto st283
 tr956:
-//line sip.rl:497
+//line sip.rl:473
 value=&msg.Unsupported
 	goto st283
 tr966:
-//line sip.rl:498
+//line sip.rl:474
 value=&msg.UserAgent
 	goto st283
 tr983:
-//line sip.rl:499
+//line sip.rl:475
 value=&msg.Warning
 	goto st283
 tr999:
-//line sip.rl:500
+//line sip.rl:476
 value=&msg.WWWAuthenticate
 	goto st283
 	st283:
 		p++
 	st_case_283:
-//line msg_parse.go:9618
+//line msg_parse.go:9570
 		switch data[p] {
 		case 9:
 			goto st283
@@ -9625,159 +9577,159 @@ value=&msg.WWWAuthenticate
 		}
 		goto st0
 tr436:
-//line sip.rl:466
+//line sip.rl:442
 value=&msg.AcceptContact
 	goto st284
 tr452:
-//line sip.rl:465
+//line sip.rl:441
 value=&msg.Accept
 	goto st284
 tr470:
-//line sip.rl:467
+//line sip.rl:443
 value=&msg.AcceptEncoding
 	goto st284
 tr479:
-//line sip.rl:468
+//line sip.rl:444
 value=&msg.AcceptLanguage
 	goto st284
 tr490:
-//line sip.rl:471
+//line sip.rl:447
 value=&msg.AlertInfo
 	goto st284
 tr495:
-//line sip.rl:469
+//line sip.rl:445
 value=&msg.Allow
 	goto st284
 tr503:
-//line sip.rl:470
+//line sip.rl:446
 value=&msg.AllowEvents
 	goto st284
 tr523:
-//line sip.rl:472
+//line sip.rl:448
 value=&msg.AuthenticationInfo
 	goto st284
 tr533:
-//line sip.rl:473
+//line sip.rl:449
 value=&msg.Authorization
 	goto st284
 tr535:
-//line sip.rl:490
+//line sip.rl:466
 value=&msg.ReferredBy
 	goto st284
 tr565:
-//line sip.rl:477
+//line sip.rl:453
 value=&msg.CallInfo
 	goto st284
 tr598:
-//line sip.rl:474
+//line sip.rl:450
 value=&msg.ContentDisposition
 	goto st284
 tr607:
-//line sip.rl:476
+//line sip.rl:452
 value=&msg.ContentEncoding
 	goto st284
 tr617:
-//line sip.rl:475
+//line sip.rl:451
 value=&msg.ContentLanguage
 	goto st284
 tr652:
-//line sip.rl:478
+//line sip.rl:454
 value=&msg.Date
 	goto st284
 tr665:
-//line sip.rl:479
+//line sip.rl:455
 value=&msg.ErrorInfo
 	goto st284
 tr670:
-//line sip.rl:480
+//line sip.rl:456
 value=&msg.Event
 	goto st284
 tr699:
-//line sip.rl:481
+//line sip.rl:457
 value=&msg.InReplyTo
 	goto st284
 tr701:
-//line sip.rl:495
+//line sip.rl:471
 value=&msg.Supported
 	goto st284
 tr740:
-//line sip.rl:483
+//line sip.rl:459
 value=&msg.MIMEVersion
 	goto st284
 tr768:
-//line sip.rl:484
+//line sip.rl:460
 value=&msg.Organization
 	goto st284
 tr798:
-//line sip.rl:485
+//line sip.rl:461
 value=&msg.Priority
 	goto st284
 tr817:
-//line sip.rl:486
+//line sip.rl:462
 value=&msg.ProxyAuthenticate
 	goto st284
 tr827:
-//line sip.rl:487
+//line sip.rl:463
 value=&msg.ProxyAuthorization
 	goto st284
 tr835:
-//line sip.rl:488
+//line sip.rl:464
 value=&msg.ProxyRequire
 	goto st284
 tr837:
-//line sip.rl:489
+//line sip.rl:465
 value=&msg.ReferTo
 	goto st284
 tr887:
-//line sip.rl:482
+//line sip.rl:458
 value=&msg.ReplyTo
 	goto st284
 tr893:
-//line sip.rl:491
+//line sip.rl:467
 value=&msg.Require
 	goto st284
 tr903:
-//line sip.rl:492
+//line sip.rl:468
 value=&msg.RetryAfter
 	goto st284
 tr910:
-//line sip.rl:494
+//line sip.rl:470
 value=&msg.Subject
 	goto st284
 tr918:
-//line sip.rl:493
+//line sip.rl:469
 value=&msg.Server
 	goto st284
 tr942:
-//line sip.rl:496
+//line sip.rl:472
 value=&msg.Timestamp
 	goto st284
 tr944:
-//line sip.rl:469
+//line sip.rl:445
 value=&msg.Allow
-//line sip.rl:470
+//line sip.rl:446
 value=&msg.AllowEvents
 	goto st284
 tr957:
-//line sip.rl:497
+//line sip.rl:473
 value=&msg.Unsupported
 	goto st284
 tr967:
-//line sip.rl:498
+//line sip.rl:474
 value=&msg.UserAgent
 	goto st284
 tr984:
-//line sip.rl:499
+//line sip.rl:475
 value=&msg.Warning
 	goto st284
 tr1000:
-//line sip.rl:500
+//line sip.rl:476
 value=&msg.WWWAuthenticate
 	goto st284
 	st284:
 		p++
 	st_case_284:
-//line msg_parse.go:9781
+//line msg_parse.go:9733
 		_widec = int16(data[p])
 		if 13 <= data[p] && data[p] <= 13 {
 			_widec = 256 + (int16(data[p]) - 0)
@@ -9805,10 +9757,8 @@ value=&msg.WWWAuthenticate
 		}
 		goto st0
 tr559:
-//line sip.rl:152
-
-	{goto st280 }
-
+//line sip.rl:248
+ {goto st280 } 
 	goto st782
 tr442:
 //line sip.rl:54
@@ -9816,10 +9766,8 @@ tr442:
 	p--
 
 
-//line sip.rl:156
-
-	{goto st263 }
-
+//line sip.rl:249
+ {goto st263 } 
 	goto st782
 tr541:
 //line sip.rl:54
@@ -9827,35 +9775,32 @@ tr541:
 	p--
 
 
-//line sip.rl:191
-
-	{goto st34 }
-
+//line sip.rl:247
+ {goto st34 } 
 	goto st782
 tr576:
-//line sip.rl:549
+//line sip.rl:525
 value=nil
 //line sip.rl:54
 
 	p--
 
 
-//line sip.rl:195
-
-	{goto st256 }
-
+//line sip.rl:243
+ {goto st256 } 
 	goto st782
 tr971:
+//line sip.rl:119
+
+	via = new(Via)
+
 //line sip.rl:54
 
 	p--
 
 
-//line sip.rl:160
-
-	via = new(Via)
-	{goto st103 }
-
+//line sip.rl:250
+ {goto st103 } 
 	goto st782
 tr1001:
 //line sip.rl:58
@@ -9866,7 +9811,7 @@ tr1001:
 	st782:
 		p++
 	st_case_782:
-//line msg_parse.go:9870
+//line msg_parse.go:9815
 		goto st0
 	st285:
 		p++
@@ -10918,7 +10863,7 @@ tr553:
 	st378:
 		p++
 	st_case_378:
-//line msg_parse.go:10922
+//line msg_parse.go:10867
 		_widec = int16(data[p])
 		if 13 <= data[p] && data[p] <= 13 {
 			_widec = 256 + (int16(data[p]) - 0)
@@ -11053,13 +10998,13 @@ tr553:
 		}
 		goto st0
 tr557:
-//line sip.rl:245
+//line sip.rl:211
 
 	msg.CallID = string(data[mark:p])
 
 	goto st381
 tr643:
-//line sip.rl:261
+//line sip.rl:227
 
 	msg.CSeqMethod = string(data[mark:p])
 
@@ -11067,7 +11012,7 @@ tr643:
 	st381:
 		p++
 	st_case_381:
-//line msg_parse.go:11071
+//line msg_parse.go:11016
 		if data[p] == 10 {
 			goto tr559
 		}
@@ -11232,37 +11177,37 @@ tr643:
 		}
 		goto tr416
 tr572:
-//line sip.rl:452
+//line sip.rl:428
 addrp=lastAddr(&msg.Contact)
 	goto st394
 tr683:
-//line sip.rl:453
+//line sip.rl:429
 addrp=lastAddr(&msg.From)
 	goto st394
 tr788:
-//line sip.rl:454
+//line sip.rl:430
 addrp=lastAddr(&msg.PAssertedIdentity)
 	goto st394
 tr855:
-//line sip.rl:455
+//line sip.rl:431
 addrp=lastAddr(&msg.RecordRoute)
 	goto st394
 tr879:
-//line sip.rl:456
+//line sip.rl:432
 addrp=lastAddr(&msg.RemotePartyID)
 	goto st394
 tr907:
-//line sip.rl:457
+//line sip.rl:433
 addrp=lastAddr(&msg.Route)
 	goto st394
 tr930:
-//line sip.rl:458
+//line sip.rl:434
 addrp=lastAddr(&msg.To)
 	goto st394
 	st394:
 		p++
 	st_case_394:
-//line msg_parse.go:11266
+//line msg_parse.go:11211
 		switch data[p] {
 		case 9:
 			goto st394
@@ -11273,37 +11218,37 @@ addrp=lastAddr(&msg.To)
 		}
 		goto st0
 tr573:
-//line sip.rl:452
+//line sip.rl:428
 addrp=lastAddr(&msg.Contact)
 	goto st395
 tr684:
-//line sip.rl:453
+//line sip.rl:429
 addrp=lastAddr(&msg.From)
 	goto st395
 tr789:
-//line sip.rl:454
+//line sip.rl:430
 addrp=lastAddr(&msg.PAssertedIdentity)
 	goto st395
 tr856:
-//line sip.rl:455
+//line sip.rl:431
 addrp=lastAddr(&msg.RecordRoute)
 	goto st395
 tr880:
-//line sip.rl:456
+//line sip.rl:432
 addrp=lastAddr(&msg.RemotePartyID)
 	goto st395
 tr908:
-//line sip.rl:457
+//line sip.rl:433
 addrp=lastAddr(&msg.Route)
 	goto st395
 tr931:
-//line sip.rl:458
+//line sip.rl:434
 addrp=lastAddr(&msg.To)
 	goto st395
 	st395:
 		p++
 	st_case_395:
-//line msg_parse.go:11307
+//line msg_parse.go:11252
 		_widec = int16(data[p])
 		if 13 <= data[p] && data[p] <= 13 {
 			_widec = 256 + (int16(data[p]) - 0)
@@ -11773,15 +11718,15 @@ addrp=lastAddr(&msg.To)
 		}
 		goto st0
 tr624:
-//line sip.rl:508
+//line sip.rl:484
 clen=0
-//line sip.rl:249
+//line sip.rl:215
 
 	clen = clen * 10 + (int(data[p]) - 0x30)
 
 	goto st437
 tr626:
-//line sip.rl:249
+//line sip.rl:215
 
 	clen = clen * 10 + (int(data[p]) - 0x30)
 
@@ -11789,7 +11734,7 @@ tr626:
 	st437:
 		p++
 	st_case_437:
-//line msg_parse.go:11793
+//line msg_parse.go:11738
 		_widec = int16(data[p])
 		if 13 <= data[p] && data[p] <= 13 {
 			_widec = 256 + (int16(data[p]) - 0)
@@ -11943,7 +11888,7 @@ tr626:
 		}
 		goto st0
 tr637:
-//line sip.rl:257
+//line sip.rl:223
 
 	msg.CSeq = msg.CSeq * 10 + (int(data[p]) - 0x30)
 
@@ -11951,7 +11896,7 @@ tr637:
 	st450:
 		p++
 	st_case_450:
-//line msg_parse.go:11955
+//line msg_parse.go:11900
 		_widec = int16(data[p])
 		if 13 <= data[p] && data[p] <= 13 {
 			_widec = 256 + (int16(data[p]) - 0)
@@ -12029,7 +11974,7 @@ tr641:
 	st452:
 		p++
 	st_case_452:
-//line msg_parse.go:12033
+//line msg_parse.go:11978
 		_widec = int16(data[p])
 		if 13 <= data[p] && data[p] <= 13 {
 			_widec = 256 + (int16(data[p]) - 0)
@@ -12453,15 +12398,15 @@ tr641:
 		}
 		goto st0
 tr678:
-//line sip.rl:510
+//line sip.rl:486
 msg.Expires=0
-//line sip.rl:265
+//line sip.rl:231
 
 	msg.Expires = msg.Expires * 10 + (int(data[p]) - 0x30)
 
 	goto st485
 tr680:
-//line sip.rl:265
+//line sip.rl:231
 
 	msg.Expires = msg.Expires * 10 + (int(data[p]) - 0x30)
 
@@ -12469,7 +12414,7 @@ tr680:
 	st485:
 		p++
 	st_case_485:
-//line msg_parse.go:12473
+//line msg_parse.go:12418
 		_widec = int16(data[p])
 		if 13 <= data[p] && data[p] <= 13 {
 			_widec = 256 + (int16(data[p]) - 0)
@@ -12733,45 +12678,45 @@ tr680:
 		}
 		goto st0
 tr704:
-//line sip.rl:508
+//line sip.rl:484
 clen=0
-//line sip.rl:249
+//line sip.rl:215
 
 	clen = clen * 10 + (int(data[p]) - 0x30)
 
-//line sip.rl:510
+//line sip.rl:486
 msg.Expires=0
-//line sip.rl:265
+//line sip.rl:231
 
 	msg.Expires = msg.Expires * 10 + (int(data[p]) - 0x30)
 
-//line sip.rl:511
+//line sip.rl:487
 msg.MaxForwards=0
-//line sip.rl:269
+//line sip.rl:235
 
 	msg.MaxForwards = msg.MaxForwards * 10 + (int(data[p]) - 0x30)
 
-//line sip.rl:512
+//line sip.rl:488
 msg.MinExpires=0
-//line sip.rl:273
+//line sip.rl:239
 
 	msg.MinExpires = msg.MinExpires * 10 + (int(data[p]) - 0x30)
 
 	goto st508
 tr706:
-//line sip.rl:249
+//line sip.rl:215
 
 	clen = clen * 10 + (int(data[p]) - 0x30)
 
-//line sip.rl:265
+//line sip.rl:231
 
 	msg.Expires = msg.Expires * 10 + (int(data[p]) - 0x30)
 
-//line sip.rl:269
+//line sip.rl:235
 
 	msg.MaxForwards = msg.MaxForwards * 10 + (int(data[p]) - 0x30)
 
-//line sip.rl:273
+//line sip.rl:239
 
 	msg.MinExpires = msg.MinExpires * 10 + (int(data[p]) - 0x30)
 
@@ -12779,7 +12724,7 @@ tr706:
 	st508:
 		p++
 	st_case_508:
-//line msg_parse.go:12783
+//line msg_parse.go:12728
 		_widec = int16(data[p])
 		if 13 <= data[p] && data[p] <= 13 {
 			_widec = 256 + (int16(data[p]) - 0)
@@ -12988,15 +12933,15 @@ tr706:
 		}
 		goto st0
 tr723:
-//line sip.rl:511
+//line sip.rl:487
 msg.MaxForwards=0
-//line sip.rl:269
+//line sip.rl:235
 
 	msg.MaxForwards = msg.MaxForwards * 10 + (int(data[p]) - 0x30)
 
 	goto st526
 tr725:
-//line sip.rl:269
+//line sip.rl:235
 
 	msg.MaxForwards = msg.MaxForwards * 10 + (int(data[p]) - 0x30)
 
@@ -13004,7 +12949,7 @@ tr725:
 	st526:
 		p++
 	st_case_526:
-//line msg_parse.go:13008
+//line msg_parse.go:12953
 		_widec = int16(data[p])
 		if 13 <= data[p] && data[p] <= 13 {
 			_widec = 256 + (int16(data[p]) - 0)
@@ -13286,15 +13231,15 @@ tr725:
 		}
 		goto st0
 tr751:
-//line sip.rl:512
+//line sip.rl:488
 msg.MinExpires=0
-//line sip.rl:273
+//line sip.rl:239
 
 	msg.MinExpires = msg.MinExpires * 10 + (int(data[p]) - 0x30)
 
 	goto st552
 tr753:
-//line sip.rl:273
+//line sip.rl:239
 
 	msg.MinExpires = msg.MinExpires * 10 + (int(data[p]) - 0x30)
 
@@ -13302,7 +13247,7 @@ tr753:
 	st552:
 		p++
 	st_case_552:
-//line msg_parse.go:13306
+//line msg_parse.go:13251
 		_widec = int16(data[p])
 		if 13 <= data[p] && data[p] <= 13 {
 			_widec = 256 + (int16(data[p]) - 0)
@@ -15567,20 +15512,20 @@ tr753:
 	if p == eof {
 		switch cs {
 		case 281, 282, 288, 289, 290, 291, 292, 293, 294, 295, 296, 297, 298, 299, 300, 301, 302, 303, 304, 305, 306, 307, 308, 309, 310, 311, 312, 313, 314, 315, 316, 317, 318, 319, 320, 321, 322, 323, 324, 325, 326, 327, 328, 329, 330, 331, 332, 333, 334, 335, 336, 337, 338, 339, 340, 341, 342, 343, 344, 345, 346, 347, 348, 349, 350, 351, 352, 353, 354, 355, 356, 357, 358, 359, 360, 361, 362, 363, 364, 370, 371, 372, 373, 374, 375, 385, 386, 387, 388, 389, 390, 391, 392, 393, 399, 400, 401, 402, 403, 404, 405, 406, 407, 408, 409, 410, 411, 412, 413, 414, 415, 416, 417, 418, 419, 420, 421, 422, 423, 424, 425, 426, 427, 428, 429, 430, 431, 432, 433, 434, 441, 442, 443, 444, 445, 446, 447, 459, 460, 461, 462, 463, 464, 465, 466, 467, 468, 469, 470, 471, 472, 473, 474, 475, 476, 477, 478, 479, 480, 481, 482, 489, 490, 491, 492, 493, 494, 495, 496, 497, 498, 499, 500, 501, 502, 503, 504, 505, 512, 513, 514, 515, 516, 517, 518, 519, 520, 521, 522, 523, 530, 531, 532, 533, 534, 535, 536, 537, 538, 539, 540, 541, 542, 543, 544, 545, 546, 547, 548, 549, 556, 557, 558, 559, 560, 561, 562, 563, 564, 565, 566, 567, 568, 569, 570, 571, 572, 573, 574, 575, 576, 577, 578, 579, 580, 581, 582, 583, 584, 585, 586, 587, 588, 589, 590, 591, 592, 593, 594, 595, 596, 597, 598, 599, 600, 601, 602, 603, 604, 605, 606, 607, 608, 609, 610, 611, 612, 613, 614, 615, 616, 617, 618, 619, 620, 621, 622, 623, 624, 625, 626, 627, 628, 629, 630, 631, 632, 633, 634, 635, 636, 637, 638, 639, 640, 641, 642, 643, 644, 645, 646, 647, 648, 649, 650, 651, 652, 653, 654, 655, 656, 657, 658, 659, 660, 661, 662, 663, 664, 665, 666, 667, 668, 669, 670, 671, 672, 673, 674, 675, 676, 677, 678, 679, 680, 681, 682, 683, 684, 685, 686, 687, 688, 689, 690, 691, 692, 693, 694, 695, 696, 697, 698, 699, 700, 701, 702, 703, 704, 705, 706, 707, 708, 709, 710, 711, 712, 713, 714, 715, 716, 717, 718, 719, 720, 721, 722, 723, 724, 725, 726, 727, 728, 729, 730, 731, 732, 733, 734, 740, 741, 742, 743, 744, 745, 746, 747, 748, 749, 750, 751, 752, 753, 754, 755, 756, 757, 758, 759, 760, 761, 762, 763:
-//line sip.rl:170
+//line sip.rl:156
 
 	p--
 
 	{goto st273 }
 
 		case 778:
-//line sip.rl:239
+//line sip.rl:205
 
 	*addrp = addr
 	addrp = &addr.Next
 	addr = nil
 
-//line msg_parse.go:15584
+//line msg_parse.go:15529
 		}
 	}
 
