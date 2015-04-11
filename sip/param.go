@@ -4,6 +4,7 @@ package sip
 
 import (
 	"bytes"
+	"strings"
 )
 
 // Param is a linked list of ;key="values" for Addr/Via parameters.
@@ -18,7 +19,7 @@ func (p *Param) Get(name string) *Param {
 	if p == nil {
 		return nil
 	}
-	if p.Name == name {
+	if strings.EqualFold(p.Name, name) {
 		return p
 	}
 	return p.Next.Get(name)
