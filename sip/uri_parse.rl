@@ -110,7 +110,7 @@ func ParseURIBytes(data []byte) (uri *URI, err error) {
 			amt++
 		}
 
-		action uparam {
+		action param {
 			if uri.Params == nil {
 				uri.Params = Params{}
 			}
@@ -136,14 +136,14 @@ func ParseURIBytes(data []byte) (uri *URI, err error) {
 		uric            = reserved | unreserved | "%" | "[" | "]";
 		userc           = unreserved | "&" | "=" | "+" | "$" | "," | ";" | "?" | "/";
 		passc           = unreserved | "&" | "=" | "+" | "$" | ",";
-		uparamc         = unreserved | "[" | "]" | "/" | ":" | "&" | "+" | "$";
+		paramc          = unreserved | "[" | "]" | "/" | ":" | "&" | "+" | "$";
 		headerc         = unreserved | "[" | "]" | "/" | "?" | ":" | "+" | "$";
 
 		# Multibyte character definitions.
 		escaped         = "%" ( xdigit @hexHi ) ( xdigit @hexLo );
 		userchar        = escaped | ( userc @append );
 		passchar        = escaped | ( passc @append );
-		uparamchar      = escaped | ( uparamc @lower );
+		paramchar       = escaped | ( paramc @append );
 		headerchar      = escaped | ( headerc @append );
 
 		# URI component definitions.
@@ -153,17 +153,17 @@ func ParseURIBytes(data []byte) (uri *URI, err error) {
 		host6           = "[" ( ipv6c+ >start @lower %host ) "]";
 		host            = host6 | ( ( ipv4c | hostc | telc )+ >start @lower %host );
 		port            = digit+ @port;
-		uparamkey       = uparamchar+ >start >b2 %b1;
-		uparamval       = uparamchar+ >start %b2;
-		uparam          = ";" uparamkey ( "=" uparamval )? %uparam;
+		paramkey        = paramchar+ >start >b2 %b1;
+		paramval        = paramchar+ >start %b2;
+		param           = ";" paramkey ( "=" paramval )? %param;
 		headerkey       = headerchar+ >start >b2 %b1;
 		headerval       = headerchar+ >start %b2;
 		header          = headerkey ( "=" headerval )? %header;
 		headers         = "?" header ( "&" header )*;
 		userpass        = user ( ":" pass )?;
 		hostport        = host ( ":" port )?;
-		uriSansUser    := scheme ":" hostport uparam* headers?;
-		uriWithUser    := scheme ":" userpass "@" hostport uparam* headers?;
+		uriSansUser    := scheme ":" hostport param* headers?;
+		uriWithUser    := scheme ":" userpass "@" hostport param* headers?;
 
 		# XXX: This backtracking solution causes a weird Ragel bug.
 		# uri            := any+ >mark %backtrack %goto_uriSansUser
