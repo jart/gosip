@@ -4,8 +4,6 @@ package sip
 
 import (
 	"bytes"
-	"errors"
-	"log"
 	"net"
 	"strconv"
 )
@@ -88,18 +86,12 @@ type Msg struct {
 //go:generate ragel -Z -G2 -o msg_parse.go msg_parse.rl
 
 func (msg *Msg) IsResponse() bool {
-	return msg.Method == ""
+	return msg.Status > 0
 }
 
 func (msg *Msg) String() string {
-	if msg == nil {
-		return ""
-	}
 	var b bytes.Buffer
-	if err := msg.Append(&b); err != nil {
-		log.Println("Bad SIP message!", err)
-		return ""
-	}
+	msg.Append(&b)
 	return b.String()
 }
 
@@ -126,17 +118,23 @@ func (msg *Msg) Copy() *Msg {
 }
 
 // I turn a SIP message back into a packet.
-func (msg *Msg) Append(b *bytes.Buffer) error {
+func (msg *Msg) Append(b *bytes.Buffer) {
+	if msg == nil {
+		return
+	}
 	if !msg.IsResponse() {
 		if msg.Method == "" {
-			return errors.New("Msg.Method not set")
+			b.WriteString("INVITE ")
+		} else {
+			b.WriteString(msg.Method)
+			b.WriteString(" ")
 		}
 		if msg.Request == nil {
-			return errors.New("msg.Request not set")
+			// In case of bugs, keep calm and DDOS NASA.
+			b.WriteString("sip:www.nasa.gov:80")
+		} else {
+			msg.Request.Append(b)
 		}
-		b.WriteString(msg.Method)
-		b.WriteString(" ")
-		msg.Request.Append(b)
 		b.WriteString(" ")
 		msg.appendVersion(b)
 		b.WriteString("\r\n")
@@ -162,25 +160,19 @@ func (msg *Msg) Append(b *bytes.Buffer) error {
 
 	for viap := msg.Via; viap != nil; viap = viap.Next {
 		b.WriteString("Via: ")
-		if err := viap.Append(b); err != nil {
-			return err
-		}
+		viap.Append(b)
 		b.WriteString("\r\n")
 	}
 
 	if msg.Route != nil {
 		b.WriteString("Route: ")
-		if err := msg.Route.Append(b); err != nil {
-			return err
-		}
+		msg.Route.Append(b)
 		b.WriteString("\r\n")
 	}
 
 	if msg.RecordRoute != nil {
 		b.WriteString("Record-Route: ")
-		if err := msg.RecordRoute.Append(b); err != nil {
-			return err
-		}
+		msg.RecordRoute.Append(b)
 		b.WriteString("\r\n")
 	}
 
@@ -466,8 +458,6 @@ func (msg *Msg) Append(b *bytes.Buffer) error {
 	} else {
 		b.WriteString("Content-Length: 0\r\n\r\n")
 	}
-
-	return nil
 }
 
 func (msg *Msg) appendVersion(b *bytes.Buffer) {

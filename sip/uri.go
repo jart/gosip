@@ -22,18 +22,11 @@ package sip
 
 import (
 	"bytes"
-	"errors"
 	"github.com/jart/gosip/util"
 )
 
 const (
 	delims = ":/@;?#<>"
-)
-
-var (
-	URISchemeNotFound = errors.New("scheme not found")
-	URIMissingHost    = errors.New("host missing")
-	URIBadPort        = errors.New("invalid port number")
 )
 
 type URI struct {
@@ -63,15 +56,15 @@ func (uri *URI) Copy() *URI {
 // TODO(jart): URI Comparison https://tools.ietf.org/html/rfc3261#section-19.1.4
 
 func (uri *URI) String() string {
-	if uri == nil {
-		return "<nil>"
-	}
 	var b bytes.Buffer
 	uri.Append(&b)
 	return b.String()
 }
 
 func (uri *URI) Append(b *bytes.Buffer) {
+	if uri == nil {
+		return
+	}
 	if uri.Scheme == "" {
 		b.WriteString("sip:")
 	} else {

@@ -4,14 +4,8 @@ package sip
 
 import (
 	"bytes"
-	"errors"
 	"github.com/jart/gosip/util"
 	"strconv"
-)
-
-var (
-	ViaBadHeader  = errors.New("Bad Via header")
-	ViaProtoBlank = errors.New("Via Transport blank")
 )
 
 // Example: SIP/2.0/UDP 1.2.3.4:5060;branch=z9hG4bK556f77e6.
@@ -25,10 +19,7 @@ type Via struct {
 	Next      *Via   // pointer to next via header if any
 }
 
-func (via *Via) Append(b *bytes.Buffer) error {
-	if via.Host == "" {
-		return ViaProtoBlank
-	}
+func (via *Via) Append(b *bytes.Buffer) {
 	if via.Protocol == "" {
 		b.WriteString("SIP/")
 	} else {
@@ -53,7 +44,6 @@ func (via *Via) Append(b *bytes.Buffer) error {
 		b.WriteString(strconv.Itoa(int(via.Port)))
 	}
 	via.Param.Append(b)
-	return nil
 }
 
 // Copy returns a deep copy of via.

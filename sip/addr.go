@@ -48,9 +48,6 @@ func ParseAddrBytes(s []byte) (addr *Addr, err error) {
 }
 
 func (addr *Addr) String() string {
-	if addr == nil {
-		return ""
-	}
 	var b bytes.Buffer
 	addr.Append(&b)
 	return b.String()
@@ -71,7 +68,10 @@ func (addr *Addr) Tag() *Addr {
 }
 
 // Reassembles a SIP address into a buffer.
-func (addr *Addr) Append(b *bytes.Buffer) error {
+func (addr *Addr) Append(b *bytes.Buffer) {
+	if addr == nil {
+		return
+	}
 	if addr.Display != "" {
 		appendQuoted(b, []byte(addr.Display))
 		b.WriteByte(' ')
@@ -85,7 +85,6 @@ func (addr *Addr) Append(b *bytes.Buffer) error {
 		b.WriteByte(' ')
 		addr.Next.Append(b)
 	}
-	return nil
 }
 
 // Deep copies a new Addr object.
