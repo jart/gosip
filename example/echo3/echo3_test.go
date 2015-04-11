@@ -1,6 +1,6 @@
 // Echo test that uses slightly higher level APIs.
 
-package echo2_test
+package echo3_test
 
 import (
 	"github.com/jart/gosip/dsp"
