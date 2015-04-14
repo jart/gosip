@@ -39,7 +39,7 @@ func TestOptions(t *testing.T) {
 			Protocol: "UDP",
 			Host:     laddr.IP.String(),
 			Port:     uint16(laddr.Port),
-			Param:    &sip.Param{"branch", util.GenerateBranch(), nil},
+			Param:    &sip.Param{Name: "branch", Value: util.GenerateBranch()},
 		},
 		Contact: &sip.Addr{
 			Uri: &sip.URI{
@@ -53,7 +53,7 @@ func TestOptions(t *testing.T) {
 				Host: "justinetunney.com",
 				Port: 5060,
 			},
-			Param: &sip.Param{"tag", util.GenerateTag(), nil},
+			Param: &sip.Param{Name: "tag", Value: util.GenerateTag()},
 		},
 		To: &sip.Addr{
 			Uri: &sip.URI{
@@ -76,7 +76,7 @@ func TestOptions(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	msg, err := sip.ParseMsg(string(memory[0:amt]))
+	msg, err := sip.ParseMsg(memory[0:amt])
 	if err != nil {
 		t.Fatal(err)
 	}

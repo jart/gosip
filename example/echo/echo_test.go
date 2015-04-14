@@ -179,7 +179,7 @@ func TestCallToEchoApp(t *testing.T) {
 		Via: &sip.Via{
 			Host:  laddr.IP.String(),
 			Port:  uint16(laddr.Port),
-			Param: &sip.Param{"branch", util.GenerateBranch(), nil},
+			Param: &sip.Param{Name: "branch", Value: util.GenerateBranch()},
 		},
 		From: &sip.Addr{
 			Display: "Echo Test",
@@ -188,7 +188,7 @@ func TestCallToEchoApp(t *testing.T) {
 				Host:   laddr.IP.String(),
 				Port:   uint16(laddr.Port),
 			},
-			Param: &sip.Param{"tag", util.GenerateTag(), nil},
+			Param: &sip.Param{Name: "tag", Value: util.GenerateTag()},
 		},
 		To: &sip.Addr{
 			Uri: &sip.URI{
@@ -224,7 +224,7 @@ func TestCallToEchoApp(t *testing.T) {
 		t.Fatal("read 100 trying:", err)
 	}
 	log.Printf("<<< %s\n%s\n", raddr, string(memory[0:amt]))
-	msg, err := sip.ParseMsg(string(memory[0:amt]))
+	msg, err := sip.ParseMsg(memory[0:amt])
 	if err != nil {
 		t.Fatal("parse 100 trying", err)
 	}
@@ -239,7 +239,7 @@ func TestCallToEchoApp(t *testing.T) {
 		t.Fatal("read 200 ok:", err)
 	}
 	log.Printf("<<< %s\n%s\n", raddr, string(memory[0:amt]))
-	msg, err = sip.ParseMsg(string(memory[0:amt]))
+	msg, err = sip.ParseMsg(memory[0:amt])
 	if err != nil {
 		t.Fatal("parse 200 ok:", err)
 	}
@@ -341,7 +341,7 @@ func TestCallToEchoApp(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	msg, err = sip.ParseMsg(string(memory[0:amt]))
+	msg, err = sip.ParseMsg(memory[0:amt])
 	if err != nil {
 		t.Fatal(err)
 	}

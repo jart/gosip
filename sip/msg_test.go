@@ -44,10 +44,15 @@ type msgTest struct {
 	name string
 	s    string
 	msg  sip.Msg
-	err  error
+	e    error
 }
 
 var msgTests = []msgTest{
+
+	msgTest{
+		s: "",
+		e: sip.MsgIncompleteError{Msg: []uint8{}},
+	},
 
 	msgTest{
 		name: "UTF8 Phrase",
@@ -82,7 +87,7 @@ var msgTests = []msgTest{
 			VersionMajor: 2,
 			Status:       200,
 			Phrase:       "OK",
-			XHeader:      &sip.XHeader{"X-LOL", []byte("omfg"), nil},
+			XHeader:      &sip.XHeader{Name: "X-LOL", Value: []byte("omfg")},
 		},
 	},
 
@@ -154,7 +159,7 @@ var msgTests = []msgTest{
 				" Come buy, come buy:\r\n" +
 				" Apples and quinces,\r\n" +
 				" Lemons and oranges",
-			XHeader: &sip.XHeader{"X-LOL", []byte("omfg"), nil},
+			XHeader: &sip.XHeader{Name: "X-LOL", Value: []byte("omfg")},
 		},
 	},
 
@@ -364,7 +369,7 @@ var msgTests = []msgTest{
 					Scheme: "sip",
 					Host:   "lol.com",
 				},
-				Param: &sip.Param{"tag", "omfg", nil},
+				Param: &sip.Param{Name: "tag", Value: "omfg"},
 			},
 		},
 	},
@@ -384,7 +389,7 @@ var msgTests = []msgTest{
 					Scheme: "sip",
 					Host:   "lol.com",
 				},
-				Param: &sip.Param{"tag", "◕◡◕", nil},
+				Param: &sip.Param{Name: "tag", Value: "◕◡◕"},
 			},
 		},
 	},
@@ -403,7 +408,7 @@ var msgTests = []msgTest{
 					Scheme: "sip",
 					Host:   "lol.com",
 				},
-				Param: &sip.Param{"tag", "", nil},
+				Param: &sip.Param{Name: "tag", Value: ""},
 			},
 		},
 	},
@@ -422,7 +427,7 @@ var msgTests = []msgTest{
 					Scheme: "sip",
 					Host:   "lol.com",
 				},
-				Param: &sip.Param{"tag", "omfg", nil},
+				Param: &sip.Param{Name: "tag", Value: "omfg"},
 			},
 		},
 	},
@@ -603,7 +608,7 @@ var msgTests = []msgTest{
 				Version:   "2.0",
 				Transport: "TCP",
 				Host:      "spindle.example.com",
-				Param:     &sip.Param{"branch", "z9hG4bK9ikj8", nil},
+				Param:     &sip.Param{Name: "branch", Value: "z9hG4bK9ikj8"},
 			},
 		},
 	},
@@ -623,7 +628,7 @@ var msgTests = []msgTest{
 				Version:   "2.0",
 				Transport: "TCP",
 				Host:      "spindle.example.com",
-				Param:     &sip.Param{"branch", "z9hG4bK9ikj8", nil},
+				Param:     &sip.Param{Name: "branch", Value: "z9hG4bK9ikj8"},
 			},
 		},
 	},
@@ -648,19 +653,19 @@ var msgTests = []msgTest{
 				Version:   "2.0",
 				Transport: "UDP",
 				Host:      "192.0.2.2",
-				Param:     &sip.Param{"branch", "390skdjuw", nil},
+				Param:     &sip.Param{Name: "branch", Value: "390skdjuw"},
 				Next: &sip.Via{
 					Protocol:  "SIP",
 					Version:   "2.0",
 					Transport: "TCP",
 					Host:      "spindle.example.com",
-					Param:     &sip.Param{"branch", "z9hG4bK9ikj8", nil},
+					Param:     &sip.Param{Name: "branch", Value: "z9hG4bK9ikj8"},
 					Next: &sip.Via{
 						Protocol:  "SIP",
 						Version:   "2.0",
 						Transport: "UDP",
 						Host:      "192.168.255.111",
-						Param:     &sip.Param{"branch", "z9hG4bK30239", nil},
+						Param:     &sip.Param{Name: "branch", Value: "z9hG4bK30239"},
 					},
 				},
 			},
@@ -699,7 +704,11 @@ var msgTests = []msgTest{
 				Transport: "UDP",
 				Host:      "10.11.34.37",
 				Port:      42367,
-				Param:     &sip.Param{"branch", "9dc39c3c3e84", &sip.Param{"rport", "", nil}},
+				Param: &sip.Param{
+					Name:  "branch",
+					Value: "9dc39c3c3e84",
+					Next:  &sip.Param{Name: "rport"},
+				},
 			},
 			To: &sip.Addr{
 				Uri: &sip.URI{
@@ -713,9 +722,9 @@ var msgTests = []msgTest{
 					Scheme: "sip",
 					Host:   "10.11.34.37",
 					Port:   42367,
-					Param:  &sip.URIParam{"laffo", "", nil},
+					Param:  &sip.URIParam{Name: "laffo"},
 				},
-				Param: &sip.Param{"tag", "11917cbc0513", nil},
+				Param: &sip.Param{Name: "tag", Value: "11917cbc0513"},
 			},
 			Contact: &sip.Addr{
 				Uri: &sip.URI{
@@ -789,9 +798,9 @@ var msgTests = []msgTest{
 					Scheme: "sip",
 					Host:   "127.0.0.1",
 					Port:   52711,
-					Param:  &sip.URIParam{"transport", "udp", nil},
+					Param:  &sip.URIParam{Name: "transport", Value: "udp"},
 				},
-				Param: &sip.Param{"tag", "4568e274dbd8", nil},
+				Param: &sip.Param{Name: "tag", Value: "4568e274dbd8"},
 			},
 			To: &sip.Addr{
 				Uri: &sip.URI{
@@ -800,7 +809,7 @@ var msgTests = []msgTest{
 					Host:   "127.0.0.1",
 					Port:   5060,
 				},
-				Param: &sip.Param{"tag", "as71a0fa72", nil},
+				Param: &sip.Param{Name: "tag", Value: "as71a0fa72"},
 			},
 			Contact: &sip.Addr{
 				Uri: &sip.URI{
@@ -844,7 +853,7 @@ var msgTests = []msgTest{
 				Transport: "UDP",
 				Host:      "1.2.3.4",
 				Port:      55345,
-				Param:     &sip.Param{"branch", "z9hG4bK-d1d81e94a099", nil},
+				Param:     &sip.Param{Name: "branch", Value: "z9hG4bK-d1d81e94a099"},
 			},
 			From: &sip.Addr{
 				Uri: &sip.URI{
@@ -852,7 +861,7 @@ var msgTests = []msgTest{
 					User:   "+12126660420",
 					Host:   "fl.gg",
 				},
-				Param: &sip.Param{"tag", "68e274dbd83b", nil},
+				Param: &sip.Param{Name: "tag", Value: "68e274dbd83b"},
 			},
 			To: &sip.Addr{
 				Uri: &sip.URI{
@@ -860,7 +869,7 @@ var msgTests = []msgTest{
 					User:   "+12125650666",
 					Host:   "fl.gg",
 				},
-				Param: &sip.Param{"tag", "gK0cacc73a", nil},
+				Param: &sip.Param{Name: "tag", Value: "gK0cacc73a"},
 			},
 			Contact: &sip.Addr{
 				Uri: &sip.URI{
@@ -875,14 +884,14 @@ var msgTests = []msgTest{
 					Scheme: "sip",
 					Host:   "216.115.69.133",
 					Port:   5060,
-					Param:  &sip.URIParam{"lr", "", nil},
+					Param:  &sip.URIParam{Name: "lr"},
 				},
 				Next: &sip.Addr{
 					Uri: &sip.URI{
 						Scheme: "sip",
 						Host:   "216.115.69.144",
 						Port:   5060,
-						Param:  &sip.URIParam{"lr", "", nil},
+						Param:  &sip.URIParam{Name: "lr"},
 					},
 				},
 			},
@@ -948,7 +957,11 @@ var msgTests = []msgTest{
 				Transport: "UDP",
 				Host:      "10.11.34.37",
 				Port:      59516,
-				Param:     &sip.Param{"branch", "z9hG4bKS308QB9UUpNyD", &sip.Param{"rport", "", nil}},
+				Param: &sip.Param{
+					Name:  "branch",
+					Value: "z9hG4bKS308QB9UUpNyD",
+					Next:  &sip.Param{Name: "rport"},
+				},
 			},
 			To: &sip.Addr{
 				Uri: &sip.URI{
@@ -962,7 +975,7 @@ var msgTests = []msgTest{
 					Host:   "10.11.34.37",
 					Port:   59516,
 				},
-				Param: &sip.Param{"tag", "S1jX7UtK5Zerg", nil},
+				Param: &sip.Param{Name: "tag", Value: "S1jX7UtK5Zerg"},
 			},
 			Contact: &sip.Addr{
 				Uri: &sip.URI{
@@ -1045,7 +1058,7 @@ var msgTests = []msgTest{
 				Scheme: "sip",
 				User:   "vivekg",
 				Host:   "chair-dnrc.example.com",
-				Param:  &sip.URIParam{"unknownparam", "", nil},
+				Param:  &sip.URIParam{Name: "unknownparam"},
 			},
 			To: &sip.Addr{
 				Uri: &sip.URI{
@@ -1053,7 +1066,7 @@ var msgTests = []msgTest{
 					User:   "vivekg",
 					Host:   "chair-dnrc.example.com",
 				},
-				Param: &sip.Param{"tag", "1918181833n", nil},
+				Param: &sip.Param{Name: "tag", Value: "1918181833n"},
 			},
 			From: &sip.Addr{
 				Display: "J Rosenberg \\\"",
@@ -1062,7 +1075,7 @@ var msgTests = []msgTest{
 					User:   "jdrosen",
 					Host:   "example.com",
 				},
-				Param: &sip.Param{"tag", "98asjd8", nil},
+				Param: &sip.Param{Name: "tag", Value: "98asjd8"},
 			},
 			MaxForwards: 68,
 			CallID:      "wsinv.ndaksdj@192.0.2.1",
@@ -1073,19 +1086,19 @@ var msgTests = []msgTest{
 				Version:   "2.0",
 				Transport: "UDP",
 				Host:      "192.0.2.2",
-				Param:     &sip.Param{"branch", "390skdjuw", nil},
+				Param:     &sip.Param{Name: "branch", Value: "390skdjuw"},
 				Next: &sip.Via{
 					Protocol:  "SIP",
 					Version:   "2.0",
 					Transport: "TCP",
 					Host:      "spindle.example.com",
-					Param:     &sip.Param{"branch", "z9hG4bK9ikj8", nil},
+					Param:     &sip.Param{Name: "branch", Value: "z9hG4bK9ikj8"},
 					Next: &sip.Via{
 						Protocol:  "SIP",
 						Version:   "2.0",
 						Transport: "UDP",
 						Host:      "192.168.255.111",
-						Param:     &sip.Param{"branch", "z9hG4bK30239", nil},
+						Param:     &sip.Param{Name: "branch", Value: "z9hG4bK30239"},
 					},
 				},
 			},
@@ -1103,15 +1116,11 @@ var msgTests = []msgTest{
 					Scheme: "sip",
 					Host:   "services.example.com",
 					Param: &sip.URIParam{
-						Name:  "unknown-no-value",
-						Value: "",
+						Name: "unknown-no-value",
 						Next: &sip.URIParam{
 							Name:  "unknownwith",
 							Value: "value",
-							Next: &sip.URIParam{
-								Name:  "lr",
-								Value: "",
-							},
+							Next:  &sip.URIParam{Name: "lr"},
 						},
 					},
 				},
@@ -1127,8 +1136,7 @@ var msgTests = []msgTest{
 					Name:  "q",
 					Value: "0.33",
 					Next: &sip.Param{
-						Name:  "secondparam",
-						Value: "",
+						Name: "secondparam",
 						Next: &sip.Param{
 							Name:  "newparam",
 							Value: "newvalue",
@@ -1171,7 +1179,7 @@ var msgTests = []msgTest{
 				Version:   "2.0",
 				Transport: "TCP",
 				Host:      "host1.example.com",
-				Param:     &sip.Param{"branch", "z9hG4bK-.!%66*_+`'~", nil},
+				Param:     &sip.Param{Name: "branch", Value: "z9hG4bK-.!%66*_+`'~"},
 			},
 			To: &sip.Addr{
 				Display: "BEL:\x07 NUL:\x00 DEL:\x7F",
@@ -1207,13 +1215,16 @@ var msgTests = []msgTest{
 
 func TestParseMsg(t *testing.T) {
 	for _, test := range msgTests {
-		msg, err := sip.ParseMsg(test.s)
+		msg, err := sip.ParseMsg([]byte(test.s))
 		if err != nil {
-			if test.err == nil {
+			if test.e == nil {
 				t.Errorf("%v", err)
 				continue
 			} else { // test was supposed to fail
-				panic("TODO(jart): Implement failing support.")
+				if !reflect.DeepEqual(test.e, err) {
+					t.Errorf("%s\nWant: %#v\nGot:  %#v", test.s, test.e, err)
+				}
+				continue
 			}
 		}
 		if !reflect.DeepEqual(&test.msg, msg) {
@@ -1226,9 +1237,6 @@ func TestParseMsg(t *testing.T) {
 			}
 			if !reflect.DeepEqual(test.msg.Via, msg.Via) {
 				t.Errorf("Via:\n%#v !=\n%#v", test.msg.Via, msg.Via)
-				// t.Errorf("Via #2:\n%#v !=\n%#v", test.msg.Via.Next, msg.Via.Next)
-				// t.Errorf("Via #3:\n%#v !=\n%#v", test.msg.Via.Next.Next, msg.Via.Next.Next)
-				// t.Errorf("Via #4:\n%#v !=\n%#v", test.msg.Via.Next.Next.Next, msg.Via.Next.Next.Next)
 			}
 			if !reflect.DeepEqual(test.msg.Request, msg.Request) {
 				t.Errorf("Request:\n%#v !=\n%#v", test.msg.Request, msg.Request)
@@ -1252,13 +1260,13 @@ func TestParseMsg(t *testing.T) {
 func BenchmarkParseMsgFlowroute(b *testing.B) { // 26653 ns/op
 	msg := []byte(flowroute)
 	for i := 0; i < b.N; i++ {
-		sip.ParseMsgBytes(msg)
+		sip.ParseMsg(msg)
 	}
 }
 
 func BenchmarkParseMsgTorture2(b *testing.B) { // 31397 ns/op
 	msg := []byte(torture2)
 	for i := 0; i < b.N; i++ {
-		sip.ParseMsgBytes(msg)
+		sip.ParseMsg(msg)
 	}
 }

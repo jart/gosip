@@ -18,7 +18,7 @@ var uriTests = []uriTest{
 
 	uriTest{
 		s: "",
-		e: errors.New("Empty URI"),
+		e: errors.New("Incomplete URI: "),
 	},
 
 	uriTest{
@@ -127,7 +127,7 @@ var uriTests = []uriTest{
 			Pass:   "priceisright",
 			Host:   "dead:beef::666",
 			Port:   5060,
-			Param:  &sip.URIParam{"isup-oli", "00", nil},
+			Param:  &sip.URIParam{Name: "isup-oli", Value: "00"},
 		},
 	},
 
@@ -151,7 +151,14 @@ var uriTests = []uriTest{
 			Scheme: "sips",
 			User:   "alice",
 			Host:   "atlanta.com",
-			Header: &sip.URIHeader{"subject", "project x", &sip.URIHeader{"priority", "urgent", nil}},
+			Header: &sip.URIHeader{
+				Name:  "subject",
+				Value: "project x",
+				Next: &sip.URIHeader{
+					Name:  "priority",
+					Value: "urgent",
+				},
+			},
 		},
 	},
 
@@ -162,7 +169,7 @@ var uriTests = []uriTest{
 			User:   "+1-212-555-1212",
 			Pass:   "1234",
 			Host:   "gateway.com",
-			Param:  &sip.URIParam{"user", "phone", nil},
+			Param:  &sip.URIParam{Name: "user", Value: "phone"},
 		},
 	},
 
@@ -171,8 +178,8 @@ var uriTests = []uriTest{
 		uri: &sip.URI{
 			Scheme: "sip",
 			Host:   "atlanta.com",
-			Param:  &sip.URIParam{"method", "register", nil},
-			Header: &sip.URIHeader{"to", "alice@atlanta.com", nil},
+			Param:  &sip.URIParam{Name: "method", Value: "register"},
+			Header: &sip.URIHeader{Name: "to", Value: "alice@atlanta.com"},
 		},
 	},
 
@@ -189,7 +196,7 @@ var uriTests = []uriTest{
 
 func TestParseURI(t *testing.T) {
 	for _, test := range uriTests {
-		uri, err := sip.ParseURI(test.s)
+		uri, err := sip.ParseURI([]byte(test.s))
 		if err != nil {
 			if !reflect.DeepEqual(test.e, err) {
 				t.Errorf("%s\nWant: %#v\nGot:  %#v", test.s, test.e, err)

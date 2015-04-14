@@ -109,7 +109,7 @@ action VersionMinor {
 }
 
 action RequestURI {
-	msg.Request, err = ParseURIBytes(data[mark:p])
+	msg.Request, err = ParseURI(data[mark:p])
 	if err != nil { return nil, err }
 }
 
@@ -190,7 +190,7 @@ action AddrUnquotedDisplay {{
 }}
 
 action AddrUri {
-	addr.Uri, err = ParseURIBytes(data[mark:p])
+	addr.Uri, err = ParseURI(data[mark:p])
 	if err != nil { return nil, err }
 }
 

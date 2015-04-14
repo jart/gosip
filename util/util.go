@@ -9,77 +9,51 @@ import (
 	"syscall"
 )
 
-// Returns true if error is an i/o timeout.
-func IsTimeout(err error) bool {
-	operr, ok := err.(*net.OpError)
-	return ok && operr.Timeout()
-}
-
-// Returns true if error is ICMP connection refused.
+// Return true if error is ICMP connection refused.
 func IsRefused(err error) bool {
 	operr, ok := err.(*net.OpError)
 	return ok && operr.Err == syscall.ECONNREFUSED
 }
 
-// Returns true if error was caused by reading from a closed socket.
+// Return true if error was caused by reading from a closed socket.
 func IsUseOfClosed(err error) bool {
 	return strings.Contains(err.Error(), "use of closed network connection")
 }
 
-// Returns true if IP contains a colon.
+// Return true if IP contains a colon.
 func IsIPv6(ip string) bool {
-	n := strings.Index(ip, ":")
-	return n >= 0
+	return strings.Index(ip, ":") >= 0
 }
 
-// Returns true if IPv4 and is a LAN address as defined by RFC 1918.
-func IsIPPrivate(ip net.IP) bool {
-	if ip != nil {
-		ip = ip.To4()
-		if ip != nil {
-			switch ip[0] {
-			case 10:
-				return true
-			case 172:
-				if ip[1] >= 16 && ip[1] <= 31 {
-					return true
-				}
-			case 192:
-				if ip[1] == 168 {
-					return true
-				}
-			}
-		}
-	}
-	return false
-}
-
-// Generates a secure random number between 0 and 50,000.
+// Generate a secure random number between 0 and 50,000.
 func GenerateCSeq() int {
 	return rand.Int() % 50000
 }
 
-// Generates a 48-bit secure random string like: 27c97271d363.
+// Generate a 48-bit secure random string like: 27c97271d363.
 func GenerateTag() string {
 	return hex.EncodeToString(randomBytes(6))
 }
 
-// This is used in the Via tag. Probably not suitable for use by stateless
-// proxies.
+// Generate a SIP 2.0 Via branch ID. This is probably not suitable for use by
+// stateless proxies.
 func GenerateBranch() string {
 	return "z9hG4bK-" + GenerateTag()
 }
 
-// Generates a secure UUID4, e.g.f47ac10b-58cc-4372-a567-0e02b2c3d479
+// Generate a secure UUID4, e.g.f47ac10b-58cc-4372-a567-0e02b2c3d479
 func GenerateCallID() string {
 	lol := randomBytes(15)
 	digs := hex.EncodeToString(lol)
-	uuid4 := digs[0:8] + "-" + digs[8:12] + "-4" + digs[12:15] +
-		"-a" + digs[15:18] + "-" + digs[18:]
+	uuid4 := digs[0:8] +
+		"-" + digs[8:12] +
+		"-4" + digs[12:15] +
+		"-a" + digs[15:18] +
+		"-" + digs[18:]
 	return uuid4
 }
 
-// Generates a random ID for an SDP.
+// Generate a random ID for an SDP.
 func GenerateOriginID() string {
 	return strconv.FormatUint(uint64(rand.Uint32()), 10)
 }

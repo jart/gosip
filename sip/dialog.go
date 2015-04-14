@@ -373,7 +373,7 @@ func (dls *dialogState) send(msg *Msg) bool {
 	dls.b.Reset()
 	msg.Append(&dls.b)
 	if *tracing {
-		trace("send", dls.b.String(), dls.sock.RemoteAddr())
+		trace("send", dls.b.Bytes(), dls.sock.RemoteAddr())
 	}
 	_, err := dls.sock.Write(dls.b.Bytes())
 	if err != nil {

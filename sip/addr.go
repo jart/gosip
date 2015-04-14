@@ -31,22 +31,6 @@ type Addr struct {
 	Next    *Addr  // for comma separated lists of addresses
 }
 
-func ParseAddr(s string) (addr *Addr, err error) {
-	return ParseAddrBytes([]byte(s))
-}
-
-func ParseAddrBytes(s []byte) (addr *Addr, err error) {
-	var b bytes.Buffer
-	b.WriteString("SIP/2.0 900 ParseAddr()\r\nContact:")
-	b.Write(s)
-	b.WriteString("\r\n\r\n")
-	msg, err := ParseMsgBytes(b.Bytes())
-	if err != nil {
-		return nil, err
-	}
-	return msg.Contact, nil
-}
-
 func (addr *Addr) String() string {
 	var b bytes.Buffer
 	addr.Append(&b)

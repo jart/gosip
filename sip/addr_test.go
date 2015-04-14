@@ -1,6 +1,7 @@
 package sip_test
 
 import (
+	"bytes"
 	"github.com/jart/gosip/sip"
 	"reflect"
 	"testing"
@@ -35,7 +36,7 @@ var addrTests = []addrTest{
 				Scheme: "sip",
 				Host:   "pokemon.net",
 			},
-			Param: &sip.Param{"tag", "deadbeef", nil},
+			Param: &sip.Param{Name: "tag", Value: "deadbeef"},
 		},
 	},
 
@@ -48,7 +49,7 @@ var addrTests = []addrTest{
 				Scheme: "sip",
 				Host:   "pokemon.net",
 			},
-			Param: &sip.Param{"tag", "deadbeef", nil},
+			Param: &sip.Param{Name: "tag", Value: "deadbeef"},
 		},
 	},
 
@@ -61,7 +62,7 @@ var addrTests = []addrTest{
 				Scheme: "sip",
 				Host:   "pokemon.net",
 			},
-			Param: &sip.Param{"tag", "deadbeef", nil},
+			Param: &sip.Param{Name: "tag", Value: "deadbeef"},
 		},
 	},
 
@@ -74,7 +75,7 @@ var addrTests = []addrTest{
 				Scheme: "sip",
 				Host:   "pokemon.net",
 			},
-			Param: &sip.Param{"tag", "deadbeef", nil},
+			Param: &sip.Param{Name: "tag", Value: "deadbeef"},
 		},
 	},
 
@@ -86,7 +87,7 @@ var addrTests = []addrTest{
 				Scheme: "sip",
 				Host:   "pokemon.net",
 			},
-			Param: &sip.Param{"tag", "\"deadbeef\"", nil},
+			Param: &sip.Param{Name: "tag", Value: "\"deadbeef\""},
 		},
 	},
 
@@ -98,7 +99,7 @@ var addrTests = []addrTest{
 				Scheme: "sip",
 				User:   "brave",
 				Host:   "toaster.net",
-				Param:  &sip.URIParam{"isup-oli", "29", nil},
+				Param:  &sip.URIParam{Name: "isup-oli", Value: "29"},
 			},
 		},
 	},
@@ -111,9 +112,9 @@ var addrTests = []addrTest{
 				Scheme: "sip",
 				User:   "brave",
 				Host:   "toaster.net",
-				Param:  &sip.URIParam{"isup-oli", "29", nil},
+				Param:  &sip.URIParam{Name: "isup-oli", Value: "29"},
 			},
-			Param: &sip.Param{"tag", "deadbeef", nil},
+			Param: &sip.Param{Name: "tag", Value: "deadbeef"},
 		},
 	},
 
@@ -166,16 +167,28 @@ var addrTests = []addrTest{
 				Scheme: "sip",
 				User:   "jart",
 				Host:   "google.com",
-				Param:  &sip.URIParam{"isup-oli", "29", nil},
+				Param:  &sip.URIParam{Name: "isup-oli", Value: "29"},
 			},
-			Param: &sip.Param{"tag", "deadbeef", nil},
+			Param: &sip.Param{Name: "tag", Value: "deadbeef"},
 		},
 	},
 }
 
-func TestParseAddr(t *testing.T) {
+func ParseAddrBytes(s []byte) (addr *sip.Addr, err error) {
+	var b bytes.Buffer
+	b.WriteString("SIP/2.0 900 ParseAddrBytes()\r\nContact:")
+	b.Write(s)
+	b.WriteString("\r\n\r\n")
+	msg, err := sip.ParseMsg(b.Bytes())
+	if err != nil {
+		return nil, err
+	}
+	return msg.Contact, nil
+}
+
+func TestParseAddrBytes(t *testing.T) {
 	for _, test := range addrTests {
-		addr, err := sip.ParseAddr(test.s)
+		addr, err := ParseAddrBytes([]byte(test.s))
 		if err != nil {
 			if test.err == nil {
 				t.Error(err)

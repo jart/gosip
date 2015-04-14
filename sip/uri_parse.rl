@@ -11,16 +11,8 @@ import (
 %% machine uri;
 %% write data;
 
-// ParseURI turns a a SIP URI into a data structure.
-func ParseURI(s string) (uri *URI, err error) {
-	if s == "" {
-		return nil, errors.New("Empty URI")
-	}
-	return ParseURIBytes([]byte(s))
-}
-
 // ParseURI turns a a SIP URI byte slice into a data structure.
-func ParseURIBytes(data []byte) (uri *URI, err error) {
+func ParseURI(data []byte) (uri *URI, err error) {
 	if data == nil {
 		return nil, nil
 	}
@@ -31,19 +23,10 @@ func ParseURIBytes(data []byte) (uri *URI, err error) {
 	eof := len(data)
 	buf := make([]byte, len(data))
 	amt := 0
-	// mark := 0
 	var b1, b2 string
 	var hex byte
 
 	%%{
-		action mark {
-			mark = p
-		}
-
-		action backtrack {
-			fexec mark;
-		}
-
 		action start {
 			amt = 0
 		}

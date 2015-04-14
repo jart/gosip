@@ -12,11 +12,11 @@ var (
 	timestampTagging = flag.Bool("timestampTagging", false, "Add microsecond timestamps to Via tags")
 )
 
-func trace(dir, pkt string, addr net.Addr) {
+func trace(dir string, pkt []byte, addr net.Addr) {
 	size := len(pkt)
 	bar := strings.Repeat("-", 72)
 	suffix := "\n"
-	if pkt != "" && pkt[len(pkt)-1] == '\n' {
+	if pkt != nil && len(pkt) > 0 && pkt[len(pkt)-1] == '\n' {
 		suffix = ""
 	}
 	log.Printf(

@@ -12,16 +12,8 @@ import (
 %% include sip "sip.rl";
 %% write data;
 
-// ParseMsg turns a SIP message into a data structure.
-func ParseMsg(s string) (msg *Msg, err error) {
-	if s == "" {
-		return nil, errors.New("Empty SIP message")
-	}
-	return ParseMsgBytes([]byte(s))
-}
-
 // ParseMsg turns a SIP message byte slice into a data structure.
-func ParseMsgBytes(data []byte) (msg *Msg, err error) {
+func ParseMsg(data []byte) (msg *Msg, err error) {
 	if data == nil {
 		return nil, nil
 	}
