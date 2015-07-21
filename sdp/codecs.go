@@ -21,6 +21,7 @@ package sdp
 var (
 	ULAWCodec = Codec{PT: 0, Name: "PCMU", Rate: 8000}
 	DTMFCodec = Codec{PT: 101, Name: "telephone-event", Rate: 8000, Fmtp: "0-16"}
+	Opus      = Codec{PT: 111, Name: "opus", Rate: 48000, Param: "2"}
 
 	StandardCodecs = map[uint8]Codec{
 		0:  ULAWCodec,                                           // G.711 μ-Law is the de-facto codec (SpanDSP g711.h)
