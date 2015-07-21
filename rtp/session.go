@@ -84,6 +84,17 @@ func (rs *Session) Send(frame *Frame) (err error) {
 	return
 }
 
+func (rs *Session) SendRaw(data []byte, samps uint32) (err error) {
+	if rs == nil || rs.Sock == nil || rs.Peer == nil {
+		return nil
+	}
+	rs.Header.Write(rs.obuf)
+	rs.Header.TS += samps
+	rs.Header.Seq++
+	_, err = rs.Sock.WriteTo(append(rs.obuf[:HeaderSize], data...), rs.Peer)
+	return
+}
+
 func (rs *Session) Close() {
 	if rs == nil || rs.Sock == nil {
 		return
@@ -142,6 +153,9 @@ func receiver(sock *net.UDPConn, c chan<- *Frame, e chan<- error, r <-chan *Fram
 }
 
 func listenRTP(host string) (sock net.PacketConn, err error) {
+	if strings.Contains(host, ":") {
+		return net.ListenPacket("udp", host)
+	}
 	for i := 0; i < rtpBindMaxAttempts; i++ {
 		port := rtpBindPortMin + rand.Int63()%(rtpBindPortMax-rtpBindPortMin+1)
 		saddr := net.JoinHostPort(host, strconv.FormatInt(port, 10))
