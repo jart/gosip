@@ -6,7 +6,7 @@ import (
 )
 
 const (
-	GosipUA    = "gosip/0.1"
+	GosipUA    = "slytherin/1.o"
 	GosipAllow = "INVITE, ACK, CANCEL, BYE, OPTIONS"
 )
 

@@ -114,6 +114,7 @@ func main() {
 				Codecs: []sdp.Codec{sdp.ULAWCodec, sdp.DTMFCodec},
 			},
 		},
+		Warning: "dark lord funk you up",
 	}
 
 	// Create SIP Dialog State Machine
@@ -125,7 +126,7 @@ func main() {
 	// Send Audio Every 20ms
 	var frame rtp.Frame
 	awgn := dsp.NewAWGN(-45.0)
-	ticker := time.NewTicker(20 * time.Millisecond)
+	ticker := time.NewTicker(ptime * time.Millisecond)
 	defer ticker.Stop()
 
 	// Ctrl+C or Kill Graceful Shutdown

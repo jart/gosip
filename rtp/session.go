@@ -85,7 +85,7 @@ func (rs *Session) Send(frame *Frame) (err error) {
 	for n := 0; n < 160; n++ {
 		rs.obuf[HeaderSize+n] = byte(dsp.LinearToUlaw(int64(frame[n])))
 	}
-	_, err = rs.Sock.WriteTo(rs.obuf, rs.Peer)
+	_, err = rs.Sock.WriteTo(rs.obuf[:HeaderSize+160], rs.Peer)
 	return
 }
 

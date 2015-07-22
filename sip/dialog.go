@@ -22,7 +22,7 @@ const (
 )
 
 var (
-	looseSignalling = flag.Bool("looseSignalling", true, "Permit SIP messages from servers other than the next hop.")
+	looseSignalling = flag.Bool("looseSignalling", false, "Permit SIP messages from servers other than the next hop.")
 	resendInterval  = flag.Int("resendInterval", 400, "Milliseconds between SIP resends.")
 	maxResends      = flag.Int("maxResends", 2, "Max SIP message retransmits.")
 )

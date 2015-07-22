@@ -8,7 +8,7 @@ import (
 )
 
 var (
-	tracing          = flag.Bool("tracing", true, "Enable SIP message tracing")
+	tracing          = flag.Bool("trace", false, "Enable SIP message tracing")
 	timestampTagging = flag.Bool("timestampTagging", false, "Add microsecond timestamps to Via tags")
 )
 

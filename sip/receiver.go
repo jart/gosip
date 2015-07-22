@@ -41,8 +41,18 @@ func ReceiveMessages(sock *net.UDPConn, c chan<- *Msg, e chan<- error) {
 }
 
 func addReceived(msg *Msg, addr *net.UDPAddr) {
-	if msg.Via.Host != addr.IP.String() || int(msg.Via.Port) != addr.Port {
-		msg.Via.Param = &Param{"received", addr.String(), msg.Via.Param}
+	if msg.IsResponse() {
+		return
+	}
+	if int(msg.Via.Port) != addr.Port {
+		if msg.Via.Param.Get("rport") == nil {
+			msg.Via.Param = &Param{"rport", string(addr.Port), msg.Via.Param}
+		}
+	}
+	if msg.Via.Host != addr.IP.String() {
+		if msg.Via.Param.Get("received") == nil {
+			msg.Via.Param = &Param{"received", addr.IP.String(), msg.Via.Param}
+		}
 	}
 }
 
