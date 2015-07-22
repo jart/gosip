@@ -93,31 +93,33 @@ type EventHeader struct {
 	Duration uint16
 }
 
-// Writes an rtp header to a buffer. You need 12 bytes.
-func (h *Header) Write(b []byte) {
-	b[0] = (Version & mask2) << 6
+// Write appends an RTP header to a byte slice.
+func (h *Header) Write(b []byte) []byte {
+	var b0, b1 byte
+	b0 = (Version & mask2) << 6
 	if h.Pad {
-		b[0] |= (1 & mask1) << 5
+		b0 |= (1 & mask1) << 5
 	}
-	// if extend { b[0] |= (1 & mask1) << 4 }
-	// b[0] |= (csrcCount & mask4) << 0
-	b[1] = (h.PT & mask7) << 0
+	// if extend { b0 |= (1 & mask1) << 4 }
+	// b0 |= (csrcCount & mask4) << 0
+	b1 = (h.PT & mask7) << 0
 	if h.Mark {
-		b[1] |= (1 & mask1) << 7
+		b1 |= (1 & mask1) << 7
 	}
-	b[2] = byte(h.Seq >> 8)
-	b[3] = byte(h.Seq)
-	b[4] = byte(h.TS >> 24)
-	b[5] = byte(h.TS >> 16)
-	b[6] = byte(h.TS >> 8)
-	b[7] = byte(h.TS)
-	b[8] = byte(h.Ssrc >> 24)
-	b[9] = byte(h.Ssrc >> 16)
-	b[10] = byte(h.Ssrc >> 8)
-	b[11] = byte(h.Ssrc)
+	return append(b, b0, b1,
+		byte(h.Seq>>8),
+		byte(h.Seq),
+		byte(h.TS>>24),
+		byte(h.TS>>16),
+		byte(h.TS>>8),
+		byte(h.TS),
+		byte(h.Ssrc>>24),
+		byte(h.Ssrc>>16),
+		byte(h.Ssrc>>8),
+		byte(h.Ssrc))
 }
 
-// Reads header bits from buffer.
+// Read extracts an RTP header from a byte slice.
 func (h *Header) Read(b []byte) error {
 	if b[0]>>6 != Version {
 		return ErrBadVersion

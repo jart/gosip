@@ -180,6 +180,7 @@ func main() {
 		case ch := <-keyboard:
 			if err := rs.SendDTMF(ch); err != nil {
 				log.Printf("DTMF: %s\r\n", err.Error())
+				break
 			}
 			log.Printf("DTMF: %c\r\n", ch)
 

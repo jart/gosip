@@ -17,10 +17,13 @@ const (
 	rtpBindMaxAttempts = 10
 	rtpBindPortMin     = 16384
 	rtpBindPortMax     = 32768
+	dtmfVolume         = 6
+	dtmfDuration       = 400
+	dtmfInterval       = 100
 )
 
 var (
-	dtmfCodes = map[byte]byte{'0': 0, '1': 1, '2': 2, '3': 3, '4': 4, '5': 5, '6': 6, '7': 7, '8': 8, '9': 9, '*': 10, '#': 11, 'a': 12, 'A': 12, 'b': 13, 'B': 13, 'c': 14, 'C': 14, 'd': 15, 'D': 15, '!': 16}
+	dtmfCodes = [256]byte{'0': 0, '1': 1, '2': 2, '3': 3, '4': 4, '5': 5, '6': 6, '7': 7, '8': 8, '9': 9, '*': 10, '#': 11, 'a': 12, 'A': 12, 'b': 13, 'B': 13, 'c': 14, 'C': 14, 'd': 15, 'D': 15, '!': 16}
 )
 
 type Frame [160]int16
@@ -70,7 +73,7 @@ func NewSession(host string) (rs *Session, err error) {
 			TS:   0,
 			Ssrc: rand.Uint32(),
 		},
-		obuf: make([]byte, HeaderSize+160),
+		obuf: make([]byte, 0, 1500),
 	}, nil
 }
 
@@ -79,13 +82,14 @@ func (rs *Session) Send(frame *Frame) (err error) {
 		return nil
 	}
 	rs.Header.PT = sdp.ULAWCodec.PT
-	rs.Header.Write(rs.obuf)
+	buf := rs.Header.Write(rs.obuf)
+	buf = buf[0 : len(buf)+160]
 	rs.Header.TS += 160
 	rs.Header.Seq++
 	for n := 0; n < 160; n++ {
-		rs.obuf[HeaderSize+n] = byte(dsp.LinearToUlaw(int64(frame[n])))
+		buf[HeaderSize+n] = byte(dsp.LinearToUlaw(int64(frame[n])))
 	}
-	_, err = rs.Sock.WriteTo(rs.obuf[:HeaderSize+160], rs.Peer)
+	_, err = rs.Sock.WriteTo(buf, rs.Peer)
 	return
 }
 
@@ -94,19 +98,16 @@ func (rs *Session) SendRaw(pt uint8, data []byte, samps uint32) (err error) {
 		return nil
 	}
 	rs.Header.PT = pt
-	rs.Header.Write(rs.obuf)
+	buf := rs.Header.Write(rs.obuf)
 	rs.Header.TS += samps
 	rs.Header.Seq++
-	_, err = rs.Sock.WriteTo(append(rs.obuf[:HeaderSize], data...), rs.Peer)
+	_, err = rs.Sock.WriteTo(append(buf, data...), rs.Peer)
 	return
 }
 
 func (rs *Session) SendDTMF(digit byte) error {
-	const volume = 6
-	const duration = 1600
-	const interval = 400
-	code, ok := dtmfCodes[digit]
-	if !ok {
+	code := dtmfCodes[digit]
+	if code == 0 && digit != '0' {
 		return errors.New("Invalid DTMF digit: " + string(digit))
 	}
 	if rs == nil || rs.Sock == nil || rs.Peer == nil {
@@ -114,30 +115,30 @@ func (rs *Session) SendDTMF(digit byte) error {
 	}
 	rs.Header.PT = sdp.DTMFCodec.PT
 	rs.Header.Mark = true
-	rs.obuf[HeaderSize+0] = code
-	rs.obuf[HeaderSize+1] = volume & 0x3f
+	var event [4]byte
+	event[0] = code
+	event[1] = dtmfVolume & 0x3f
 	dur := uint16(1)
 	for {
-		rs.obuf[HeaderSize+2] = byte(dur >> 8)
-		rs.obuf[HeaderSize+3] = byte(dur & 0xff)
-		rs.Header.Write(rs.obuf)
-		_, err := rs.Sock.WriteTo(rs.obuf[:HeaderSize+4], rs.Peer)
+		event[2] = byte(dur >> 8)
+		event[3] = byte(dur & 0xff)
+		_, err := rs.Sock.WriteTo(append(rs.Header.Write(rs.obuf), event[:]...), rs.Peer)
 		if err != nil {
 			return err
 		}
 		rs.Header.Seq++
 		rs.Header.Mark = false
-		dur += interval
-		if dur >= duration {
+		dur += dtmfInterval
+		if dur >= dtmfDuration {
 			break
 		}
 	}
-	rs.obuf[HeaderSize+1] |= 0x80
-	rs.obuf[HeaderSize+2] = byte(duration >> 8)
-	rs.obuf[HeaderSize+3] = byte(duration & 0xff)
+	event[1] |= 0x80
+	event[2] = byte(dtmfDuration >> 8)
+	event[3] = byte(dtmfDuration & 0xff)
 	for n := 0; n < 3; n++ {
 		rs.Header.Write(rs.obuf)
-		_, err := rs.Sock.WriteTo(rs.obuf[:HeaderSize+4], rs.Peer)
+		_, err := rs.Sock.WriteTo(append(rs.Header.Write(rs.obuf), event[:]...), rs.Peer)
 		if err != nil {
 			return err
 		}
