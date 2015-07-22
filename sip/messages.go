@@ -60,7 +60,7 @@ func NewAck(msg, invite *Msg) *Msg {
 
 func NewCancel(invite *Msg) *Msg {
 	if invite.IsResponse() || invite.Method != MethodInvite {
-		log.Printf("Can't CANCEL anything non-INVITE:\n%s", invite)
+		log.Printf("Can't CANCEL anything non-INVITE:\r\n%s", invite)
 	}
 	return &Msg{
 		Method:     MethodCancel,

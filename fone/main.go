@@ -1,7 +1,8 @@
 package main
 
-// #cgo pkg-config: libpulse-simple
+// #cgo pkg-config: ncurses libpulse-simple
 // #include <stdlib.h>
+// #include <ncurses.h>
 // #include <pulse/simple.h>
 // #include <pulse/error.h>
 import "C"
@@ -9,69 +10,84 @@ import "C"
 import (
 	"errors"
 	"flag"
+	"fmt"
 	"github.com/jart/gosip/dsp"
 	"github.com/jart/gosip/rtp"
 	"github.com/jart/gosip/sdp"
 	"github.com/jart/gosip/sip"
 	"github.com/jart/gosip/util"
+	"io/ioutil"
+	"log"
 	"net"
+	"net/http"
 	"os"
+	"os/signal"
 	"time"
 	"unsafe"
 )
 
 const (
-	hz       = 8000
-	chans    = 1
-	ptime    = 20
-	ssize    = 2
-	psamps   = hz / (1000 / ptime) * chans
-	pbytes   = psamps * ssize
-	filename = "/var/lib/asterisk/sounds/en/cc-yougotpranked.s16"
+	hz     = 8000
+	chans  = 1
+	ptime  = 20
+	ssize  = 2
+	psamps = hz / (1000 / ptime) * chans
+	pbytes = psamps * ssize
 )
 
 var (
-	address      = flag.String("sipAddress", ":9020", "Listen address")
-	paServerFlag = flag.String("paServer", "", "Pulse Audio server name")
-	paSinkFlag   = flag.String("paSink", "", "Pulse Audio device or sink name")
+	addressFlag  = flag.String("address", "", "Public IP (or hostname) of the local machine. Defaults to asking an untrusted webserver.")
+	paServerFlag = flag.String("paServer", "", "PulseAudio server name")
+	paSinkFlag   = flag.String("paSink", "", "PulseAudio device or sink name")
+	muteFlag     = flag.Bool("mute", false, "Send comfort noise rather than microphone input")
 	paName       = C.CString("fone")
 )
 
 func main() {
-	pa, err := makePulseAudio(C.PA_STREAM_PLAYBACK, filename)
+	log.SetFlags(log.LstdFlags | log.Lmicroseconds | log.Lshortfile)
+	flag.Usage = func() {
+		fmt.Fprintf(os.Stderr, "Usage: %s URI\n", os.Args[0])
+		flag.PrintDefaults()
+	}
+	flag.Parse()
+	if len(flag.Args()) != 1 {
+		flag.Usage()
+		os.Exit(1)
+	}
+
+	// Whom Are We Calling?
+	requestURIString := flag.Args()[0]
+	requestURI, err := sip.ParseURI([]byte(requestURIString))
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "Bad Request URI: %s\n", err.Error())
+		os.Exit(1)
+	}
+
+	// Computer Speaker
+	speaker, err := makePulseAudio(C.PA_STREAM_PLAYBACK, requestURIString)
 	if err != nil {
 		panic(err)
 	}
-	defer C.pa_simple_free(pa)
-	defer C.pa_simple_flush(pa, nil)
+	defer C.pa_simple_free(speaker)
+	defer C.pa_simple_flush(speaker, nil)
 
-	f, err := os.Open(filename)
+	// Computer Microphone
+	mic, err := makePulseAudio(C.PA_STREAM_RECORD, requestURIString)
 	if err != nil {
 		panic(err)
 	}
-	defer f.Close()
+	defer C.pa_simple_free(mic)
 
-	tick := time.NewTicker(ptime * time.Millisecond)
-	defer tick.Stop()
-	func() {
-		for {
-			var buf [pbytes]byte
-			select {
-			case <-tick.C:
-				got, _ := f.Read(buf[:])
-				if got < pbytes {
-					return
-				}
-				var paerr C.int
-				if C.pa_simple_write(pa, unsafe.Pointer(&buf[0]), pbytes, &paerr) != 0 {
-					panic(C.GoString(C.pa_strerror(paerr)))
-				}
-			}
+	// Get Public IP Address
+	publicIP := *addressFlag
+	if publicIP == "" {
+		publicIP, err = getPublicIP()
+		if err != nil {
+			panic(err)
 		}
-	}()
-	os.Exit(0)
+	}
 
-	// Create RTP audio session.
+	// Create RTP Session
 	rs, err := rtp.NewSession("")
 	if err != nil {
 		panic(err)
@@ -79,11 +95,20 @@ func main() {
 	defer rs.Close()
 	rtpPort := uint16(rs.Sock.LocalAddr().(*net.UDPAddr).Port)
 
+	// Construct SIP INVITE
 	invite := &sip.Msg{
 		Method:  sip.MethodInvite,
-		Request: &sip.URI{User: "echo", Host: "127.0.0.1", Port: 5060},
+		Request: requestURI,
+		Via:     &sip.Via{Host: publicIP},
+		To:      &sip.Addr{Uri: requestURI},
+		From:    &sip.Addr{Uri: &sip.URI{Host: publicIP, User: os.Getenv("USER")}},
+		Contact: &sip.Addr{Uri: &sip.URI{Host: publicIP}},
 		Payload: &sdp.SDP{
-			Origin: sdp.Origin{ID: util.GenerateOriginID()},
+			Addr: publicIP,
+			Origin: sdp.Origin{
+				ID:   util.GenerateOriginID(),
+				Addr: publicIP,
+			},
 			Audio: &sdp.Media{
 				Port:   rtpPort,
 				Codecs: []sdp.Codec{sdp.ULAWCodec, sdp.DTMFCodec},
@@ -91,49 +116,103 @@ func main() {
 		},
 	}
 
-	// Create a SIP phone call.
+	// Create SIP Dialog State Machine
 	dl, err := sip.NewDialog(invite)
 	if err != nil {
 		panic(err)
 	}
 
-	// We're going to send white noise every 20ms.
+	// Send Audio Every 20ms
 	var frame rtp.Frame
 	awgn := dsp.NewAWGN(-45.0)
 	ticker := time.NewTicker(20 * time.Millisecond)
 	defer ticker.Stop()
 
-	// Hangup after 200ms.
-	death := time.After(200 * time.Millisecond)
+	// Ctrl+C or Kill Graceful Shutdown
+	death := make(chan os.Signal, 1)
+	signal.Notify(death, os.Interrupt, os.Kill)
+
+	// DTMF Terminal Input
+	keyboard := make(chan byte)
+	keyboardStart := func() {
+		C.cbreak()
+		C.noecho()
+		go func() {
+			var buf [1]byte
+			for {
+				amt, err := os.Stdin.Read(buf[:])
+				if err != nil || amt != 1 {
+					log.Printf("Keyboard: %s\r\n", err)
+					return
+				}
+				keyboard <- buf[0]
+			}
+		}()
+	}
+
+	C.initscr()
+	defer C.endwin()
 
 	// Let's GO!
 	var answered bool
+	var paerr C.int
 	for {
 		select {
+
+		// Send Audio
 		case <-ticker.C:
-			for n := 0; n < 160; n++ {
-				frame[n] = awgn.Get()
+			if *muteFlag {
+				for n := 0; n < psamps; n++ {
+					frame[n] = awgn.Get()
+				}
+			} else {
+				if C.pa_simple_read(mic, unsafe.Pointer(&frame[0]), pbytes, &paerr) != 0 {
+					log.Printf("Microphone: %s\r\n", C.GoString(C.pa_strerror(paerr)))
+					break
+				}
 			}
 			if err := rs.Send(&frame); err != nil {
-				panic("RTP send failed: " + err.Error())
+				log.Printf("RTP: %s\r\n", err.Error())
 			}
-		case err := <-dl.OnErr:
-			panic(err)
+
+		// Send DTMF
+		case ch := <-keyboard:
+			if err := rs.SendDTMF(ch); err != nil {
+				log.Printf("DTMF: %s\r\n", err.Error())
+			}
+			log.Printf("DTMF: %c\r\n", ch)
+
+		// Receive Audio
+		case frame := <-rs.C:
+			if len(frame) != psamps {
+				log.Printf("RTP: Received undersized frame: %d != %d\r\n", len(frame), psamps)
+			} else {
+				if C.pa_simple_write(speaker, unsafe.Pointer(&frame[0]), pbytes, &paerr) != 0 {
+					log.Printf("Speaker: %s\r\n", C.GoString(C.pa_strerror(paerr)))
+				}
+			}
+			rs.R <- frame
+
+		// Signalling
+		case rs.Peer = <-dl.OnPeer:
 		case state := <-dl.OnState:
 			switch state {
 			case sip.DialogAnswered:
 				answered = true
+				keyboardStart()
 			case sip.DialogHangup:
-				if !answered {
-					panic("Call didn't get answered!")
+				if answered {
+					return
+				} else {
+					os.Exit(1)
 				}
-				return
 			}
-		case rs.Peer = <-dl.OnPeer:
-		case frame := <-rs.C:
-			rs.R <- frame
+
+		// Errors and Interruptions
+		case err := <-dl.OnErr:
+			log.Fatalf("SIP: %s\r\n", err.Error())
 		case err := <-rs.E:
-			panic("RTP recv failed: " + err.Error())
+			log.Printf("RTP: %s\r\n", err.Error())
 			rs.CloseAfterError()
 			dl.Hangup <- true
 		case <-death:
@@ -149,11 +228,19 @@ func makePulseAudio(direction C.pa_stream_direction_t, streamName string) (*C.pa
 	ss.channels = chans
 
 	var ba C.pa_buffer_attr
-	ba.maxlength = pbytes * 4
-	ba.tlength = pbytes
-	ba.prebuf = pbytes * 2
-	ba.minreq = pbytes
-	ba.fragsize = 0xffffffff
+	if direction == C.PA_STREAM_PLAYBACK {
+		ba.maxlength = pbytes * 4
+		ba.tlength = pbytes
+		ba.prebuf = pbytes * 2
+		ba.minreq = pbytes
+		ba.fragsize = 0xffffffff
+	} else {
+		ba.maxlength = pbytes * 4
+		ba.tlength = 0xffffffff
+		ba.prebuf = 0xffffffff
+		ba.minreq = 0xffffffff
+		ba.fragsize = pbytes
+	}
 
 	var paServer *C.char
 	if *paServerFlag != "" {
@@ -176,4 +263,17 @@ func makePulseAudio(direction C.pa_stream_direction_t, streamName string) (*C.pa
 		return nil, errors.New(C.GoString(C.pa_strerror(paerr)))
 	}
 	return pa, nil
+}
+
+func getPublicIP() (string, error) {
+	resp, err := http.Get("http://api.ipify.org")
+	if err != nil {
+		return "", err
+	}
+	defer resp.Body.Close()
+	body, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return "", err
+	}
+	return string(body), nil
 }

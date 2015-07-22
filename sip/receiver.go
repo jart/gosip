@@ -25,7 +25,7 @@ func ReceiveMessages(sock *net.UDPConn, c chan<- *Msg, e chan<- error) {
 		}
 		msg, err := ParseMsg(packet)
 		if err != nil {
-			log.Println("Dropping SIP message:", err)
+			log.Printf("Dropping SIP message: %s\r\n", err)
 			continue
 		}
 		addReceived(msg, addr)
@@ -74,6 +74,6 @@ func fixMessagesFromStrictRouters(lhost string, lport uint16, msg *Msg) {
 			seclast.Next = nil
 			msg.Route.Last()
 		}
-		log.Printf("Fixing request URI after strict router traversal: %s -> %s", oldReq, newReq)
+		log.Printf("Fixing request URI after strict router traversal: %s -> %s\r\n", oldReq, newReq)
 	}
 }

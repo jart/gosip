@@ -15,15 +15,15 @@ var (
 func trace(dir string, pkt []byte, addr net.Addr) {
 	size := len(pkt)
 	bar := strings.Repeat("-", 72)
-	suffix := "\n"
+	suffix := "\r\n"
 	if pkt != nil && len(pkt) > 0 && pkt[len(pkt)-1] == '\n' {
 		suffix = ""
 	}
 	log.Printf(
-		"%s %d bytes from %s/%s\n"+
-			"%s\n"+
+		"%s %d bytes from %s/%s\r\n"+
+			"%s\r\n"+
 			"%s%s"+
-			"%s\n",
+			"%s\r\n",
 		dir, size, addr.Network(), addr.String(),
 		bar,
 		pkt, suffix,

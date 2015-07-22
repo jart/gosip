@@ -6,6 +6,7 @@ import (
 	"bytes"
 	"errors"
 	"flag"
+	"github.com/jart/gosip/rtp"
 	"github.com/jart/gosip/sdp"
 	"github.com/jart/gosip/util"
 	"log"
@@ -22,7 +23,7 @@ const (
 
 var (
 	looseSignalling = flag.Bool("looseSignalling", true, "Permit SIP messages from servers other than the next hop.")
-	resendInterval  = flag.Int("resendInterval", 200, "Milliseconds between SIP resends.")
+	resendInterval  = flag.Int("resendInterval", 400, "Milliseconds between SIP resends.")
 	maxResends      = flag.Int("maxResends", 2, "Max SIP message retransmits.")
 )
 
@@ -95,7 +96,7 @@ func (dls *dialogState) run() {
 			dls.sock.Close()
 			dls.sock = nil
 			if util.IsRefused(err) {
-				log.Printf("ICMP refusal: %s (%s)", dls.sock.RemoteAddr(), dls.dest)
+				log.Printf("ICMP refusal: %s (%s)\r\n", dls.sock.RemoteAddr(), dls.dest)
 				if !dls.popRoute() {
 					return
 				}
@@ -179,7 +180,7 @@ func (dls *dialogState) connect() bool {
 		dls.cleanupSock()
 		conn, err := net.Dial("udp", dls.addr)
 		if err != nil {
-			log.Printf("net.Dial(udp, %s) failed: %s", dls.addr, err)
+			log.Printf("net.Dial(udp, %s) failed: %s\r\n", dls.addr, err)
 			return false
 		}
 		dls.sock = conn.(*net.UDPConn)
@@ -193,9 +194,9 @@ func (dls *dialogState) connect() bool {
 		// SIP signalling paths can change depending on the environment, so we need
 		// to be able to accept packets from anyone.
 		if dls.csock == nil && *looseSignalling {
-			cconn, err := net.ListenPacket("udp", ":0")
+			cconn, err := rtp.Listen("")
 			if err != nil {
-				log.Printf("net.ListenPacket(udp, :0) failed: %s", err)
+				log.Printf("Loose signalling not possible: %s\r\n", err)
 				return false
 			}
 			dls.csock = cconn.(*net.UDPConn)
@@ -213,28 +214,41 @@ func (dls *dialogState) populate(msg *Msg) {
 	laddr := dls.sock.LocalAddr().(*net.UDPAddr)
 	lhost := laddr.IP.String()
 	lport := uint16(laddr.Port)
-	msg.Via = &Via{
-		Host:  lhost,
-		Port:  lport,
-		Param: &Param{"branch", util.GenerateBranch(), nil},
+
+	if msg.Via == nil {
+		msg.Via = &Via{Host: lhost}
 	}
+	msg.Via.Port = lport
+	branch := msg.Via.Param.Get("branch")
+	if branch != nil {
+		branch.Value = util.GenerateBranch()
+	} else {
+		msg.Via.Param = &Param{"branch", util.GenerateBranch(), msg.Via.Param}
+	}
+
 	if msg.Contact == nil {
-		if dls.csock != nil {
-			lport = uint16(dls.csock.LocalAddr().(*net.UDPAddr).Port)
-		}
-		msg.Contact = &Addr{
-			Uri: &URI{
-				Scheme: "sip",
-				Host:   lhost,
-				Port:   lport,
-				Param:  &URIParam{"transport", "udp", nil},
-			},
-		}
+		msg.Contact = &Addr{Uri: &URI{Scheme: "sip", Host: lhost}}
 	}
+	if dls.csock != nil {
+		msg.Contact.Uri.Port = uint16(dls.csock.LocalAddr().(*net.UDPAddr).Port)
+	} else {
+		msg.Contact.Uri.Port = lport
+	}
+	if msg.Contact.Uri.Param.Get("transport") == nil {
+		msg.Contact.Uri.Param = &URIParam{"transport", "udp", msg.Contact.Uri.Param}
+	}
+
 	if msg.Method == MethodInvite {
 		if ms, ok := msg.Payload.(*sdp.SDP); ok {
-			ms.Addr = lhost
-			ms.Origin.Addr = lhost
+			if ms.Addr == "" {
+				ms.Addr = lhost
+			}
+			if ms.Origin.Addr == "" {
+				ms.Origin.Addr = lhost
+			}
+			if ms.Origin.ID == "" {
+				ms.Origin.ID = util.GenerateOriginID()
+			}
 		}
 	}
 	PopulateMessage(nil, nil, msg)
@@ -249,7 +263,7 @@ func (dls *dialogState) handleMessage(msg *Msg) bool {
 		return false
 	}
 	if msg.CallID != dls.request.CallID {
-		log.Printf("Received message doesn't match dialog")
+		log.Printf("Received message doesn't match dialog\r\n")
 		return dls.send(NewResponse(msg, StatusCallTransactionDoesNotExist))
 	}
 	if msg.IsResponse() {
@@ -261,7 +275,7 @@ func (dls *dialogState) handleMessage(msg *Msg) bool {
 
 func (dls *dialogState) handleResponse(msg *Msg) bool {
 	if !ResponseMatch(dls.request, msg) {
-		log.Println("Received response doesn't match transaction")
+		log.Println("Received response doesn't match transaction\r\n")
 		return true
 	}
 	if msg.Status >= StatusOK && dls.request.Method == MethodInvite {
@@ -296,7 +310,7 @@ func (dls *dialogState) handleResponse(msg *Msg) bool {
 		}
 	case StatusServiceUnavailable:
 		if dls.request == dls.invite {
-			log.Printf("Service unavailable: %s (%s)", dls.sock.RemoteAddr(), dls.dest)
+			log.Printf("Service unavailable: %s (%s)\r\n", dls.sock.RemoteAddr(), dls.dest)
 			return dls.popRoute()
 		} else {
 			dls.errChan <- &ResponseError{Msg: msg}
@@ -394,7 +408,7 @@ func (dls *dialogState) resendRequest() bool {
 		dls.requestResends++
 		dls.requestTimer = time.After(duration(resendInterval))
 	} else {
-		log.Printf("Timeout: %s (%s)", dls.sock.RemoteAddr(), dls.dest)
+		log.Printf("Timeout: %s (%s)\r\n", dls.sock.RemoteAddr(), dls.dest)
 		if !dls.popRoute() {
 			return false
 		}
@@ -422,7 +436,7 @@ func (dls *dialogState) resendResponse() bool {
 		dls.responseTimer = time.After(duration(resendInterval))
 	} else {
 		// TODO(jart): If resending INVITE 200 OK, start sending BYE.
-		log.Printf("Timeout sending response: %s (%s)", dls.sock.RemoteAddr(), dls.dest)
+		log.Printf("Timeout sending response: %s (%s)\r\n", dls.sock.RemoteAddr(), dls.dest)
 		if !dls.popRoute() {
 			return false
 		}

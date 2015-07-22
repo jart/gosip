@@ -105,10 +105,10 @@ func RouteAddress(host string, port uint16, wantSRV bool) (routes *AddressRoute,
 					}
 					s = " " + routes.Address + s
 				}
-				log.Printf("%s routes to: %s", host, s)
+				log.Printf("%s routes to: %s\r\n", host, s)
 				return routes, nil
 			}
-			log.Printf("net.LookupSRV(sip, udp, %s) failed: %s", host, err)
+			log.Printf("net.LookupSRV(sip, udp, %s) failed: %s\r\n", host, err)
 		}
 		port = 5060
 	}
