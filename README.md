@@ -26,8 +26,8 @@ refusal, and 502 Service Unavailable responses. It also supports SIP redirects
 as well as changing the audio/signalling path mid-call. But most importantly,
 gosip is lightweight enough that you can actually design your app to use a
 single process for each phone call (assuming your app is in the audio path.) By
-taking this non-monolithic approach to design, you can actually build a highly
-available (five nines) global telephony service with zero interruptions during
+taking this non-monolithic approach to design, you can actually build a higher
+availability global telephony service with zero interruptions during
 software upgrades.
 
 gosip parses SIP messages using the Ragel finite state machine compiler. Much
