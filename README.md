@@ -1,7 +1,6 @@
 # gosip
 
 Version: 0.1  
-Copyright (c) 2010-2014 Justine Alexandra Roberts Tunney
 
 ## About
 
