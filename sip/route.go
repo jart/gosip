@@ -83,7 +83,7 @@ func RouteMessage(via *Via, contact *Addr, msg *Msg) (host string, port uint16, 
 		// we should use rport as real port in request-line
 		if rport := msg.Via.Param.Get("rport"); rport != nil && len(rport.Value) > 0 {
 
-			i, err := strconv.ParseInt(rport.Value, 10, 16)
+			i, err := strconv.Atoi(rport.Value)
 			if err != nil {
 				return "", 0, err
 			}
