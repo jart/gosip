@@ -1,11 +1,11 @@
 // Copyright 2020 Justine Alexandra Roberts Tunney
-// 
+//
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
-// 
+//
 //     http://www.apache.org/licenses/LICENSE-2.0
-// 
+//
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -59,8 +59,18 @@ func addReceived(msg *Msg, addr *net.UDPAddr) {
 		return
 	}
 	if int(msg.Via.Port) != addr.Port {
-		if msg.Via.Param.Get("rport") == nil {
-			msg.Via.Param = &Param{"rport", string(addr.Port), msg.Via.Param}
+
+		rport := msg.Via.Param.Get("rport")
+		port := strconv.Itoa(addr.Port)
+
+		if rport == nil {
+			msg.Via.Param = &Param{"rport", port, msg.Via.Param}
+		} else {
+
+			// implied rport is 5060, but some NAT will use another port,we use real port instead
+			if len(rport.Value) == 0 {
+				rport.Value = port
+			}
 		}
 	}
 	if msg.Via.Host != addr.IP.String() {
