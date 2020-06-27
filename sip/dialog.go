@@ -1,11 +1,11 @@
 // Copyright 2020 Justine Alexandra Roberts Tunney
-// 
+//
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
-// 
+//
 //     http://www.apache.org/licenses/LICENSE-2.0
-// 
+//
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -20,12 +20,13 @@ import (
 	"bytes"
 	"errors"
 	"flag"
-	"github.com/jart/gosip/rtp"
-	"github.com/jart/gosip/sdp"
-	"github.com/jart/gosip/util"
 	"log"
 	"net"
 	"time"
+
+	"github.com/jart/gosip/rtp"
+	"github.com/jart/gosip/sdp"
+	"github.com/jart/gosip/util"
 )
 
 const (
@@ -289,7 +290,7 @@ func (dls *dialogState) handleMessage(msg *Msg) bool {
 
 func (dls *dialogState) handleResponse(msg *Msg) bool {
 	if !ResponseMatch(dls.request, msg) {
-		log.Println("Received response doesn't match transaction\r\n")
+		log.Printf("Received response doesn't match transaction\r\n")
 		return true
 	}
 	if msg.Status >= StatusOK && dls.request.Method == MethodInvite {
