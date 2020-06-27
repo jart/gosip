@@ -1,11 +1,11 @@
 // Copyright 2020 Justine Alexandra Roberts Tunney
-// 
+//
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
-// 
+//
 //     http://www.apache.org/licenses/LICENSE-2.0
-// 
+//
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -16,9 +16,11 @@ package sip
 
 import (
 	"errors"
-	"github.com/jart/gosip/util"
 	"log"
 	"net"
+	"strconv"
+
+	"github.com/jart/gosip/util"
 )
 
 type AddressRoute struct {
@@ -70,9 +72,22 @@ func RouteMessage(via *Via, contact *Addr, msg *Msg) (host string, port uint16, 
 		if via.CompareHostPort(msg.Via) {
 			msg.Via = msg.Via.Next
 		}
+
 		host, port = msg.Via.Host, msg.Via.Port
 		if received := msg.Via.Param.Get("received"); received != nil {
 			host = received.Value
+		}
+
+		// fix: Get real port from rport field.
+		// Request path like UAC->NAT->UAS will change port(according to NAT type) sometime,
+		// we should use rport as real port in request-line
+		if rport := msg.Via.Param.Get("rport"); rport != nil && len(rport.Value) > 0 {
+
+			i, err := strconv.ParseInt(rport.Value, 10, 16)
+			if err != nil {
+				return "", 0, err
+			}
+			port = uint16(i)
 		}
 	} else {
 		if contact.CompareHostPort(msg.Route) {
