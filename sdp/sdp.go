@@ -1,11 +1,11 @@
 // Copyright 2020 Justine Alexandra Roberts Tunney
-// 
+//
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
-// 
+//
 //     http://www.apache.org/licenses/LICENSE-2.0
-// 
+//
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -69,11 +69,12 @@ package sdp
 import (
 	"bytes"
 	"errors"
-	"github.com/jart/gosip/util"
 	"log"
 	"net"
 	"strconv"
 	"strings"
+
+	"github.com/jart/gosip/util"
 )
 
 const (
@@ -93,6 +94,7 @@ type SDP struct {
 	SendOnly bool        // True if 'a=sendonly' was specified in SDP
 	RecvOnly bool        // True if 'a=recvonly' was specified in SDP
 	Attrs    [][2]string // a= lines we don't recognize
+	Other    [][2]string // Other description
 }
 
 // Easy way to create a basic, everyday SDP for VoIP.
@@ -213,6 +215,19 @@ func Parse(s string) (sdp *SDP, err error) {
 					sdp.Attrs = sdp.Attrs[0 : l+1]
 					sdp.Attrs[l] = [2]string{line, ""}
 				}
+			}
+		default:
+
+			// Other unknown fields will be saved here
+			if n := strings.Index(line, "="); n >= 0 {
+
+				if n == 0 {
+					log.Println("Evil SDP field:", line)
+				} else {
+					sdp.Other = append(sdp.Other, [2]string{line[0:n], line[n+1:]})
+				}
+			} else {
+				sdp.Other = append(sdp.Other, [2]string{line, ""})
 			}
 		}
 	}
@@ -342,6 +357,16 @@ func (sdp *SDP) Append(b *bytes.Buffer) {
 		b.WriteString("a=recvonly\r\n")
 	} else {
 		b.WriteString("a=sendrecv\r\n")
+	}
+
+	// save unknown field
+	if sdp.Other != nil {
+		for _, v := range sdp.Other {
+			b.WriteString(v[0])
+			b.WriteString("=")
+			b.WriteString(v[1])
+			b.WriteString("\r\n")
+		}
 	}
 }
 
