@@ -15,7 +15,7 @@
 // Global Settings.  You can change these at startup to fine tune
 // certain behaviors.
 
-package sip
+package dialog
 
 import (
 	"os"
