@@ -12,16 +12,18 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package sip
+package dialog
 
 import (
 	"log"
 	"net"
 	"strconv"
 	"time"
+
+	"github.com/jart/gosip/sip"
 )
 
-func ReceiveMessages(sock *net.UDPConn, c chan<- *Msg, e chan<- error) {
+func ReceiveMessages(sock *net.UDPConn, c chan<- *sip.Msg, e chan<- error) {
 	buf := make([]byte, 2048)
 	laddr := sock.LocalAddr().(*net.UDPAddr)
 	lhost := laddr.IP.String()
@@ -37,7 +39,7 @@ func ReceiveMessages(sock *net.UDPConn, c chan<- *Msg, e chan<- error) {
 		if *tracing {
 			trace("recv", packet, addr)
 		}
-		msg, err := ParseMsg(packet)
+		msg, err := sip.ParseMsg(packet)
 		if err != nil {
 			log.Printf("Dropping SIP message: %s\r\n", err)
 			continue
@@ -54,7 +56,7 @@ func ReceiveMessages(sock *net.UDPConn, c chan<- *Msg, e chan<- error) {
 	close(e) // Must be unbuffered!
 }
 
-func addReceived(msg *Msg, addr *net.UDPAddr) {
+func addReceived(msg *sip.Msg, addr *net.UDPAddr) {
 	if msg.IsResponse() {
 		return
 	}
@@ -64,7 +66,11 @@ func addReceived(msg *Msg, addr *net.UDPAddr) {
 		port := strconv.Itoa(addr.Port)
 
 		if rport == nil {
-			msg.Via.Param = &Param{"rport", port, msg.Via.Param}
+			msg.Via.Param = &sip.Param{
+				Name:  "rport",
+				Value: port,
+				Next:  msg.Via.Param,
+			}
 		} else {
 
 			// implied rport is 5060, but some NAT will use another port,we use real port instead
@@ -75,26 +81,34 @@ func addReceived(msg *Msg, addr *net.UDPAddr) {
 	}
 	if msg.Via.Host != addr.IP.String() {
 		if msg.Via.Param.Get("received") == nil {
-			msg.Via.Param = &Param{"received", addr.IP.String(), msg.Via.Param}
+			msg.Via.Param = &sip.Param{
+				Name:  "received",
+				Value: addr.IP.String(),
+				Next:  msg.Via.Param,
+			}
 		}
 	}
 }
 
-func addTimestamp(msg *Msg, ts time.Time) {
+func addTimestamp(msg *sip.Msg, ts time.Time) {
 	if *timestampTagging {
-		msg.Via.Param = &Param{"usi", strconv.FormatInt(ts.UnixNano()/int64(time.Microsecond), 10), msg.Via.Param}
+		msg.Via.Param = &sip.Param{
+			Name:  "usi",
+			Value: strconv.FormatInt(ts.UnixNano()/int64(time.Microsecond), 10),
+			Next:  msg.Via.Param,
+		}
 	}
 }
 
 // RFC3261 16.4 Route Information Preprocessing
 // RFC3261 16.12.1.2: Traversing a Strict-Routing Proxy
-func fixMessagesFromStrictRouters(lhost string, lport uint16, msg *Msg) {
+func fixMessagesFromStrictRouters(lhost string, lport uint16, msg *sip.Msg) {
 	if msg.Request != nil &&
 		msg.Request.Param.Get("lr") != nil &&
 		msg.Route != nil &&
 		msg.Request.Host == lhost &&
 		or5060(msg.Request.Port) == lport {
-		var oldReq, newReq *URI
+		var oldReq, newReq *sip.URI
 		if msg.Route.Next == nil {
 			oldReq, newReq = msg.Request, msg.Route.Uri
 			msg.Request = msg.Route.Uri

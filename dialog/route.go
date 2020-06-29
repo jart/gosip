@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package sip
+package dialog
 
 import (
 	"errors"
@@ -20,6 +20,7 @@ import (
 	"net"
 	"strconv"
 
+	"github.com/jart/gosip/sip"
 	"github.com/jart/gosip/util"
 )
 
@@ -28,7 +29,7 @@ type AddressRoute struct {
 	Next    *AddressRoute
 }
 
-func PopulateMessage(via *Via, contact *Addr, msg *Msg) {
+func PopulateMessage(via *sip.Via, contact *sip.Addr, msg *sip.Msg) {
 	if !msg.IsResponse() {
 		if msg.Via == nil {
 			msg.Via = via
@@ -37,7 +38,7 @@ func PopulateMessage(via *Via, contact *Addr, msg *Msg) {
 			msg.Contact = contact
 		}
 		if msg.To == nil {
-			msg.To = &Addr{Uri: msg.Request}
+			msg.To = &sip.Addr{Uri: msg.Request}
 		}
 		if msg.From == nil {
 			msg.From = msg.Contact.Copy()
@@ -59,15 +60,23 @@ func PopulateMessage(via *Via, contact *Addr, msg *Msg) {
 			msg.UserAgent = GosipUA
 		}
 		if msg.Via.Param.Get("branch") == nil {
-			msg.Via.Param = &Param{"branch", util.GenerateBranch(), msg.Via.Param}
+			msg.Via.Param = &sip.Param{
+				Name:  "branch",
+				Value: util.GenerateBranch(),
+				Next:  msg.Via.Param,
+			}
 		}
 		if msg.From.Param.Get("tag") == nil {
-			msg.From.Param = &Param{"tag", util.GenerateTag(), msg.From.Param}
+			msg.From.Param = &sip.Param{
+				Name:  "tag",
+				Value: util.GenerateTag(),
+				Next:  msg.From.Param,
+			}
 		}
 	}
 }
 
-func RouteMessage(via *Via, contact *Addr, msg *Msg) (host string, port uint16, err error) {
+func RouteMessage(via *sip.Via, contact *sip.Addr, msg *sip.Msg) (host string, port uint16, err error) {
 	if msg.IsResponse() {
 		if via.CompareHostPort(msg.Via) {
 			msg.Via = msg.Via.Next
@@ -103,7 +112,7 @@ func RouteMessage(via *Via, contact *Addr, msg *Msg) (host string, port uint16, 
 			} else {
 				// RFC3261 16.12.1.2: Traversing a Strict-Routing Proxy
 				msg.Route = msg.Route.Copy()
-				msg.Route.Last().Next = &Addr{Uri: msg.Request}
+				msg.Route.Last().Next = &sip.Addr{Uri: msg.Request}
 				msg.Request = msg.Route.Uri
 				msg.Route = msg.Route.Next
 				host, port = msg.Request.Host, msg.Request.Port
@@ -120,7 +129,7 @@ func RouteAddress(host string, port uint16, wantSRV bool) (routes *AddressRoute,
 		if port == 0 {
 			port = 5060
 		}
-		return &AddressRoute{Address: net.JoinHostPort(host, portstr(port))}, nil
+		return &AddressRoute{Address: net.JoinHostPort(host, util.Portstr(port))}, nil
 	}
 	if port == 0 {
 		if wantSRV {
@@ -129,7 +138,7 @@ func RouteAddress(host string, port uint16, wantSRV bool) (routes *AddressRoute,
 				s := ""
 				for i := len(srvs) - 1; i >= 0; i-- {
 					routes = &AddressRoute{
-						Address: net.JoinHostPort(srvs[i].Target, portstr(srvs[i].Port)),
+						Address: net.JoinHostPort(srvs[i].Target, util.Portstr(srvs[i].Port)),
 						Next:    routes,
 					}
 					s = " " + routes.Address + s
@@ -141,7 +150,7 @@ func RouteAddress(host string, port uint16, wantSRV bool) (routes *AddressRoute,
 		}
 		port = 5060
 	}
-	addr, err := net.ResolveUDPAddr("udp", net.JoinHostPort(host, portstr(port)))
+	addr, err := net.ResolveUDPAddr("udp", net.JoinHostPort(host, util.Portstr(port)))
 	if err != nil {
 		return nil, err
 	}

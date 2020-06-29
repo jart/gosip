@@ -1,11 +1,11 @@
 // Copyright 2020 Justine Alexandra Roberts Tunney
-// 
+//
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
-// 
+//
 //     http://www.apache.org/licenses/LICENSE-2.0
-// 
+//
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -16,9 +16,10 @@ package sip_test
 
 import (
 	"bytes"
-	"github.com/jart/gosip/sip"
 	"reflect"
 	"testing"
+
+	"github.com/jart/gosip/sip"
 )
 
 type addrTest struct {
@@ -31,7 +32,7 @@ type addrTest struct {
 
 var addrTests = []addrTest{
 
-	addrTest{
+	{
 		name: "Basic address",
 		s:    "<sip:pokemon.net>",
 		addr: sip.Addr{
@@ -42,7 +43,7 @@ var addrTests = []addrTest{
 		},
 	},
 
-	addrTest{
+	{
 		name: "Address parameter",
 		s:    "<sip:pokemon.net>;tag=deadbeef",
 		addr: sip.Addr{
@@ -54,7 +55,7 @@ var addrTests = []addrTest{
 		},
 	},
 
-	addrTest{
+	{
 		name:        "Address parameter spacing",
 		s:           "<sip:pokemon.net>\t ;\t tag\t = \tdeadbeef",
 		s_canonical: "<sip:pokemon.net>;tag=deadbeef",
@@ -67,7 +68,7 @@ var addrTests = []addrTest{
 		},
 	},
 
-	addrTest{
+	{
 		name:        "Address parameter quoted",
 		s:           "<sip:pokemon.net>;tag=\"deadbeef\"",
 		s_canonical: "<sip:pokemon.net>;tag=deadbeef",
@@ -80,7 +81,7 @@ var addrTests = []addrTest{
 		},
 	},
 
-	addrTest{
+	{
 		name:        "Address parameter quoted spacing",
 		s:           "<sip:pokemon.net>\t ;\t tag\t = \t\"deadbeef\"",
 		s_canonical: "<sip:pokemon.net>;tag=deadbeef",
@@ -93,7 +94,7 @@ var addrTests = []addrTest{
 		},
 	},
 
-	addrTest{
+	{
 		name: "Address parameter quoted escaped",
 		s:    "<sip:pokemon.net>;tag=\"\\\"deadbeef\\\"\"",
 		addr: sip.Addr{
@@ -105,7 +106,7 @@ var addrTests = []addrTest{
 		},
 	},
 
-	addrTest{
+	{
 		name: "URI parameter",
 		s:    "<sip:brave@toaster.net;isup-oli=29>",
 		addr: sip.Addr{
@@ -118,7 +119,7 @@ var addrTests = []addrTest{
 		},
 	},
 
-	addrTest{
+	{
 		name: "Address + URI parameter",
 		s:    "<sip:brave@toaster.net;isup-oli=29>;tag=deadbeef",
 		addr: sip.Addr{
@@ -132,7 +133,7 @@ var addrTests = []addrTest{
 		},
 	},
 
-	addrTest{
+	{
 		s: `<sip:pokemon.com>, Ditto <sip:ditto@pokemon.com>`,
 		addr: sip.Addr{
 			Uri: &sip.URI{
@@ -150,7 +151,7 @@ var addrTests = []addrTest{
 		},
 	},
 
-	addrTest{
+	{
 		s: `<sip:1.2.3.4>, <sip:1.2.3.5>, <sip:[666::dead:beef]>`,
 		addr: sip.Addr{
 			Uri: &sip.URI{
@@ -172,7 +173,7 @@ var addrTests = []addrTest{
 		},
 	},
 
-	addrTest{
+	{
 		s: "\"\\\"\\\"Justine \\\\Tunney \" " +
 			"<sip:jart@google.com;isup-oli=29>;tag=deadbeef",
 		addr: sip.Addr{

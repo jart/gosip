@@ -1,11 +1,11 @@
 // Copyright 2020 Justine Alexandra Roberts Tunney
-// 
+//
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
-// 
+//
 //     http://www.apache.org/licenses/LICENSE-2.0
-// 
+//
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -25,11 +25,6 @@ import (
 	"errors"
 	"flag"
 	"fmt"
-	"github.com/jart/gosip/dsp"
-	"github.com/jart/gosip/rtp"
-	"github.com/jart/gosip/sdp"
-	"github.com/jart/gosip/sip"
-	"github.com/jart/gosip/util"
 	"io/ioutil"
 	"log"
 	"net"
@@ -38,6 +33,13 @@ import (
 	"os/signal"
 	"time"
 	"unsafe"
+
+	"github.com/jart/gosip/dialog"
+	"github.com/jart/gosip/dsp"
+	"github.com/jart/gosip/rtp"
+	"github.com/jart/gosip/sdp"
+	"github.com/jart/gosip/sip"
+	"github.com/jart/gosip/util"
 )
 
 const (
@@ -132,7 +134,7 @@ func main() {
 	}
 
 	// Create SIP Dialog State Machine
-	dl, err := sip.NewDialog(invite)
+	dl, err := dialog.NewDialog(invite)
 	if err != nil {
 		panic(err)
 	}
@@ -213,10 +215,10 @@ func main() {
 		case rs.Peer = <-dl.OnPeer:
 		case state := <-dl.OnState:
 			switch state {
-			case sip.DialogAnswered:
+			case dialog.Answered:
 				answered = true
 				keyboardStart()
-			case sip.DialogHangup:
+			case dialog.Hangup:
 				if answered {
 					return
 				} else {

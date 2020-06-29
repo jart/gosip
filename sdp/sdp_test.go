@@ -1,11 +1,11 @@
 // Copyright 2020 Justine Alexandra Roberts Tunney
-// 
+//
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
-// 
+//
 //     http://www.apache.org/licenses/LICENSE-2.0
-// 
+//
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -16,8 +16,9 @@ package sdp_test
 
 import (
 	"fmt"
-	"github.com/jart/gosip/sdp"
 	"testing"
+
+	"github.com/jart/gosip/sdp"
 )
 
 type sdpTest struct {
@@ -30,7 +31,7 @@ type sdpTest struct {
 
 var sdpTests = []sdpTest{
 
-	sdpTest{
+	{
 		name: "Asterisk PCMU+DTMF",
 		s: ("v=0\r\n" +
 			"o=root 31589 31589 IN IP4 10.0.0.38\r\n" +
@@ -58,18 +59,18 @@ var sdpTests = []sdpTest{
 				Proto: "RTP/AVP",
 				Port:  30126,
 				Codecs: []sdp.Codec{
-					sdp.Codec{PT: 0, Name: "PCMU", Rate: 8000},
-					sdp.Codec{PT: 101, Name: "telephone-event", Rate: 8000, Fmtp: "0-16"},
+					{PT: 0, Name: "PCMU", Rate: 8000},
+					{PT: 101, Name: "telephone-event", Rate: 8000, Fmtp: "0-16"},
 				},
 			},
 			Attrs: [][2]string{
-				[2]string{"silenceSupp", "off - - - -"},
+				{"silenceSupp", "off - - - -"},
 			},
 			Ptime: 20,
 		},
 	},
 
-	sdpTest{
+	{
 		name: "Audio+Video+Implicit+Fmtp",
 		s: "v=0\r\n" +
 			"o=- 3366701332 3366701332 IN IP4 1.2.3.4\r\n" +
@@ -102,21 +103,21 @@ var sdpTests = []sdpTest{
 				Proto: "RTP/AVP",
 				Port:  32898,
 				Codecs: []sdp.Codec{
-					sdp.Codec{PT: 18, Name: "G729", Rate: 8000, Fmtp: "annexb=yes"},
+					{PT: 18, Name: "G729", Rate: 8000, Fmtp: "annexb=yes"},
 				},
 			},
 			Video: &sdp.Media{
 				Proto: "RTP/AVP",
 				Port:  32900,
 				Codecs: []sdp.Codec{
-					sdp.Codec{PT: 34, Name: "H263", Rate: 90000},
+					{PT: 34, Name: "H263", Rate: 90000},
 				},
 			},
 			Attrs: [][2]string{},
 		},
 	},
 
-	sdpTest{
+	{
 		name: "Implicit Codecs",
 		s: "v=0\r\n" +
 			"o=- 3366701332 3366701332 IN IP4 1.2.3.4\r\n" +
@@ -152,10 +153,10 @@ var sdpTests = []sdpTest{
 				Proto: "RTP/AVP",
 				Port:  32898,
 				Codecs: []sdp.Codec{
-					sdp.Codec{PT: 9, Name: "G722", Rate: 8000},
-					sdp.Codec{PT: 18, Name: "G729", Rate: 8000},
-					sdp.Codec{PT: 0, Name: "PCMU", Rate: 8000},
-					sdp.Codec{PT: 101, Name: "telephone-event", Rate: 8000},
+					{PT: 9, Name: "G722", Rate: 8000},
+					{PT: 18, Name: "G729", Rate: 8000},
+					{PT: 0, Name: "PCMU", Rate: 8000},
+					{PT: 101, Name: "telephone-event", Rate: 8000},
 				},
 			},
 			Ptime: 20,
@@ -163,7 +164,7 @@ var sdpTests = []sdpTest{
 		},
 	},
 
-	sdpTest{
+	{
 		name: "IPv6",
 		s: "v=0\r\n" +
 			"o=- 3366701332 3366701332 IN IP6 dead:beef::666\r\n" +
@@ -199,10 +200,10 @@ var sdpTests = []sdpTest{
 				Proto: "RTP/AVP",
 				Port:  32898,
 				Codecs: []sdp.Codec{
-					sdp.Codec{PT: 9, Name: "G722", Rate: 8000},
-					sdp.Codec{PT: 18, Name: "G729", Rate: 8000},
-					sdp.Codec{PT: 0, Name: "PCMU", Rate: 8000},
-					sdp.Codec{PT: 101, Name: "telephone-event", Rate: 8000},
+					{PT: 9, Name: "G722", Rate: 8000},
+					{PT: 18, Name: "G729", Rate: 8000},
+					{PT: 0, Name: "PCMU", Rate: 8000},
+					{PT: 101, Name: "telephone-event", Rate: 8000},
 				},
 			},
 			Ptime: 20,
@@ -210,7 +211,7 @@ var sdpTests = []sdpTest{
 		},
 	},
 
-	sdpTest{
+	{
 		name: "pjmedia long sdp is long",
 		s: ("v=0\r\n" +
 			"o=- 3457169218 3457169218 IN IP4 10.11.34.37\r\n" +
@@ -247,26 +248,26 @@ var sdpTests = []sdpTest{
 				Proto: "RTP/AVP",
 				Port:  4000,
 				Codecs: []sdp.Codec{
-					sdp.Codec{PT: 103, Name: "speex", Rate: 16000},
-					sdp.Codec{PT: 102, Name: "speex", Rate: 8000},
-					sdp.Codec{PT: 104, Name: "speex", Rate: 32000},
-					sdp.Codec{PT: 113, Name: "iLBC", Rate: 8000, Fmtp: "mode=30"},
-					sdp.Codec{PT: 3, Name: "GSM", Rate: 8000},
-					sdp.Codec{PT: 0, Name: "PCMU", Rate: 8000},
-					sdp.Codec{PT: 8, Name: "PCMA", Rate: 8000},
-					sdp.Codec{PT: 9, Name: "G722", Rate: 8000},
-					sdp.Codec{PT: 101, Name: "telephone-event", Rate: 8000, Fmtp: "0-15"},
+					{PT: 103, Name: "speex", Rate: 16000},
+					{PT: 102, Name: "speex", Rate: 8000},
+					{PT: 104, Name: "speex", Rate: 32000},
+					{PT: 113, Name: "iLBC", Rate: 8000, Fmtp: "mode=30"},
+					{PT: 3, Name: "GSM", Rate: 8000},
+					{PT: 0, Name: "PCMU", Rate: 8000},
+					{PT: 8, Name: "PCMA", Rate: 8000},
+					{PT: 9, Name: "G722", Rate: 8000},
+					{PT: 101, Name: "telephone-event", Rate: 8000, Fmtp: "0-15"},
 				},
 			},
 			Ptime: 20,
 			Attrs: [][2]string{
-				[2]string{"rtcp", "4001 IN IP4 10.11.34.37"},
-				[2]string{"X-nat", "0"},
+				{"rtcp", "4001 IN IP4 10.11.34.37"},
+				{"X-nat", "0"},
 			},
 		},
 	},
 
-	sdpTest{
+	{
 		name: "mp3 tcp",
 		s: ("v=0\r\n" +
 			"o=- 3366701332 3366701334 IN IP4 10.11.34.37\r\n" +
@@ -291,7 +292,7 @@ var sdpTests = []sdpTest{
 				Proto: "TCP/IP",
 				Port:  80,
 				Codecs: []sdp.Codec{
-					sdp.Codec{PT: 111, Name: "MP3", Rate: 44100, Param: "2"},
+					{PT: 111, Name: "MP3", Rate: 44100, Param: "2"},
 				},
 			},
 			Attrs: [][2]string{},
@@ -341,7 +342,7 @@ func sdpCompareCodecs(t *testing.T, name string, corrects, codecs []sdp.Codec) {
 	if len(corrects) != len(codecs) {
 		t.Error(name, "len(Codecs)", len(corrects), "!=", len(codecs))
 	} else {
-		for i, _ := range corrects {
+		for i := range corrects {
 			c1, c2 := &corrects[i], &codecs[i]
 			if c1 == nil || c2 == nil {
 				t.Error(name, "where my codecs at?")
@@ -426,7 +427,7 @@ func TestParse(t *testing.T) {
 			} else if len(sdp.Attrs) != len(test.sdp.Attrs) {
 				t.Error(test.name, "Attrs length not same")
 			} else {
-				for i, _ := range sdp.Attrs {
+				for i := range sdp.Attrs {
 					p1, p2 := test.sdp.Attrs[i], sdp.Attrs[i]
 					if p1[0] != p2[0] || p1[1] != p2[1] {
 						t.Error(test.name, "attr", p1, "!=", p2)

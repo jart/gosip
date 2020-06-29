@@ -1,11 +1,11 @@
 // Copyright 2020 Justine Alexandra Roberts Tunney
-// 
+//
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
-// 
+//
 //     http://www.apache.org/licenses/LICENSE-2.0
-// 
+//
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -17,14 +17,16 @@
 package echo3_test
 
 import (
+	"net"
+	"testing"
+	"time"
+
+	"github.com/jart/gosip/dialog"
 	"github.com/jart/gosip/dsp"
 	"github.com/jart/gosip/rtp"
 	"github.com/jart/gosip/sdp"
 	"github.com/jart/gosip/sip"
 	"github.com/jart/gosip/util"
-	"net"
-	"testing"
-	"time"
 )
 
 func TestCallToEchoApp(t *testing.T) {
@@ -49,7 +51,7 @@ func TestCallToEchoApp(t *testing.T) {
 	}
 
 	// Create a SIP phone call.
-	dl, err := sip.NewDialog(invite)
+	dl, err := dialog.NewDialog(invite)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -79,9 +81,9 @@ func TestCallToEchoApp(t *testing.T) {
 			return
 		case state := <-dl.OnState:
 			switch state {
-			case sip.DialogAnswered:
+			case dialog.Answered:
 				answered = true
-			case sip.DialogHangup:
+			case dialog.Hangup:
 				if !answered {
 					t.Error("Call didn't get answered!")
 				}
