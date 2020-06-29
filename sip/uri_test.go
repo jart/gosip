@@ -1,11 +1,11 @@
 // Copyright 2020 Justine Alexandra Roberts Tunney
-// 
+//
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
-// 
+//
 //     http://www.apache.org/licenses/LICENSE-2.0
-// 
+//
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -16,9 +16,10 @@ package sip_test
 
 import (
 	"errors"
-	"github.com/jart/gosip/sip"
 	"reflect"
 	"testing"
+
+	"github.com/jart/gosip/sip"
 )
 
 type uriTest struct {
@@ -30,22 +31,22 @@ type uriTest struct {
 
 var uriTests = []uriTest{
 
-	uriTest{
+	{
 		s: "",
 		e: errors.New("Incomplete URI: "),
 	},
 
-	uriTest{
+	{
 		s: "sip:",
 		e: errors.New("Incomplete URI: sip:"),
 	},
 
-	uriTest{
+	{
 		s: "sip:example.com:LOL",
 		e: errors.New("Error in URI at pos 16: sip:example.com:LOL"),
 	},
 
-	uriTest{
+	{
 		s: "sip:example.com",
 		uri: &sip.URI{
 			Scheme: "sip",
@@ -53,7 +54,7 @@ var uriTests = []uriTest{
 		},
 	},
 
-	uriTest{
+	{
 		s: "sip:example.com:5060",
 		uri: &sip.URI{
 			Scheme: "sip",
@@ -62,7 +63,7 @@ var uriTests = []uriTest{
 		},
 	},
 
-	uriTest{
+	{
 		s: "sips:jart@google.com",
 		uri: &sip.URI{
 			Scheme: "sips",
@@ -71,7 +72,7 @@ var uriTests = []uriTest{
 		},
 	},
 
-	uriTest{
+	{
 		s: "sips:jart@google.com:5060",
 		uri: &sip.URI{
 			Scheme: "sips",
@@ -81,7 +82,7 @@ var uriTests = []uriTest{
 		},
 	},
 
-	uriTest{
+	{
 		s: "sips:jart:letmein@google.com",
 		uri: &sip.URI{
 			Scheme: "sips",
@@ -91,7 +92,7 @@ var uriTests = []uriTest{
 		},
 	},
 
-	uriTest{
+	{
 		s: "sips:jart:LetMeIn@google.com:5060",
 		uri: &sip.URI{
 			Scheme: "sips",
@@ -102,7 +103,7 @@ var uriTests = []uriTest{
 		},
 	},
 
-	uriTest{
+	{
 		s: "sips:GOOGLE.com",
 		uri: &sip.URI{
 			Scheme: "sips",
@@ -111,7 +112,7 @@ var uriTests = []uriTest{
 		skipFormat: true,
 	},
 
-	uriTest{
+	{
 		s: "sip:[dead:beef::666]:5060",
 		uri: &sip.URI{
 			Scheme: "sip",
@@ -120,12 +121,12 @@ var uriTests = []uriTest{
 		},
 	},
 
-	uriTest{
+	{
 		s: "sip:dead:beef::666:5060",
 		e: errors.New("Error in URI at pos 9: sip:dead:beef::666:5060"),
 	},
 
-	uriTest{
+	{
 		s: "tel:+12126660420",
 		uri: &sip.URI{
 			Scheme: "tel",
@@ -133,7 +134,7 @@ var uriTests = []uriTest{
 		},
 	},
 
-	uriTest{
+	{
 		s: "sip:bob%20barker:priceisright@[dead:beef::666]:5060;isup-oli=00",
 		uri: &sip.URI{
 			Scheme: "sip",
@@ -145,12 +146,12 @@ var uriTests = []uriTest{
 		},
 	},
 
-	uriTest{
+	{
 		s: "sips:google.com ;lol ;h=omg",
 		e: errors.New("Error in URI at pos 15: sips:google.com ;lol ;h=omg"),
 	},
 
-	uriTest{
+	{
 		s: "SIP:example.com",
 		uri: &sip.URI{
 			Scheme: "sip",
@@ -159,7 +160,7 @@ var uriTests = []uriTest{
 		skipFormat: true,
 	},
 
-	uriTest{
+	{
 		s: "sips:alice@atlanta.com?priority=urgent&subject=project%20x",
 		uri: &sip.URI{
 			Scheme: "sips",
@@ -176,7 +177,7 @@ var uriTests = []uriTest{
 		},
 	},
 
-	uriTest{
+	{
 		s: "sip:+1-212-555-1212:1234@gateway.com;user=phone",
 		uri: &sip.URI{
 			Scheme: "sip",
@@ -187,7 +188,7 @@ var uriTests = []uriTest{
 		},
 	},
 
-	uriTest{
+	{
 		s: "sip:atlanta.com;method=register?to=alice%40atlanta.com",
 		uri: &sip.URI{
 			Scheme: "sip",
@@ -197,7 +198,7 @@ var uriTests = []uriTest{
 		},
 	},
 
-	uriTest{
+	{
 		s: "sip:alice;day=tuesday@atlanta.com",
 		uri: &sip.URI{
 			Scheme: "sip",

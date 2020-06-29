@@ -1,11 +1,11 @@
 // Copyright 2020 Justine Alexandra Roberts Tunney
-// 
+//
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
-// 
+//
 //     http://www.apache.org/licenses/LICENSE-2.0
-// 
+//
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -15,9 +15,10 @@
 package sip_test
 
 import (
-	"github.com/jart/gosip/sip"
 	"reflect"
 	"testing"
+
+	"github.com/jart/gosip/sip"
 )
 
 const (
@@ -63,12 +64,12 @@ type msgTest struct {
 
 var msgTests = []msgTest{
 
-	msgTest{
+	{
 		s: "",
 		e: sip.MsgIncompleteError{Msg: []uint8{}},
 	},
 
-	msgTest{
+	{
 		name: "UTF8 Phrase",
 		s: "SIP/2.0 200 ◕◡◕\r\n" +
 			"\r\n",
@@ -79,7 +80,7 @@ var msgTests = []msgTest{
 		},
 	},
 
-	msgTest{
+	{
 		name: "Left Padding",
 		s: "SIP/2.0 200 OK\r\n" +
 			"Expires:    666\r\n" +
@@ -92,7 +93,7 @@ var msgTests = []msgTest{
 		},
 	},
 
-	msgTest{
+	{
 		name: "Extension Headers",
 		s: "SIP/2.0 200 OK\r\n" +
 			"X-LOL: omfg\r\n" +
@@ -105,7 +106,7 @@ var msgTests = []msgTest{
 		},
 	},
 
-	msgTest{
+	{
 		name: "Multiple Addresses",
 		s: "SIP/2.0 200 OK\r\n" +
 			"From:  <sip:lol.com> , <sip:bog.com> \r\n" +
@@ -129,7 +130,7 @@ var msgTests = []msgTest{
 		},
 	},
 
-	msgTest{
+	{
 		name: "Line Continuation Warning",
 		s: "SIP/2.0 200 OK\r\n" +
 			"Warning: Morning and evening\r\n" +
@@ -152,7 +153,7 @@ var msgTests = []msgTest{
 		},
 	},
 
-	msgTest{
+	{
 		name: "Line Continuation Warning Followed By Extended Header",
 		s: "SIP/2.0 200 OK\r\n" +
 			"Warning: Morning and evening\r\n" +
@@ -177,7 +178,7 @@ var msgTests = []msgTest{
 		},
 	},
 
-	msgTest{
+	{
 		name: "Line Continuation Extended Followed By Extended",
 		s: "SIP/2.0 200 OK\r\n" +
 			"X-Warning: Come buy our orchard fruits,\r\n" +
@@ -200,7 +201,7 @@ var msgTests = []msgTest{
 		},
 	},
 
-	msgTest{
+	{
 		name: "Line Continuation Extended Followed By Extended 2",
 		s: "SIP/2.0 200 OK\r\n" +
 			"NewFangledHeader:   newfangled value\r\n" +
@@ -223,7 +224,7 @@ var msgTests = []msgTest{
 		},
 	},
 
-	msgTest{
+	{
 		name: "Line Continuations Addr",
 		s: "SIP/2.0 200 OK\r\n" +
 			"From:\r\n" +
@@ -249,7 +250,7 @@ var msgTests = []msgTest{
 		},
 	},
 
-	msgTest{
+	{
 		name: "Extended header looks like standard headers",
 		s: "SIP/2.0 200 OK\r\n" +
 			"viaz: floor\r\n" +
@@ -285,7 +286,7 @@ var msgTests = []msgTest{
 		},
 	},
 
-	msgTest{
+	{
 		name: "Address Unquoted Display",
 		s: "SIP/2.0 200 OK\r\n" +
 			"From: Kitty <sip:lol.com>\r\n" +
@@ -304,7 +305,7 @@ var msgTests = []msgTest{
 		},
 	},
 
-	msgTest{
+	{
 		name: "Address Quoted Display",
 		s: "SIP/2.0 200 OK\r\n" +
 			"From: \"Hello \\\"Kitty\\\" ◕◡◕\" <sip:lol.com>\r\n" +
@@ -323,7 +324,7 @@ var msgTests = []msgTest{
 		},
 	},
 
-	msgTest{
+	{
 		name: "Address Quoted Display Multiline",
 		s: "SIP/2.0 200 OK\r\n" +
 			"From: \"oh\r\n" +
@@ -346,7 +347,7 @@ var msgTests = []msgTest{
 		},
 	},
 
-	msgTest{
+	{
 		name: "Address Unquoted Display Multiline",
 		s: "SIP/2.0 200 OK\r\n" +
 			"From: oh\r\n" +
@@ -369,7 +370,7 @@ var msgTests = []msgTest{
 		},
 	},
 
-	msgTest{
+	{
 		name: "Addr Tag",
 		s: "SIP/2.0 200 OK\r\n" +
 			"From: <sip:lol.com>;tag=omfg\r\n" +
@@ -388,7 +389,7 @@ var msgTests = []msgTest{
 		},
 	},
 
-	msgTest{
+	{
 		name: "Addr Tag Quoted",
 		// TODO(jart): Crash when extra spacing in here.
 		s: "SIP/2.0 200 OK\r\n" +
@@ -408,7 +409,7 @@ var msgTests = []msgTest{
 		},
 	},
 
-	msgTest{
+	{
 		name: "Addr Tag Bare",
 		s: "SIP/2.0 200 OK\r\n" +
 			"From: <sip:lol.com>;tag\r\n" +
@@ -427,7 +428,7 @@ var msgTests = []msgTest{
 		},
 	},
 
-	msgTest{
+	{
 		name: "Missing Angle Brackets With Tag Belongs to Addr Not URI",
 		s: "SIP/2.0 200 OK\r\n" +
 			"From: sip:lol.com;tag=omfg\r\n" +
@@ -447,7 +448,7 @@ var msgTests = []msgTest{
 	},
 
 	// // TODO(jart): Implement me.
-	// msgTest{
+	// {
 	// 	name: "Content Type Params",
 	// 	s: "SIP/2.0 200 OK\r\n" +
 	// 		"Content-Type: multipart/signed;\r\n" +
@@ -462,7 +463,7 @@ var msgTests = []msgTest{
 	// 	},
 	// },
 
-	msgTest{
+	{
 		name: "Via Host Only",
 		s: "SIP/2.0 200 OK\r\n" +
 			"Via: SIP/2.0/UDP 8.8.4.4\r\n" +
@@ -480,7 +481,7 @@ var msgTests = []msgTest{
 		},
 	},
 
-	msgTest{
+	{
 		name: "Via Port",
 		s: "SIP/2.0 200 OK\r\n" +
 			"Via: SIP/2.0/UDP 8.8.4.4:666\r\n" +
@@ -499,7 +500,7 @@ var msgTests = []msgTest{
 		},
 	},
 
-	msgTest{
+	{
 		name: "Via Port Spacing",
 		s: "SIP/2.0 200 OK\r\n" +
 			"Via: SIP/2.0/UDP 8.8.4.4 \t : \t 666\r\n" +
@@ -518,7 +519,7 @@ var msgTests = []msgTest{
 		},
 	},
 
-	msgTest{
+	{
 		name: "Via Line Continuation",
 		s: "SIP/2.0 200 OK\r\n" +
 			"Via: SIP/2.0/UDP 10.11.34.37 ,\r\n" +
@@ -545,7 +546,7 @@ var msgTests = []msgTest{
 		},
 	},
 
-	msgTest{
+	{
 		name: "Via Multiple Lines",
 		s: "SIP/2.0 200 OK\r\n" +
 			"Via: SIP/2.0/UDP 10.11.34.37\r\n" +
@@ -570,7 +571,7 @@ var msgTests = []msgTest{
 		},
 	},
 
-	msgTest{
+	{
 		name: "Via Multiple Lines Continuation",
 		s: "SIP/2.0 200 OK\r\n" +
 			"Via: SIP/2.0/UDP 10.11.34.37\r\n" +
@@ -608,7 +609,7 @@ var msgTests = []msgTest{
 		},
 	},
 
-	msgTest{
+	{
 		name: "Via Param",
 		s: "SIP/2.0 200 OK\r\n" +
 			"Via: SIP/ 2.0/TCP spindle.example.com ;branch=z9hG4bK9ikj8\r\n" +
@@ -627,7 +628,7 @@ var msgTests = []msgTest{
 		},
 	},
 
-	msgTest{
+	{
 		name: "Via Param Torture",
 		s: "SIP/2.0 200 OK\r\n" +
 			"v:  SIP  / 2.0  / TCP     spindle.example.com   ;\r\n" +
@@ -647,7 +648,7 @@ var msgTests = []msgTest{
 		},
 	},
 
-	msgTest{
+	{
 		name: "Via Torture",
 		s: "SIP/2.0 200 OK\r\n" +
 			"Via  : SIP  /   2.0\r\n" +
@@ -686,7 +687,7 @@ var msgTests = []msgTest{
 		},
 	},
 
-	msgTest{
+	{
 		name: "OPTIONS",
 		s: "OPTIONS sip:10.11.34.37:42367 SIP/2.0\r\n" +
 			"Via: SIP/2.0/UDP 10.11.34.37:42367;rport;branch=9dc39c3c3e84\r\n" +
@@ -752,7 +753,7 @@ var msgTests = []msgTest{
 		},
 	},
 
-	msgTest{
+	{
 		s: "SIP/2.0 200 OK\r\n" +
 			"Via: SIP/2.0/UDP 127.0.0.1:52711;branch=z9hG4bK-03d1d81e94a0;received=127.0.0.1;rport=52711\r\n" +
 			"From: <sip:127.0.0.1:52711;transport=udp>;tag=4568e274dbd8\r\n" +
@@ -851,7 +852,7 @@ var msgTests = []msgTest{
 		},
 	},
 
-	msgTest{
+	{
 		name: "Flowroute Fun",
 		s:    flowroute,
 		msg: sip.Msg{
@@ -924,7 +925,7 @@ var msgTests = []msgTest{
 		},
 	},
 
-	msgTest{
+	{
 		name: "INVITE",
 		s: "INVITE sip:10.11.34.37 SIP/2.0\r\n" +
 			"via: SIP/2.0/UDP 10.11.34.37:59516;rport;branch=z9hG4bKS308QB9UUpNyD\r\n" +
@@ -1026,7 +1027,7 @@ var msgTests = []msgTest{
 		},
 	},
 
-	msgTest{
+	{
 		name: "RFC4475 Torture Message #1",
 		s: "INVITE sip:vivekg@chair-dnrc.example.com;unknownparam SIP/2.0\r\n" +
 			"TO :\r\n" +
@@ -1172,7 +1173,7 @@ var msgTests = []msgTest{
 		},
 	},
 
-	msgTest{
+	{
 		name: "RFC4475 Torture Message #2",
 		s:    torture2,
 		msg: sip.Msg{

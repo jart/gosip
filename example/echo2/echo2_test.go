@@ -1,11 +1,11 @@
 // Copyright 2020 Justine Alexandra Roberts Tunney
-// 
+//
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
-// 
+//
 //     http://www.apache.org/licenses/LICENSE-2.0
-// 
+//
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -17,14 +17,16 @@
 package echo2_test
 
 import (
-	"github.com/jart/gosip/dsp"
-	"github.com/jart/gosip/rtp"
-	"github.com/jart/gosip/sdp"
-	"github.com/jart/gosip/sip"
 	"log"
 	"net"
 	"testing"
 	"time"
+
+	"github.com/jart/gosip/dialog"
+	"github.com/jart/gosip/dsp"
+	"github.com/jart/gosip/rtp"
+	"github.com/jart/gosip/sdp"
+	"github.com/jart/gosip/sip"
 )
 
 func TestCallToEchoApp(t *testing.T) {
@@ -40,14 +42,14 @@ func TestCallToEchoApp(t *testing.T) {
 	rtpaddr := rs.Sock.LocalAddr().(*net.UDPAddr)
 
 	// Create the SIP UDP transport layer.
-	tp, err := sip.NewTransport(from)
+	tp, err := dialog.NewTransport(from)
 	if err != nil {
 		t.Fatal(err)
 	}
 	defer tp.Sock.Close()
 
 	// Send an INVITE message with an SDP media session description.
-	invite := sip.NewRequest(tp, sip.MethodInvite, to, from)
+	invite := dialog.NewRequest(tp, sip.MethodInvite, to, from)
 	invite.Payload = sdp.New(rtpaddr, sdp.ULAWCodec, sdp.DTMFCodec)
 	err = tp.Send(invite)
 	if err != nil {
@@ -91,7 +93,7 @@ loop:
 		case msg = <-tp.C:
 			if msg.IsResponse() {
 				if msg.Status >= sip.StatusOK && msg.CSeq == invite.CSeq {
-					err = tp.Send(sip.NewAck(msg, invite))
+					err = tp.Send(dialog.NewAck(msg, invite))
 					if err != nil {
 						t.Fatal("SIP send failed:", err)
 					}
@@ -129,7 +131,7 @@ loop:
 			} else {
 				if msg.Method == "BYE" {
 					log.Printf("Remote Hangup!")
-					err = tp.Send(sip.NewResponse(invite, sip.StatusOK))
+					err = tp.Send(dialog.NewResponse(invite, sip.StatusOK))
 					if err != nil {
 						t.Fatal("SIP send failed:", err)
 					}
@@ -148,9 +150,9 @@ loop:
 			resendTimer = time.After(resendInterval)
 		case <-deathTimer:
 			if answered {
-				resend = sip.NewBye(invite, msg, nil)
+				resend = dialog.NewBye(invite, msg, nil)
 			} else {
-				resend = sip.NewCancel(invite)
+				resend = dialog.NewCancel(invite)
 			}
 			err = tp.Send(resend)
 			if err != nil {
