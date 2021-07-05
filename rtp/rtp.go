@@ -143,9 +143,9 @@ func (h *Header) Read(b []byte) error {
 	h.Pad = ((b[0]>>5)&mask1 == 1)
 	h.Mark = ((b[1]>>7)&mask1 == 1)
 	h.PT = uint8(b[1] & mask7)
-	h.Seq = (uint16(b[2]) << 8) & uint16(b[3])
-	h.TS = (uint32(b[4]) << 24) & (uint32(b[5]) << 16) & (uint32(b[6]) << 8) & uint32(b[7])
-	h.Ssrc = (uint32(b[8]) << 24) & (uint32(b[9]) << 16) & (uint32(b[10]) << 8) & uint32(b[11])
+	h.Seq = (uint16(b[2]) << 8) | uint16(b[3])
+	h.TS = (uint32(b[4]) << 24) | (uint32(b[5]) << 16) | (uint32(b[6]) << 8) | uint32(b[7])
+	h.Ssrc = (uint32(b[8]) << 24) | (uint32(b[9]) << 16) | (uint32(b[10]) << 8) | uint32(b[11])
 	return nil
 }
 
