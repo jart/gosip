@@ -96,13 +96,26 @@ var msgTests = []msgTest{
 	{
 		name: "Extension Headers",
 		s: "SIP/2.0 200 OK\r\n" +
+			"D: d\r\n" +
+			"De: de\r\n" +
 			"X-LOL: omfg\r\n" +
 			"\r\n",
 		msg: sip.Msg{
 			VersionMajor: 2,
 			Status:       200,
 			Phrase:       "OK",
-			XHeader:      &sip.XHeader{Name: "X-LOL", Value: []byte("omfg")},
+			XHeader:      &sip.XHeader{
+				Name: "X-LOL",
+				Value: []byte("omfg"),
+				Next: &sip.XHeader{
+					Name: "De",
+					Value: []byte("de"),
+					Next: &sip.XHeader{
+						Name: "D",
+						Value: []byte("d"),
+					},
+				},
+			},
 		},
 	},
 
@@ -253,6 +266,7 @@ var msgTests = []msgTest{
 	{
 		name: "Extended header looks like standard headers",
 		s: "SIP/2.0 200 OK\r\n" +
+			"Proxy: 192.168.26.132:15566/TCP\r\n" +
 			"viaz: floor\r\n" +
 			"P-Asserted-LOL: dance\r\n" +
 			"Contazt: the\r\n" +
@@ -278,6 +292,10 @@ var msgTests = []msgTest{
 							Next: &sip.XHeader{
 								Name:  "viaz",
 								Value: []byte("floor"),
+								Next: &sip.XHeader{
+									Name: "Proxy",
+									Value: []byte("192.168.26.132:15566/TCP"),
+								},
 							},
 						},
 					},
