@@ -15,8 +15,10 @@
 package util
 
 import (
+	"crypto/rand"
 	"encoding/hex"
-	"math/rand"
+	"math"
+	"math/big"
 	"net"
 	"strconv"
 	"strings"
@@ -41,7 +43,12 @@ func IsIPv6(ip string) bool {
 
 // Generate a secure random number between 0 and 50,000.
 func GenerateCSeq() int {
-	return rand.Int() % 50000
+	nBig, err := rand.Int(rand.Reader, big.NewInt(50000))
+	if err != nil {
+		panic("could not get random int: " + err.Error())
+	}
+
+	return int(nBig.Int64())
 }
 
 // Generate a 48-bit secure random string like: 27c97271d363.
@@ -69,13 +76,19 @@ func GenerateCallID() string {
 
 // Generate a random ID for an SDP.
 func GenerateOriginID() string {
-	return strconv.FormatUint(uint64(rand.Uint32()), 10)
+	nBig, err := rand.Int(rand.Reader, big.NewInt(math.MaxUint32))
+	if err != nil {
+		panic("could get random number: " + err.Error())
+	}
+
+	return nBig.String()
 }
 
 func randomBytes(l int) (b []byte) {
 	b = make([]byte, l)
-	for i := 0; i < l; i++ {
-		b[i] = byte(rand.Int())
+	_, err := rand.Read(b)
+	if err != nil {
+		panic("could not read random: " + err.Error())
 	}
 	return
 }
