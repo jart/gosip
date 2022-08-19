@@ -170,6 +170,7 @@ action ViaParam {
 
 action gxh {
 	fhold;
+    if !(data[p] == '\n') { fhold; }
 	fgoto xheader;
 }
 
