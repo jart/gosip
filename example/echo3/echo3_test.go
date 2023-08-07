@@ -21,12 +21,12 @@ import (
 	"testing"
 	"time"
 
-	"github.com/jart/gosip/dialog"
-	"github.com/jart/gosip/dsp"
-	"github.com/jart/gosip/rtp"
-	"github.com/jart/gosip/sdp"
-	"github.com/jart/gosip/sip"
-	"github.com/jart/gosip/util"
+	"github.com/cresta/gosip/dialog"
+	"github.com/cresta/gosip/dsp"
+	"github.com/cresta/gosip/rtp"
+	"github.com/cresta/gosip/sdp"
+	"github.com/cresta/gosip/sip"
+	"github.com/cresta/gosip/util"
 )
 
 func TestCallToEchoApp(t *testing.T) {

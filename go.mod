@@ -1,3 +1,3 @@
-module github.com/jart/gosip
+module github.com/cresta/gosip
 
-go 1.14
+go 1.20

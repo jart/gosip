@@ -24,10 +24,10 @@ import (
 	"net"
 	"time"
 
-	"github.com/jart/gosip/rtp"
-	"github.com/jart/gosip/sdp"
-	"github.com/jart/gosip/sip"
-	"github.com/jart/gosip/util"
+	"github.com/cresta/gosip/rtp"
+	"github.com/cresta/gosip/sdp"
+	"github.com/cresta/gosip/sip"
+	"github.com/cresta/gosip/util"
 )
 
 const (

@@ -18,7 +18,7 @@ import (
 	"reflect"
 	"testing"
 
-	"github.com/jart/gosip/sip"
+	"github.com/cresta/gosip/sip"
 )
 
 const (

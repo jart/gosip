@@ -20,7 +20,7 @@ import (
 	"bytes"
 	"strconv"
 
-	"github.com/jart/gosip/util"
+	"github.com/cresta/gosip/util"
 )
 
 // Example: SIP/2.0/UDP 1.2.3.4:5060;branch=z9hG4bK556f77e6.

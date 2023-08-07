@@ -64,15 +64,7 @@ func ParseMsg(data []byte) (msg *Msg, err error) {
 		if clen != len(data) - p {
 			return nil, errors.New(fmt.Sprintf("Content-Length incorrect: %d != %d", clen, len(data) - p))
 		}
-		if ctype == sdp.ContentType {
-			ms, err := sdp.Parse(string(data[p:len(data)]))
-			if err != nil {
-				return nil, err
-			}
-			msg.Payload = ms
-		} else {
-			msg.Payload = &MiscPayload{T: ctype, D: data[p:len(data)]}
-		}
+		msg.Payload = &MiscPayload{T: ctype, D: data[p:len(data)]}
 	}
 	return msg, nil
 }
