@@ -108,9 +108,7 @@ func New(addr *net.UDPAddr, codecs ...Codec) *SDP {
 	sdp.Audio.Proto = "RTP/AVP"
 	sdp.Audio.Port = uint16(addr.Port)
 	sdp.Audio.Codecs = make([]Codec, len(codecs))
-	for i := 0; i < len(codecs); i++ {
-		sdp.Audio.Codecs[i] = codecs[i]
-	}
+	copy(sdp.Audio.Codecs, codecs)
 	sdp.Attrs = make([][2]string, 0, 8)
 	return sdp
 }
