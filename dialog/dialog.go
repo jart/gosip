@@ -28,6 +28,8 @@ import (
 	"github.com/jart/gosip/sdp"
 	"github.com/jart/gosip/sip"
 	"github.com/jart/gosip/util"
+
+	"github.com/icholy/digest"
 )
 
 const (
@@ -62,8 +64,12 @@ type dialogState struct {
 	sendHangupChan  <-chan bool
 	state           int              // Current state of the dialog.
 	dest            string           // Destination hostname (or IP).
+	destPort        uint16           // Destination port
 	addr            string           // Destination ip:port.
-	sock            *net.UDPConn     // Outbound message socket (connected for ICMP)
+	username        string           // Username for authorization
+	password        string           // Password for authorization
+	protocol        string           // Can be "tcp" or "udp"
+	sock            net.Conn         // Outbound message socket (connected for ICMP)
 	csock           *net.UDPConn     // Inbound socket for Contact field.
 	routes          *AddressRoute    // List of SRV addresses to attempt contacting.
 	invite          *sip.Msg         // Our INVITE that established the dialog.
@@ -80,7 +86,7 @@ type dialogState struct {
 }
 
 // NewDialog creates a phone call.
-func NewDialog(invite *sip.Msg) (dl *Dialog, err error) {
+func NewDialog(invite *sip.Msg, protocol string) (dl *Dialog, err error) {
 	errChan := make(chan error)
 	stateChan := make(chan int)
 	peerChan := make(chan *net.UDPAddr)
@@ -91,6 +97,32 @@ func NewDialog(invite *sip.Msg) (dl *Dialog, err error) {
 		peerChan:       peerChan,
 		sendHangupChan: sendHangupChan,
 		invite:         invite,
+		protocol:       protocol,
+	}
+	go dls.run()
+	return &Dialog{
+		OnErr:   errChan,
+		OnState: stateChan,
+		OnPeer:  peerChan,
+		Hangup:  sendHangupChan,
+	}, nil
+}
+
+// NewDialogWithCredentials creates a phone call.
+func NewDialogWithCredentials(invite *sip.Msg, protocol string, username string, password string) (dl *Dialog, err error) {
+	errChan := make(chan error)
+	stateChan := make(chan int)
+	peerChan := make(chan *net.UDPAddr)
+	sendHangupChan := make(chan bool, 4)
+	dls := &dialogState{
+		errChan:        errChan,
+		stateChan:      stateChan,
+		peerChan:       peerChan,
+		sendHangupChan: sendHangupChan,
+		invite:         invite,
+		username:       username,
+		password:       password,
+		protocol:       protocol,
 	}
 	go dls.run()
 	return &Dialog{
@@ -164,6 +196,7 @@ func (dls *dialogState) sendRequest(request *sip.Msg) bool {
 	dls.request = request
 	dls.routes = routes
 	dls.dest = host
+	dls.destPort = port
 	return dls.popRoute()
 }
 
@@ -194,17 +227,17 @@ func (dls *dialogState) connect() bool {
 		// to the remote address so we can receive ICMP unavailable errors. It also
 		// allows us to discover the appropriate IP address for the local machine.
 		dls.cleanupSock()
-		conn, err := net.Dial("udp", dls.addr)
+		conn, err := net.Dial(dls.protocol, dls.addr)
 		if err != nil {
-			log.Printf("net.Dial(udp, %s) failed: %s\r\n", dls.addr, err)
+			log.Printf("net.Dial(%s, %s) failed: %s\r\n", dls.protocol, dls.addr, err)
 			return false
 		}
-		dls.sock = conn.(*net.UDPConn)
+		dls.sock = conn
 		sockMsgs := make(chan *sip.Msg)
 		sockErrs := make(chan error)
 		dls.sockMsgs = sockMsgs
 		dls.sockErrs = sockErrs
-		go ReceiveMessages(dls.sock, sockMsgs, sockErrs)
+		go ReceiveMessagesFromAddr(dls.sock, sockMsgs, sockErrs, &net.UDPAddr{IP: net.ParseIP(dls.dest), Port: int(dls.destPort)})
 
 		// But a connected UDP socket can only receive packets from a single host.
 		// SIP signalling paths can change depending on the environment, so we need
@@ -227,9 +260,16 @@ func (dls *dialogState) connect() bool {
 }
 
 func (dls *dialogState) populate(msg *sip.Msg) {
-	laddr := dls.sock.LocalAddr().(*net.UDPAddr)
-	lhost := laddr.IP.String()
-	lport := uint16(laddr.Port)
+	var lhost string
+	var lport uint16
+	switch laddr := dls.sock.LocalAddr().(type) {
+	case *net.UDPAddr:
+		lhost = laddr.IP.String()
+		lport = uint16(laddr.Port)
+	case *net.TCPAddr:
+		lhost = laddr.IP.String()
+		lport = uint16(laddr.Port)
+	}
 
 	if msg.Via == nil {
 		msg.Via = &sip.Via{Host: lhost}
@@ -303,10 +343,6 @@ func (dls *dialogState) handleResponse(msg *sip.Msg) bool {
 		return true
 	}
 	if msg.Status >= sip.StatusOK && dls.request.Method == sip.MethodInvite {
-		if msg.Contact == nil {
-			dls.errChan <- errors.New("Remote UA sent >=200 response w/o Contact")
-			return false
-		}
 		if !dls.send(NewAck(msg, dls.request)) {
 			return false
 		}
@@ -332,6 +368,23 @@ func (dls *dialogState) handleResponse(msg *sip.Msg) bool {
 			dls.transition(Hangup)
 			return false
 		}
+	case sip.StatusUnauthorized:
+		chal, err := digest.ParseChallenge(msg.WWWAuthenticate)
+		if err != nil {
+			dls.errChan <- errors.New("Fail to parse WWWAuthenticate challenge")
+		}
+
+		// Reply with digest
+		cred, _ := digest.Digest(chal, digest.Options{
+			Method:   msg.CSeqMethod,
+			URI:      dls.dest,
+			Username: dls.username,
+			Password: dls.password,
+		})
+
+		newReq := dls.invite.Copy()
+		newReq.Authorization = cred.String()
+		return dls.send(newReq)
 	case sip.StatusServiceUnavailable:
 		if dls.request == dls.invite {
 			log.Printf("Service unavailable: %s (%s)\r\n", dls.sock.RemoteAddr(), dls.dest)
