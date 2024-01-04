@@ -58,9 +58,15 @@ func NewResponse(msg *sip.Msg, status int) *sip.Msg {
 
 // http://tools.ietf.org/html/rfc3261#section-17.1.1.3
 func NewAck(msg, invite *sip.Msg) *sip.Msg {
+	var request *sip.URI
+	if msg.Contact != nil {
+		request = msg.Contact.Uri
+	} else {
+		request = msg.From.Uri
+	}
 	return &sip.Msg{
 		Method:             sip.MethodAck,
-		Request:            msg.Contact.Uri,
+		Request:            request,
 		From:               msg.From,
 		To:                 msg.To,
 		Via:                msg.Via.Detach(),
