@@ -422,7 +422,7 @@ addr_angled_end    = CRLF @Addr @goto_header
                    | SEMI <: any @hold @goto_addr_param
                    | COMMA <: any @Addr @hold @goto_addr;
 addr_angled       := addr_display? addr_spec addr_angled_end;
-addr_uri_end       = CRLF %Addr @goto_header
+addr_uri_end       = CRLF @Addr @goto_header
                    | SEMI <: any @hold @goto_addr_param
                    | COMMA <: any @Addr @hold @goto_addr;
 addr_uri          := ( uri - ";" ) %AddrUri addr_uri_end;
