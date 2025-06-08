@@ -44,6 +44,7 @@ const (
 
 var (
 	ErrBadVersion                  = errors.New("bad rtp version header")
+	ErrTruncatedPacket             = errors.New("truncated rtp packet")
 	ErrExtendedHeadersNotSupported = errors.New("rtp extended headers not supported")
 )
 
@@ -135,6 +136,9 @@ func (h *Header) Write(b []byte) []byte {
 
 // Read extracts an RTP header from a byte slice.
 func (h *Header) Read(b []byte) error {
+	if len(b) < 12 {
+		return ErrTruncatedPacket
+	}
 	if b[0]>>6 != Version {
 		return ErrBadVersion
 	} else if (b[0]>>4)&1 != 0 {
