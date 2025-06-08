@@ -30,13 +30,13 @@ type Param struct {
 
 // Get returns an entry in O(n) time.
 func (p *Param) Get(name string) *Param {
-	if p == nil {
-		return nil
+	for p != nil {
+		if strings.EqualFold(p.Name, name) {
+			return p
+		}
+		p = p.Next
 	}
-	if strings.EqualFold(p.Name, name) {
-		return p
-	}
-	return p.Next.Get(name)
+	return nil
 }
 
 // Append serializes parameters in insertion order.
