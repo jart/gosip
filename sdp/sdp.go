@@ -450,7 +450,7 @@ func parseMediaInfo(s string) (port uint16, proto string, pts []uint8, err error
 
 	// Convert port to int and check range.
 	portU, err := strconv.ParseUint(portS, 10, 16)
-	if err != nil || !(0 <= port && port <= 65535) {
+	if err != nil || !(0 <= portU && portU <= 65535) {
 		return 0, "", nil, errors.New("invalid m= port")
 	}
 	port = uint16(portU)
