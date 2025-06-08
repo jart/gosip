@@ -131,6 +131,25 @@ var msgTests = []msgTest{
 	},
 
 	{
+		name: "Naked URI",
+		s: "SIP/2.0 200 OK\r\n" +
+			"From: sip:127.0.0.1:1234\r\n" +
+			"\r\n",
+		msg: sip.Msg{
+			VersionMajor: 2,
+			Status:       200,
+			Phrase:       "OK",
+			From: &sip.Addr{
+				Uri: &sip.URI{
+					Scheme: "sip",
+					Host:   "127.0.0.1",
+					Port:   1234,
+				},
+			},
+		},
+	},
+
+	{
 		name: "Line Continuation Warning",
 		s: "SIP/2.0 200 OK\r\n" +
 			"Warning: Morning and evening\r\n" +
