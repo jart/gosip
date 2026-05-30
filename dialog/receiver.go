@@ -23,6 +23,46 @@ import (
 	"github.com/jart/gosip/sip"
 )
 
+func ReceiveMessagesFromAddr(sock net.Conn, c chan<- *sip.Msg, e chan<- error, addr *net.UDPAddr) {
+	buf := make([]byte, 2048)
+	var lhost string
+	var lport uint16
+	switch laddr := sock.LocalAddr().(type) {
+	case *net.UDPAddr:
+		lhost = laddr.IP.String()
+		lport = uint16(laddr.Port)
+	case *net.TCPAddr:
+		lhost = laddr.IP.String()
+		lport = uint16(laddr.Port)
+	}
+	for {
+		amt, err := sock.Read(buf)
+		if err != nil {
+			e <- err
+			break
+		}
+		ts := time.Now()
+		packet := buf[0:amt]
+		if *tracing {
+			trace("recv", packet, addr)
+		}
+		msg, err := sip.ParseMsg(packet)
+		if err != nil {
+			log.Printf("Dropping SIP message: %s\r\n", err)
+			continue
+		}
+		addReceived(msg, addr)
+		addTimestamp(msg, ts)
+		if msg.Route != nil && msg.Route.Uri.Host == lhost && or5060(msg.Route.Uri.Port) == lport {
+			msg.Route = msg.Route.Next
+		}
+		fixMessagesFromStrictRouters(lhost, lport, msg)
+		c <- msg
+	}
+	close(c)
+	close(e) // Must be unbuffered!
+}
+
 func ReceiveMessages(sock *net.UDPConn, c chan<- *sip.Msg, e chan<- error) {
 	buf := make([]byte, 2048)
 	laddr := sock.LocalAddr().(*net.UDPAddr)
