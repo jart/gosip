@@ -171,7 +171,7 @@ func TestCallToEchoApp(t *testing.T) {
 	laddr := conn.LocalAddr().(*net.UDPAddr)
 
 	// Create an RTP socket.
-	rtpsock, err := net.ListenPacket("udp", "108.61.60.146:0")
+	rtpsock, err := net.ListenPacket("udp", ":0")
 	if err != nil {
 		t.Error("rtp listen:", err)
 		return
