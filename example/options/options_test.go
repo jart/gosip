@@ -42,7 +42,7 @@ func TestOptions(t *testing.T) {
 		Method:     "OPTIONS",
 		CSeqMethod: "OPTIONS",
 		Accept:     "application/sdp",
-		UserAgent:  "pokémon/1.o",
+ UserAgent:  "pokémon/1.o",
 		Request: &sip.URI{
 			Scheme: "sip",
 			User:   "echo",
@@ -55,7 +55,7 @@ func TestOptions(t *testing.T) {
 			Host:     laddr.IP.String(),
 			Port:     uint16(laddr.Port),
 			Param:    &sip.Param{Name: "branch", Value: util.GenerateBranch()},
-		},
+ },
 		Contact: &sip.Addr{
 			Uri: &sip.URI{
 				Host: laddr.IP.String(),

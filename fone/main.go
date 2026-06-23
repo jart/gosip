@@ -52,11 +52,14 @@ const (
 )
 
 var (
-	addressFlag  = flag.String("address", "", "Public IP (or hostname) of the local machine. Defaults to asking an untrusted webserver.")
-	paServerFlag = flag.String("paServer", "", "PulseAudio server name")
-	paSinkFlag   = flag.String("paSink", "", "PulseAudio device or sink name")
-	muteFlag     = flag.Bool("mute", false, "Send comfort noise rather than microphone input")
-	paName       = C.CString("fone")
+	addressFlag     = flag.String("address", "", "Public IP (or hostname) of the local machine. Defaults to asking an untrusted webserver.")
+	paServerFlag    = flag.String("paServer", "", "PulseAudio server name")
+	paSinkFlag      = flag.String("paSink", "", "PulseAudio device or sink name")
+	muteFlag        = flag.Bool("mute", false, "Send comfort noise rather than microphone input")
+	looseSignalling = flag.Bool("looseSignalling", false, "Permit SIP messages from servers other than the next hop.")
+	resendInterval  = flag.Int("resendInterval", 400, "Milliseconds between SIP resends.")
+	maxResends      = flag.Int("maxResends", 2, "Max SIP message retransmits.")
+	paName          = C.CString("fone")
 )
 
 func main() {
@@ -134,7 +137,12 @@ func main() {
 	}
 
 	// Create SIP Dialog State Machine
-	dl, err := dialog.NewDialog(invite)
+	dl, err := dialog.NewDialog(invite,
+		dialog.WithLooseSignalling(*looseSignalling),
+		dialog.WithResendInterval(
+			time.Duration(*resendInterval)*time.Millisecond),
+		dialog.WithMaxResends(*maxResends),
+	)
 	if err != nil {
 		panic(err)
 	}

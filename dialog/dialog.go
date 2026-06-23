@@ -19,7 +19,6 @@ package dialog
 import (
 	"bytes"
 	"errors"
-	"flag"
 	"log"
 	"net"
 	"time"
@@ -35,12 +34,6 @@ const (
 	Ringing
 	Answered
 	Hangup
-)
-
-var (
-	looseSignalling = flag.Bool("looseSignalling", false, "Permit SIP messages from servers other than the next hop.")
-	resendInterval  = flag.Int("resendInterval", 400, "Milliseconds between SIP resends.")
-	maxResends      = flag.Int("maxResends", 2, "Max SIP message retransmits.")
 )
 
 // Dialog represents an outbound SIP phone call.
@@ -77,10 +70,14 @@ type dialogState struct {
 	lseq            int              // Local CSeq value.
 	rseq            int              // Remote CSeq value.
 	b               bytes.Buffer     // Outbound message buffer.
+
+	looseSignalling bool
+	resendInterval  time.Duration
+	maxResends      int
 }
 
 // NewDialog creates a phone call.
-func NewDialog(invite *sip.Msg) (dl *Dialog, err error) {
+func NewDialog(invite *sip.Msg, options ...func(*dialogState)) (dl *Dialog, err error) {
 	errChan := make(chan error)
 	stateChan := make(chan int)
 	peerChan := make(chan *net.UDPAddr)
@@ -91,14 +88,47 @@ func NewDialog(invite *sip.Msg) (dl *Dialog, err error) {
 		peerChan:       peerChan,
 		sendHangupChan: sendHangupChan,
 		invite:         invite,
+
+		looseSignalling: false,
+		resendInterval:  400 * time.Millisecond,
+		maxResends:      2,
 	}
+	for _, o := range options {
+		o(dls)
+	}
+
 	go dls.run()
+
 	return &Dialog{
 		OnErr:   errChan,
 		OnState: stateChan,
 		OnPeer:  peerChan,
 		Hangup:  sendHangupChan,
 	}, nil
+}
+
+// WithLooseSignalling specifies whether SIP messages from servers other
+// than the next hop are accepted.  The default is false.
+func WithLooseSignalling(loose bool) func(*dialogState) {
+	return func(dls *dialogState) {
+		dls.looseSignalling = loose
+	}
+}
+
+// WithResendInterval specifies the time between SIP reemissions.
+// The default is 400ms.
+func WithResendInterval(interval time.Duration) func(*dialogState) {
+	return func(dls *dialogState) {
+		dls.resendInterval = interval
+	}
+}
+
+// WithMaxResends specifies the number of times SIP messages will be
+// retransmitted.  The default is 2.
+func WithMaxResends(resends int) func(*dialogState) {
+	return func(dls *dialogState) {
+		dls.maxResends = resends
+	}
 }
 
 func (dls *dialogState) run() {
@@ -184,7 +214,7 @@ func (dls *dialogState) popRoute() bool {
 		dls.lseq = dls.request.CSeq
 	}
 	dls.requestResends = 0
-	dls.requestTimer = time.After(duration(resendInterval))
+	dls.requestTimer = time.After(dls.resendInterval)
 	return dls.send(dls.request)
 }
 
@@ -209,7 +239,7 @@ func (dls *dialogState) connect() bool {
 		// But a connected UDP socket can only receive packets from a single host.
 		// SIP signalling paths can change depending on the environment, so we need
 		// to be able to accept packets from anyone.
-		if dls.csock == nil && *looseSignalling {
+		if dls.csock == nil && dls.looseSignalling {
 			cconn, err := rtp.Listen("")
 			if err != nil {
 				log.Printf("Loose signalling not possible: %s\r\n", err)
@@ -425,12 +455,12 @@ func (dls *dialogState) resendRequest() bool {
 	if dls.request == nil {
 		return true
 	}
-	if dls.requestResends < *maxResends {
+	if dls.requestResends < dls.maxResends {
 		if !dls.send(dls.request) {
 			return false
 		}
 		dls.requestResends++
-		dls.requestTimer = time.After(duration(resendInterval))
+		dls.requestTimer = time.After(dls.resendInterval)
 	} else {
 		log.Printf("Timeout: %s (%s)\r\n", dls.sock.RemoteAddr(), dls.dest)
 		if !dls.popRoute() {
@@ -444,7 +474,7 @@ func (dls *dialogState) resendRequest() bool {
 func (dls *dialogState) sendResponse(msg *sip.Msg) bool {
 	dls.response = msg
 	dls.responseResends = 0
-	dls.responseTimer = time.After(duration(resendInterval))
+	dls.responseTimer = time.After(dls.resendInterval)
 	return dls.send(dls.response)
 }
 
@@ -452,12 +482,12 @@ func (dls *dialogState) resendResponse() bool {
 	if dls.response == nil {
 		return true
 	}
-	if dls.responseResends < *maxResends {
+	if dls.responseResends < dls.maxResends {
 		if !dls.send(dls.response) {
 			return false
 		}
 		dls.responseResends++
-		dls.responseTimer = time.After(duration(resendInterval))
+		dls.responseTimer = time.After(dls.resendInterval)
 	} else {
 		// TODO(jart): If resending INVITE 200 OK, start sending BYE.
 		log.Printf("Timeout sending response: %s (%s)\r\n", dls.sock.RemoteAddr(), dls.dest)
