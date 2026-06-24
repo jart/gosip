@@ -278,13 +278,16 @@ func (sdp *SDP) ContentType() string {
 	return ContentType
 }
 
-func (sdp *SDP) Data() []byte {
+func (sdp *SDP) Marshal() ([]byte, error) {
 	if sdp == nil {
-		return nil
+		return nil, errors.New("nil SDP")
 	}
 	var b bytes.Buffer
-	sdp.Append(&b)
-	return b.Bytes()
+	err := sdp.Append(&b)
+	if err != nil {
+		return nil, err
+	}
+	return b.Bytes(), nil
 }
 
 func (sdp *SDP) String() string {
@@ -296,7 +299,7 @@ func (sdp *SDP) String() string {
 	return b.String()
 }
 
-func (sdp *SDP) Append(b *bytes.Buffer) {
+func (sdp *SDP) Append(b *bytes.Buffer) error {
 	b.WriteString("v=0\r\n")
 	sdp.Origin.Append(b)
 	b.WriteString("s=")
@@ -366,6 +369,7 @@ func (sdp *SDP) Append(b *bytes.Buffer) {
 			b.WriteString("\r\n")
 		}
 	}
+	return nil
 }
 
 // Here we take the list of payload types from the m= line (e.g. 9 18 0 101)

@@ -79,7 +79,10 @@ func TestOptions(t *testing.T) {
 	}
 
 	var b bytes.Buffer
-	options.Append(&b)
+	err = options.Append(&b)
+	if err != nil {
+		t.Fatal(err)
+	}
 	if amt, err := sock.Write(b.Bytes()); err != nil || amt != b.Len() {
 		t.Fatal(err)
 	}

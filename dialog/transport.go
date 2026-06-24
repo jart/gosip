@@ -92,7 +92,10 @@ func (tp *Transport) Send(msg *sip.Msg) error {
 	ts := time.Now()
 	addTimestamp(msg, ts)
 	var b bytes.Buffer
-	msg.Append(&b)
+	err = msg.Append(&b)
+	if err != nil {
+		return err
+	}
 	if *tracing {
 		trace("send", b.Bytes(), addr)
 	}

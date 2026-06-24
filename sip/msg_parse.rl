@@ -18,15 +18,20 @@ package sip
 import (
 	"errors"
 	"fmt"
-	"github.com/jart/gosip/sdp"
 )
 
 %% machine msg;
 %% include sip "sip.rl";
 %% write data;
 
-// ParseMsg turns a SIP message byte slice into a data structure.
+// ParseMsgWithRegistry turns a SIP message byte slice into a data structure.
 func ParseMsg(data []byte) (msg *Msg, err error) {
+	return ParseMsgWithRegistry(data, DefaultBodyParserRegistry)
+}
+
+// ParseMsgWitRegistry turns a SIP message byte slice into a data structure.
+// It uses DefaultBodyParserRegistry for parsing message bodies.
+func ParseMsgWithRegistry(data []byte, registry BodyParserRegistry) (msg *Msg, err error) {
 	if data == nil {
 		return nil, nil
 	}
@@ -64,8 +69,9 @@ func ParseMsg(data []byte) (msg *Msg, err error) {
 		if clen != len(data) - p {
 			return nil, errors.New(fmt.Sprintf("Content-Length incorrect: %d != %d", clen, len(data) - p))
 		}
-		if ctype == sdp.ContentType {
-			ms, err := sdp.Parse(string(data[p:len(data)]))
+		parser, ok := registry.get(ctype)
+		if ok {
+			ms, err := parser(data[p:len(data)])
 			if err != nil {
 				return nil, err
 			}

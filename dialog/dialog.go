@@ -439,7 +439,10 @@ func (dls *dialogState) send(msg *sip.Msg) bool {
 	ts := time.Now()
 	addTimestamp(msg, ts)
 	dls.b.Reset()
-	msg.Append(&dls.b)
+	err := msg.Append(&dls.b)
+	if err != nil {
+		return false
+	}
 	if *tracing {
 		trace("send", dls.b.Bytes(), dls.sock.RemoteAddr())
 	}
