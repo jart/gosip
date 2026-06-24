@@ -225,7 +225,10 @@ func TestCallToEchoApp(t *testing.T) {
 
 	// Turn invite message into a packet and send via UDP socket.
 	var b bytes.Buffer
-	invite.Append(&b)
+	err := invite.Append(&b)
+	if err != nil {
+		t.Fatal(err)
+	}
 	log.Printf(">>> %s\n%s\n", raddr, b.String())
 	if amt, err := conn.Write(b.Bytes()); err != nil || amt != b.Len() {
 		t.Fatal(err)
@@ -281,7 +284,10 @@ func TestCallToEchoApp(t *testing.T) {
 	ack.CSeqMethod = "ACK"
 	ack.Via = msg.Via
 	b.Reset()
-	ack.Append(&b)
+	err = ack.Append(&b)
+	if err != nil {
+		t.Fatal(err)
+	}
 	if amt, err := conn.Write(b.Bytes()); err != nil || amt != b.Len() {
 		t.Fatal(err)
 	}
@@ -344,7 +350,10 @@ func TestCallToEchoApp(t *testing.T) {
 	ack.CSeqMethod = "BYE"
 	ack.CSeq++
 	b.Reset()
-	ack.Append(&b)
+	err = ack.Append(&b)
+	if err != nil {
+		t.Fatal(err)
+	}
 	amt, err = conn.Write(b.Bytes())
 	if err != nil || amt != b.Len() {
 		t.Fatal(err)

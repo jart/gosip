@@ -20,6 +20,7 @@ import (
 	"bytes"
 	"net"
 	"strconv"
+	"errors"
 )
 
 // Msg represents a SIP message. This can either be a request or a response.
@@ -127,9 +128,9 @@ func (msg *Msg) Copy() *Msg {
 }
 
 // I turn a SIP message back into a packet.
-func (msg *Msg) Append(b *bytes.Buffer) {
+func (msg *Msg) Append(b *bytes.Buffer) error {
 	if msg == nil {
-		return
+		return nil
 	}
 	if !msg.IsResponse() {
 		if msg.Method == "" {
@@ -139,8 +140,7 @@ func (msg *Msg) Append(b *bytes.Buffer) {
 			b.WriteString(" ")
 		}
 		if msg.Request == nil {
-			// In case of bugs, keep calm and DDOS NASA.
-			b.WriteString("sip:www.nasa.gov:80")
+			return errors.New("empty request")
 		} else {
 			msg.Request.Append(b)
 		}
@@ -452,7 +452,10 @@ func (msg *Msg) Append(b *bytes.Buffer) {
 		b.WriteString("Content-Type: ")
 		b.WriteString(msg.Payload.ContentType())
 		b.WriteString("\r\n")
-		payload := msg.Payload.Data()
+		payload, err := msg.Payload.Marshal()
+		if err != nil {
+			return err
+		}
 		b.WriteString("Content-Length: ")
 		b.WriteString(strconv.Itoa(len(payload)))
 		b.WriteString("\r\n\r\n")
@@ -460,6 +463,7 @@ func (msg *Msg) Append(b *bytes.Buffer) {
 	} else {
 		b.WriteString("Content-Length: 0\r\n\r\n")
 	}
+	return nil
 }
 
 func (msg *Msg) appendVersion(b *bytes.Buffer) {

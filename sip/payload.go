@@ -16,7 +16,7 @@ package sip
 
 type Payload interface {
 	ContentType() string
-	Data() []byte
+	Marshal() ([]byte, error)
 }
 
 type MiscPayload struct {
@@ -28,6 +28,6 @@ func (p *MiscPayload) ContentType() string {
 	return p.T
 }
 
-func (p *MiscPayload) Data() []byte {
-	return p.D
+func (p *MiscPayload) Marshal() ([]byte, error) {
+	return p.D, nil
 }
